@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="actionButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MainFrame_buttonGroup1"/>
+      </AuxValues>
+    </Component>
+    <Component class="com.github.tarsa.tarsalzp.gui.OptionsBean" name="optionsBean">
+    </Component>
+    <Component class="com.github.tarsa.tarsalzp.gui.ActionBean" name="actionBean">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="actionBean.setOptionsBean(optionsBean);"/>
+      </AuxValues>
+    </Component>
+    <Menu class="javax.swing.JMenuBar" name="menuBar">
+      <SubComponents>
+        <Menu class="javax.swing.JMenu" name="jMenu1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Theme"/>
+          </Properties>
+        </Menu>
+        <Menu class="javax.swing.JMenu" name="jMenu2">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="About"/>
+          </Properties>
+        </Menu>
+      </SubComponents>
+    </Menu>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="3"/>
+    <Property name="resizable" type="boolean" value="false"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="menuBar"/>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="optionsPanel" max="32767" attributes="0"/>
+                  <Component id="filenamesPanel" max="32767" attributes="0"/>
+                  <Component id="progressBar" max="32767" attributes="0"/>
+                  <Component id="actionPanel" alignment="0" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="filenamesPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="optionsPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="progressBar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JPanel" name="filenamesPanel">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Files"/>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="outputFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="inputFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="inputPathTextField" max="32767" attributes="0"/>
+                      <Component id="outputPathTextField" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="inputFileChooseButton" pref="140" max="32767" attributes="0"/>
+                      <Component id="outputFileChooseButton" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="inputPathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="inputFileChooseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="inputFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="outputFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="outputPathTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="outputFileChooseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="inputFileLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Input file"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="outputFileLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Output file"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="inputPathTextField">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Enter path to input file here"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="outputPathTextField">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Enter path to output file here"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="inputFileChooseButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="File Chooser"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="inputFileChooseButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="outputFileChooseButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="File Chooser"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="outputFileChooseButtonActionPerformed"/>
+          </Events>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JProgressBar" name="progressBar">
+    </Component>
+    <Container class="javax.swing.JPanel" name="optionsPanel">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Options"/>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="lzpLowContextLengthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpLowMaskSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpHighContextLengthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpHighMaskSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="lzpHighMaskSizeSpinner" max="32767" attributes="0"/>
+                      <Component id="lzpHighContextLengthSpinner" alignment="1" max="32767" attributes="0"/>
+                      <Component id="lzpLowMaskSizeSpinner" alignment="1" max="32767" attributes="0"/>
+                      <Component id="lzpLowContextLengthSpinner" alignment="1" pref="70" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="ppmInitLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmOrderLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmStepLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmLimitLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="ppmLimitSpinner" pref="70" max="32767" attributes="0"/>
+                      <Component id="ppmStepSpinner" pref="70" max="32767" attributes="0"/>
+                      <Component id="ppmInitSpinner" max="32767" attributes="0"/>
+                      <Component id="ppmOrderSpinner" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lzpLowContextLengthSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmOrderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmOrderSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpLowContextLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lzpLowMaskSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpLowMaskSizeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmInitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmInitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lzpHighContextLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpHighContextLengthSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmStepLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmStepSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lzpHighMaskSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lzpHighMaskSizeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ppmLimitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="lzpLowContextLengthLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="LZP Low Context Length"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lzpLowMaskSizeLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="LZP Low Mask Size"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lzpHighContextLengthLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="LZP High Context Length"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lzpHighMaskSizeLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="LZP High Mask Size"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="lzpLowContextLengthSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false">
+              <Property name="name" type="java.lang.String" value=""/>
+            </BindingProperty>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="lzpLowMaskSizeSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowMaskSize}" target="lzpLowMaskSizeSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="lzpHighContextLengthSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighContextLength}" target="lzpHighContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="lzpHighMaskSizeSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighMaskSize}" target="lzpHighMaskSizeSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="ppmOrderLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="PPM Order"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="ppmInitLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="PPM Init"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="ppmStepLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="PPM Step"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="ppmLimitLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="PPM Limit"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="ppmOrderSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmOrder}" target="ppmOrderSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="ppmInitSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmInit}" target="ppmInitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="ppmStepSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmStep}" target="ppmStepSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+        <Component class="javax.swing.JSpinner" name="ppmLimitSpinner">
+          <BindingProperties>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmLimit}" target="ppmLimitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="actionPanel">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <Component id="actionSelectionPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="actionButton" min="-2" pref="165" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="actionButton" alignment="0" max="32767" attributes="0"/>
+              <Component id="actionSelectionPanel" alignment="1" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="actionSelectionPanel">
+          <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                <TitledBorder title="Action"/>
+              </Border>
+            </Property>
+          </Properties>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="encodeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="decodeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="showDetailsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="24" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="encodeRadioButton" min="-2" pref="24" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="decodeRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="showDetailsRadioButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JRadioButton" name="encodeRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="actionButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Encode input file to output file"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="encodeRadioButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="decodeRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="actionButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Decode input file to output file"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="decodeRadioButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="showDetailsRadioButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="actionButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Show input file compression options"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showDetailsRadioButtonActionPerformed"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JButton" name="actionButton">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+              <FontInfo relative="true">
+                <Font component="actionButton" property="font" relativeSize="true" size="5"/>
+              </FontInfo>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Do it!"/>
+          </Properties>
+          <BindingProperties>
+            <BindingProperty name="enabled" source="actionBean" sourcePath="${valid}" target="actionButton" targetPath="enabled" updateStrategy="0" immediately="false"/>
+          </BindingProperties>
+        </Component>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>
