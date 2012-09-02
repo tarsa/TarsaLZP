@@ -15,67 +15,81 @@ abstract class Common {
     final InputStream inputStream;
     final OutputStream outputStream;
     // options section
-    final int lzpLowMaskSize;
-    final int lzpHighMaskSize;
-    final short ppmOrder;
-    final short ppmInit;
-    final short ppmStep;
-    final short ppmLimit;
+    private final int lzpLowContextLength;
+    private final int lzpLowMaskSize;
+    private final int lzpHighContextLength;
+    private final int lzpHighMaskSize;
+    private final short ppmOrder;
+    private final short ppmInit;
+    private final short ppmStep;
+    private final short ppmLimit;
     // LZP section
-    final int lzpLevel4;
-    final int lzpLevel8;
-    final int lzpCount4;
-    final int lzpCount8;
-    final int lzpMask4;
-    final int lzpMask8;
-    final short[] lzp4;
-    final short[] lzp8;
+    final boolean onlyLowLzp;
+    private final int lzpLowMask;
+    private final int lzpHighMask;
+    private final short[] lzpLow;
+    private final short[] lzpHigh;
     // PPM section
-    final int ppmMaskSize;
-    final int ppmMask;
+    private final int ppmMaskSize;
+    private final int ppmMask;
     final short[] rangesSingle;
     final short[] rangesGrouped;
     final short[] rangesTotal;
+    // SEE section
+    private final int[] seeLow;
+    private final int[] seeHigh;
 
     public Common(final InputStream inputStream,
             final OutputStream outputStream, final Options options) {
         this.inputStream = inputStream;
         this.outputStream = outputStream;
+        lzpLowContextLength = (int) options.getLzpLowContextLength();
         lzpLowMaskSize = (int) options.getLzpLowMaskSize();
+        lzpHighContextLength = (int) options.getLzpHighContextLength();
         lzpHighMaskSize = (int) options.getLzpHighMaskSize();
         ppmOrder = (short) options.getPpmOrder();
         ppmInit = (short) options.getPpmInit();
         ppmStep = (short) options.getPpmStep();
         ppmLimit = (short) options.getPpmLimit();
         // LZP init
-        lzpLevel4 = lzpLowMaskSize;
-        lzpLevel8 = lzpHighMaskSize;
-        lzpCount4 = 1 << lzpLevel4;
-        lzpCount8 = 1 << lzpLevel8;
-        lzpMask4 = (1 << lzpLevel4) - 1;
-        lzpMask8 = (1 << lzpLevel8) - 1;
-        lzp4 = new short[lzpCount4];
-        lzp8 = new short[lzpCount8];
-        Arrays.fill(lzp4, (short) 0xffb5);
-        Arrays.fill(lzp8, (short) 0xffb5);
+        final int lzpLowCount = 1 << lzpLowMaskSize;
+        final int lzpHighCount = 1 << lzpHighMaskSize;
+        lzpLowMask = lzpLowCount - 1;
+        lzpHighMask = lzpHighCount - 1;
+        lzpLow = new short[lzpLowCount];
+        Arrays.fill(lzpLow, (short) 0xffb5);
+        onlyLowLzp = lzpLowContextLength == lzpHighContextLength
+                && lzpLowMaskSize == lzpHighMaskSize;
+        if (onlyLowLzp) {
+            lzpHigh = null;
+        } else {
+            lzpHigh = new short[lzpHighCount];
+            Arrays.fill(lzpHigh, (short) 0xffb5);
+        }
         // PPM init
         ppmMaskSize = 8 * ppmOrder;
         ppmMask = (1 << ppmMaskSize) - 1;
         rangesSingle = new short[1 << ppmMaskSize + 8];
         rangesGrouped = new short[1 << ppmMaskSize + 4];
         rangesTotal = new short[1 << ppmMaskSize];
-        Arrays.fill(rangesSingle, (short)(ppmInit));
-        Arrays.fill(rangesGrouped, (short)(ppmInit * 16));
-        Arrays.fill(rangesTotal, (short)(ppmInit * 256));
+        Arrays.fill(rangesSingle, (short) (ppmInit));
+        Arrays.fill(rangesGrouped, (short) (ppmInit * 16));
+        Arrays.fill(rangesTotal, (short) (ppmInit * 256));
         // SEE init
-        Arrays.fill(see4, 0x8000);
-        Arrays.fill(see8, 0x8000);
+        seeLow = new int[16 * 256];
+        Arrays.fill(seeLow, 0x8000);
+        if (onlyLowLzp) {
+            seeHigh = null;
+        } else {
+            seeHigh = new int[16 * 256];
+            Arrays.fill(seeHigh, 0x8000);
+        }
     }
     // <editor-fold defaultstate="collapsed" desc="Contexts and hashes">
-    int lastPpmContext = 0;
-    long context = 0;
-    int hash4 = 0;
-    int hash8 = 0;
+    private int lastPpmContext = 0;
+    private long context = 0;
+    private int hashLow = 0;
+    private int hashHigh = 0;
 
     void updateContext(final int input) {
         context <<= 8;
@@ -89,33 +103,33 @@ abstract class Common {
     void computeHashes() {
         long localContext = context;
         long hash = 2166136261l;
-        for (int i = -1; i >= -4; i--) {
+        for (int i = 0; i < lzpLowContextLength; i++) {
             hash = hash * 16777619;
             hash = hash ^ (localContext & 0xFF);
             localContext >>>= 8;
         }
-        hash4 = (int) (hash & lzpMask4);
-        for (int i = -5; i >= -8; i--) {
+        hashLow = (int) (hash & lzpLowMask);
+        for (int i = lzpLowContextLength; i < lzpHighContextLength; i++) {
             hash = hash * 16777619;
             hash = hash ^ (localContext & 0xFF);
             localContext >>>= 8;
         }
-        hash8 = (int) (hash & lzpMask8);
+        hashHigh = (int) (hash & lzpHighMask);
     }
 
     int getLastPpmContext() {
         return lastPpmContext;
     }
 
-    int getLastHash4() {
-        return hash4;
+    int getLastHashLow() {
+        return hashLow;
     }
 
-    int getLastHash8() {
-        return hash8;
+    int getLastHashHigh() {
+        return hashHigh;
     }// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Calculating states">
-    static final int StateTable[][] = {
+    private static final int StateTable[][] = {
         {1, 241, 0, 0, 0, 0},
         {2, 227, 1, 0, 1, 1},
         {3, 213, 2, 0, 2, 2},
@@ -376,75 +390,104 @@ abstract class Common {
     int getNextState(final int state, final boolean match) {
         return StateTable[state][match ? 0 : 1];
     }// </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="LZP Models">
-    int getLZPState4(final int hash) {
-        return (lzp4[hash] >> 8) & 0xff;
+    // <editor-fold defaultstate="collapsed" desc="LZP stuff">
+
+    int getLzpStateLow(final int hash) {
+        return (lzpLow[hash] >> 8) & 0xff;
     }
 
-    int getLZPState8(final int hash) {
-        return (lzp8[hash] >> 8) & 0xff;
+    int getLzpStateHigh(final int hash) {
+        return (lzpHigh[hash] >> 8) & 0xff;
     }
 
-    int getLZPPredictedSymbol4(final int hash) {
-        return lzp4[hash] & 0xff;
+    int getLzpPredictedSymbolLow(final int hash) {
+        return lzpLow[hash] & 0xff;
     }
 
-    int getLZPPredictedSymbol8(final int hash) {
-        return lzp8[hash] & 0xff;
+    int getLzpPredictedSymbolHigh(final int hash) {
+        return lzpHigh[hash] & 0xff;
     }
 
-    void updateLZPState4(final int hash, final int input, 
+    void updateLzpStateLow(final int hash, final int input,
             final boolean match) {
-        lzp4[hash] = (short) ((getNextState(getLZPState4(hash), match) << 8) 
+        lzpLow[hash] = (short) ((getNextState(getLzpStateLow(hash), match) << 8)
                 + input);
     }
 
-    void updateLZPState8(final int hash, final int input, 
+    void updateLzpStateHigh(final int hash, final int input,
             final boolean match) {
-        lzp8[hash] = (short) ((getNextState(getLZPState8(hash), match) << 8) 
-                + input);
+        lzpHigh[hash] = (short) ((getNextState(getLzpStateHigh(hash),
+                match) << 8) + input);
     }// </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="SEE Models">
-    final int[] see4 = new int[16 * 256];
-    final int[] see8 = new int[16 * 256];
-    int history4 = 0;
-    int history8 = 0;
-    final int history4mask = 15;
-    final int history8mask = 15;
+    // <editor-fold defaultstate="collapsed" desc="SEE stuff">
+    private int historyLow = 0;
+    private int historyHigh = 0;
+    private final int historyLowMask = 15;
+    private final int historyHighMask = 15;
 
-    int getSEE4(final int state) {
-        return see4[(history4 << 8) + state];
+    int getSeeLow(final int state) {
+        return seeLow[(historyLow << 8) + state];
     }
 
-    int getSEE8(final int state) {
-        return see8[(history8 << 8) + state];
+    int getSeeHigh(final int state) {
+        return seeHigh[(historyHigh << 8) + state];
     }
 
-    void updateSEEHistory4(final boolean match) {
-        history4 = ((history4 << 1) + (match ? 0 : 1)) & history4mask;
+    void updateSeeHistoryLow(final boolean match) {
+        historyLow = ((historyLow << 1) + (match ? 0 : 1)) & historyLowMask;
     }
 
-    void updateSEEHistory8(final boolean match) {
-        history8 = ((history8 << 1) + (match ? 0 : 1)) & history8mask;
+    void updateSeeHistoryHigh(final boolean match) {
+        historyHigh = ((historyHigh << 1) + (match ? 0 : 1)) & historyHighMask;
     }
 
-    void updateSEE4(final int state, final boolean match) {
-        final int index = (history4 << 8) + state;
+    void updateSeeLow(final int state, final boolean match) {
+        final int index = (historyLow << 8) + state;
         if (match) {
-            see4[index] += ((1 << 16) - see4[index]) >> 7;
+            seeLow[index] += ((1 << 16) - seeLow[index]) >> 7;
         } else {
-            see4[index] -= see4[index] >> 7;
+            seeLow[index] -= seeLow[index] >> 7;
         }
-        updateSEEHistory4(match);
+        updateSeeHistoryLow(match);
     }
 
-    void updateSEE8(final int state, final boolean match) {
-        final int index = (history8 << 8) + state;
+    void updateSeeHigh(final int state, final boolean match) {
+        final int index = (historyHigh << 8) + state;
         if (match) {
-            see8[index] += ((1 << 16) - see8[index]) >> 7;
+            seeHigh[index] += ((1 << 16) - seeHigh[index]) >> 7;
         } else {
-            see8[index] -= see8[index] >> 7;
+            seeHigh[index] -= seeHigh[index] >> 7;
         }
-        updateSEEHistory8(match);
+        updateSeeHistoryHigh(match);
     }// </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="PPM stuff">
+
+    private void rescalePpm() {
+        for (int indexCurrent = getLastPpmContext() << 8; indexCurrent
+                < (getLastPpmContext() + 1) << 8; indexCurrent++) {
+            rangesSingle[indexCurrent] -= rangesSingle[indexCurrent] >> 1;
+        }
+        short totalFrequency = 0;
+        for (int groupCurrent = getLastPpmContext() << 4; groupCurrent
+                < (getLastPpmContext() + 1) << 4; groupCurrent++) {
+            short groupFrequency = 0;
+            for (int indexCurrent = groupCurrent << 4; indexCurrent
+                    < (groupCurrent + 1) << 4; indexCurrent++) {
+                groupFrequency += rangesSingle[indexCurrent];
+            }
+            rangesGrouped[groupCurrent] = groupFrequency;
+            totalFrequency += groupFrequency;
+        }
+        rangesTotal[getLastPpmContext()] = totalFrequency;
+    }
+
+    void updatePpm(final int index) {
+        rangesSingle[index] += ppmStep;
+        rangesGrouped[index >> 4] += ppmStep;
+        rangesTotal[getLastPpmContext()] += ppmStep;
+        if (rangesTotal[getLastPpmContext()] > ppmLimit) {
+            rescalePpm();
+        }
+    }
+    // </editor-fold>  
 }

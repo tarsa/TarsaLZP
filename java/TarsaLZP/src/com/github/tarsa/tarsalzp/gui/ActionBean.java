@@ -3,6 +3,7 @@ package com.github.tarsa.tarsalzp.gui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 
 /**
  *
@@ -18,27 +19,47 @@ public final class ActionBean {
             new PropertyChangeSupport(this);
     private Action action = null;
     private OptionsBean optionsBean = null;
-    private boolean valid = false;
+    private boolean actionAllowed = false;
+    private boolean actionInProgress = false;
+    private String inputFilePath;
+    private String outputFilePath;
     public static final String PropAction = "action";
     public static final String PropOptionsBean = "optionsBean";
-    public static final String PropValid = "valid";
-    private final PropertyChangeListener validationListener;
+    public static final String PropActionAllowed = "actionAllowed";
+    public static final String PropActionInProgress = "actionInProgress";
+    public static final String PropInputFilePath = "inputFilePath";
+    public static final String PropOutputFilePath = "outputFilePath";
+    private final PropertyChangeListener activationListener;
+
+    private class ActivationListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            validate();
+        }
+    }
 
     public ActionBean() {
-        validationListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(final PropertyChangeEvent evt) {
-                if (OptionsBean.PropValid.equals(evt.getPropertyName())) {
-                    validate();
-                }
-            }
-        };
+        activationListener = new ActivationListener();
+        for (final String prop : new String[]{PropAction, PropActionInProgress,
+                    PropInputFilePath, PropOutputFilePath}) {
+            propertyChangeSupport.addPropertyChangeListener(prop,
+                    activationListener);
+        }
     }
 
     private void validate() {
-        setValid(action == Action.Decode || action == Action.ShowOptions
-                || (action == Action.Encode && optionsBean != null
-                && optionsBean.isValid()));
+        boolean localActionAllowed = false;
+        localActionAllowed |= action == Action.Decode && inputFilePath != null
+                && new File(inputFilePath).isAbsolute();
+        localActionAllowed |= action == Action.ShowOptions && inputFilePath
+                != null && new File(inputFilePath).isAbsolute();
+        localActionAllowed |= action == Action.Encode && inputFilePath != null
+                && new File(inputFilePath).isAbsolute() && outputFilePath 
+                != null && new File(outputFilePath).isAbsolute() && optionsBean
+                != null && optionsBean.isValid();
+        localActionAllowed &= !actionInProgress;
+        setActionAllowed(localActionAllowed);
     }
 
     /**
@@ -60,12 +81,39 @@ public final class ActionBean {
     }
 
     /**
-     * Get the value of valid
+     * Get the value of actionAllowed
      *
-     * @return the value of valid
+     * @return the value of actionAllowed
      */
-    public boolean isValid() {
-        return valid;
+    public boolean isActionAllowed() {
+        return actionAllowed;
+    }
+
+    /**
+     * Get the value of actionInProgress
+     *
+     * @return the value of actionInProgress
+     */
+    public boolean isActionInProgress() {
+        return actionInProgress;
+    }
+
+    /**
+     * Get the value of inputFilePath
+     *
+     * @return the value of inputFilePath
+     */
+    public String getInputFilePath() {
+        return inputFilePath;
+    }
+
+    /**
+     * Get the value of outputFilePath
+     *
+     * @return the value of outputFilePath
+     */
+    public String getOutputFilePath() {
+        return outputFilePath;
     }
 
     /**
@@ -77,7 +125,6 @@ public final class ActionBean {
         final Action oldAction = this.action;
         this.action = action;
         propertyChangeSupport.firePropertyChange(PropAction, oldAction, action);
-        validate();
     }
 
     /**
@@ -88,25 +135,62 @@ public final class ActionBean {
     public void setOptionsBean(final OptionsBean optionsBean) {
         final OptionsBean oldOptionsBean = this.optionsBean;
         if (oldOptionsBean != null) {
-            oldOptionsBean.removePropertyChangeListener(validationListener);
+            oldOptionsBean.removePropertyChangeListener(activationListener);
         }
         this.optionsBean = optionsBean;
         if (optionsBean != null) {
-            optionsBean.addPropertyChangeListener(validationListener);
+            optionsBean.addPropertyChangeListener(activationListener);
         }
         propertyChangeSupport.firePropertyChange(PropOptionsBean,
                 oldOptionsBean, optionsBean);
     }
 
     /**
-     * Set the value of valid
+     * Set the value of actionAllowed
      *
-     * @param valid new value of valid
+     * @param actionAllowed new value of actionAllowed
      */
-    public void setValid(final boolean valid) {
-        final boolean oldValid = this.valid;
-        this.valid = valid;
-        propertyChangeSupport.firePropertyChange(PropValid, oldValid, valid);
+    public void setActionAllowed(final boolean actionAllowed) {
+        final boolean oldActionAllowed = this.actionAllowed;
+        this.actionAllowed = actionAllowed;
+        propertyChangeSupport.firePropertyChange(PropActionAllowed,
+                oldActionAllowed, actionAllowed);
+    }
+
+    /**
+     * Set the value of actionInProgress
+     *
+     * @param actionInProgress new value of actionInProgress
+     */
+    public void setActionInProgress(final boolean actionInProgress) {
+        final boolean oldActionInProgress = this.actionInProgress;
+        this.actionInProgress = actionInProgress;
+        propertyChangeSupport.firePropertyChange(PropActionInProgress,
+                oldActionInProgress, actionInProgress);
+    }
+
+    /**
+     * Set the value of inputFilePath
+     *
+     * @param inputFilePath new value of inputFilePath
+     */
+    public void setInputFilePath(final String inputFilePath) {
+        final String oldInputFilePath = this.inputFilePath;
+        this.inputFilePath = inputFilePath;
+        propertyChangeSupport.firePropertyChange(PropInputFilePath,
+                oldInputFilePath, inputFilePath);
+    }
+
+    /**
+     * Set the value of outputFilePath
+     *
+     * @param outputFilePath new value of outputFilePath
+     */
+    public void setOutputFilePath(final String outputFilePath) {
+        final String oldOutputFilePath = this.outputFilePath;
+        this.outputFilePath = outputFilePath;
+        propertyChangeSupport.firePropertyChange(PropOutputFilePath,
+                oldOutputFilePath, outputFilePath);
     }
 
     /**

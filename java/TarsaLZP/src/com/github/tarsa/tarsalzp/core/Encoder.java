@@ -13,10 +13,10 @@ public final class Encoder extends Common {
 
     private long rcBuffer;
     private long rcRange;
-    int xFFRunLength = 0;
-    int lastOutputByte = 0;
-    boolean delay = false;
-    boolean carry = false;
+    private int xFFRunLength = 0;
+    private int lastOutputByte = 0;
+    private boolean delay = false;
+    private boolean carry = false;
 
     public Encoder(final InputStream inputStream,
             final OutputStream outputStream, final Options options) {
@@ -58,7 +58,7 @@ public final class Encoder extends Common {
         }
     }
 
-    void encodeFlag(final int probability, final boolean match)
+    private void encodeFlag(final int probability, final boolean match)
             throws IOException {
         normalize();
         final long rcHelper = (rcRange >> 16) * probability;
@@ -74,7 +74,7 @@ public final class Encoder extends Common {
         }
     }
 
-    void encodeSkewed(final boolean flag) throws IOException {
+    private void encodeSkewed(final boolean flag) throws IOException {
         normalize();
         if (flag) {
             rcRange--;
@@ -88,33 +88,50 @@ public final class Encoder extends Common {
         }
     }
 
-    void encodeSingle(final int nextSymbol)
+    private void encodeSingleOnlyLowLzp(final int nextSymbol)
             throws IOException {
         computeHashes();
-        final int model4Frequency = getSEE4(getLZPState4(getLastHash4()));
-        final int model8Frequency = getSEE8(getLZPState8(getLastHash8()));
+        final int modelLowFrequency =
+                getSeeLow(getLzpStateLow(getLastHashLow()));
+        final int predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
+        final boolean match = nextSymbol == predictedSymbol;
+        encodeFlag(modelLowFrequency, match);
+        updateSeeLow(getLzpStateLow(getLastHashLow()), match);
+        updateLzpStateLow(getLastHashLow(), nextSymbol, match);
+        if (!match) {
+            encodeSymbol(nextSymbol, predictedSymbol);
+        }
+        updateContext(nextSymbol);
+    }
+
+    private void encodeSingle(final int nextSymbol) throws IOException {
+        computeHashes();
+        final int modelLowFrequency =
+                getSeeLow(getLzpStateLow(getLastHashLow()));
+        final int modelHighFrequency =
+                getSeeHigh(getLzpStateHigh(getLastHashHigh()));
         boolean match;
         int predictedSymbol;
-        if (model4Frequency >= model8Frequency) {
-            predictedSymbol = getLZPPredictedSymbol8(getLastHash8());
+        if (modelLowFrequency >= modelHighFrequency) {
+            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
             match = nextSymbol == predictedSymbol;
-            updateSEEHistory8(match);
-            updateLZPState8(getLastHash8(), nextSymbol, match);
-            predictedSymbol = getLZPPredictedSymbol4(getLastHash4());
+            updateSeeHistoryHigh(match);
+            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
+            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
             match = nextSymbol == predictedSymbol;
-            encodeFlag(model4Frequency, match);
-            updateSEE4(getLZPState4(getLastHash4()), match);
-            updateLZPState4(getLastHash4(), nextSymbol, match);
+            encodeFlag(modelLowFrequency, match);
+            updateSeeLow(getLzpStateLow(getLastHashLow()), match);
+            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
         } else {
-            predictedSymbol = getLZPPredictedSymbol4(getLastHash4());
+            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
             match = nextSymbol == predictedSymbol;
-            updateSEEHistory4(match);
-            updateLZPState4(getLastHash4(), nextSymbol, match);
-            predictedSymbol = getLZPPredictedSymbol8(getLastHash8());
+            updateSeeHistoryLow(match);
+            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
+            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
             match = nextSymbol == predictedSymbol;
-            encodeFlag(model8Frequency, match);
-            updateSEE8(getLZPState8(getLastHash8()), match);
-            updateLZPState8(getLastHash8(), nextSymbol, match);
+            encodeFlag(modelHighFrequency, match);
+            updateSeeHigh(getLzpStateHigh(getLastHashHigh()), match);
+            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
         }
         if (!match) {
             encodeSymbol(nextSymbol, predictedSymbol);
@@ -122,8 +139,8 @@ public final class Encoder extends Common {
         updateContext(nextSymbol);
     }
 
-    void encodeSymbol(final int nextSymbol, final int mispredictedSymbol)
-            throws IOException {
+    private void encodeSymbol(final int nextSymbol,
+            final int mispredictedSymbol) throws IOException {
         normalize();
         computePpmContext();
         final int index = (getLastPpmContext() << 8) + nextSymbol;
@@ -150,28 +167,7 @@ public final class Encoder extends Common {
             rcBuffer = rcBuffer & 0xFFFFFFFFl;
         }
         rcRange = rcHelper * rangesSingle[index];
-        rangesSingle[index] += ppmStep;
-        rangesGrouped[symbolGroup] += ppmStep;
-        rangesTotal[getLastPpmContext()] += ppmStep;
-        if (rangesTotal[getLastPpmContext()] > ppmLimit) {
-            for (int indexCurrent = getLastPpmContext() << 8; indexCurrent
-                    < (getLastPpmContext() + 1) << 8; indexCurrent++) {
-                rangesSingle[indexCurrent] -=
-                        rangesSingle[indexCurrent] >> 1;
-            }
-            short totalFrequency = 0;
-            for (int groupCurrent = getLastPpmContext() << 4; groupCurrent
-                    < (getLastPpmContext() + 1) << 4; groupCurrent++) {
-                short groupFrequency = 0;
-                for (int indexCurrent = groupCurrent << 4; indexCurrent
-                        < (groupCurrent + 1) << 4; indexCurrent++) {
-                    groupFrequency += rangesSingle[indexCurrent];
-                }
-                rangesGrouped[groupCurrent] = groupFrequency;
-                totalFrequency += groupFrequency;
-            }
-            rangesTotal[getLastPpmContext()] = totalFrequency;
-        }
+        updatePpm(index);
     }
 
     void flush() throws IOException {
@@ -182,7 +178,7 @@ public final class Encoder extends Common {
         }
     }
 
-    public boolean encode(final long limit) throws IOException {
+    boolean encode(final long limit) throws IOException {
         boolean endReached = false;
         for (int i = 0; i < limit; i++) {
             final int symbol = inputStream.read();
@@ -191,7 +187,11 @@ public final class Encoder extends Common {
                 break;
             }
             encodeSkewed(true);
-            encodeSingle(symbol);
+            if (onlyLowLzp) {
+                encodeSingleOnlyLowLzp(symbol);
+            } else {
+                encodeSingle(symbol);
+            }
         }
         return endReached;
     }

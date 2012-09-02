@@ -10,18 +10,22 @@
     <Component class="com.github.tarsa.tarsalzp.gui.OptionsBean" name="optionsBean">
     </Component>
     <Component class="com.github.tarsa.tarsalzp.gui.ActionBean" name="actionBean">
+      <BindingProperties>
+        <BindingProperty name="inputFilePath" source="inputPathTextField" sourcePath="${text}" target="actionBean" targetPath="inputFilePath" updateStrategy="0" immediately="false"/>
+        <BindingProperty name="outputFilePath" source="outputPathTextField" sourcePath="${text}" target="actionBean" targetPath="outputFilePath" updateStrategy="0" immediately="false"/>
+      </BindingProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="actionBean.setOptionsBean(optionsBean);"/>
       </AuxValues>
     </Component>
     <Menu class="javax.swing.JMenuBar" name="menuBar">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="themeListMenu">
+        <Menu class="javax.swing.JMenu" name="lafListMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Themes"/>
+            <Property name="text" type="java.lang.String" value="Look and Feel"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="fillThemesMenu(themeListMenu);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="fillLafsMenu(lafListMenu);"/>
           </AuxValues>
         </Menu>
         <Menu class="javax.swing.JMenu" name="aboutMenu">
@@ -288,7 +292,6 @@
         <Component class="javax.swing.JSpinner" name="lzpLowContextLengthSpinner">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" value="Value must be higher than PPM Order and not higher than LZP High Context Length"/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false">
@@ -307,7 +310,6 @@
         <Component class="javax.swing.JSpinner" name="lzpHighContextLengthSpinner">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" value="Value must not be lower than LZP Low Context Length and not higher than 8"/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighContextLength}" target="lzpHighContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
@@ -468,15 +470,13 @@
         </Container>
         <Component class="javax.swing.JButton" name="actionButton">
           <Properties>
-            <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-              <FontInfo relative="true">
-                <Font component="actionButton" property="font" relativeSize="true" size="5"/>
-              </FontInfo>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Ubuntu" size="20" style="0"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Do it!"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="enabled" source="actionBean" sourcePath="${valid}" target="actionButton" targetPath="enabled" updateStrategy="0" immediately="false"/>
+            <BindingProperty name="enabled" source="actionBean" sourcePath="${actionAllowed}" target="actionButton" targetPath="enabled" updateStrategy="0" immediately="false"/>
           </BindingProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="actionButtonActionPerformed"/>

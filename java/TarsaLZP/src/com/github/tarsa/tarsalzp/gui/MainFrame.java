@@ -90,9 +90,15 @@ public class MainFrame extends JFrame {
         showDetailsRadioButton = new javax.swing.JRadioButton();
         actionButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
-        themeListMenu = new javax.swing.JMenu();
-        fillThemesMenu(themeListMenu);
+        lafListMenu = new javax.swing.JMenu();
+        fillLafsMenu(lafListMenu);
         aboutMenu = new javax.swing.JMenu();
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, inputPathTextField, org.jdesktop.beansbinding.ELProperty.create("${text}"), actionBean, org.jdesktop.beansbinding.BeanProperty.create("inputFilePath"));
+        bindingGroup.addBinding(binding);
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, outputPathTextField, org.jdesktop.beansbinding.ELProperty.create("${text}"), actionBean, org.jdesktop.beansbinding.BeanProperty.create("outputFilePath"));
+        bindingGroup.addBinding(binding);
+
         actionBean.setOptionsBean(optionsBean);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -174,9 +180,8 @@ public class MainFrame extends JFrame {
         lzpHighMaskSizeLabel.setToolTipText("Model size is 2^(Mask Size) entries with 2 bytes per entry");
 
         lzpLowContextLengthSpinner.setToolTipText("Value must be higher than PPM Order and not higher than LZP High Context Length");
-        lzpLowContextLengthSpinner.setEnabled(false);
 
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
         bindingGroup.addBinding(binding);
 
         lzpLowMaskSizeSpinner.setToolTipText("Value must be between 15 and 30 (inclusive)");
@@ -185,7 +190,6 @@ public class MainFrame extends JFrame {
         bindingGroup.addBinding(binding);
 
         lzpHighContextLengthSpinner.setToolTipText("Value must not be lower than LZP Low Context Length and not higher than 8");
-        lzpHighContextLengthSpinner.setEnabled(false);
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpHighContextLength}"), lzpHighContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
@@ -330,10 +334,10 @@ public class MainFrame extends JFrame {
                 .addComponent(showDetailsRadioButton))
         );
 
-        actionButton.setFont(actionButton.getFont().deriveFont(actionButton.getFont().getSize()+5f));
+        actionButton.setFont(new java.awt.Font("Ubuntu", 0, 20)); // NOI18N
         actionButton.setText("Do it!");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, actionBean, org.jdesktop.beansbinding.ELProperty.create("${valid}"), actionButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, actionBean, org.jdesktop.beansbinding.ELProperty.create("${actionAllowed}"), actionButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
         actionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -357,8 +361,8 @@ public class MainFrame extends JFrame {
             .addComponent(actionSelectionPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        themeListMenu.setText("Themes");
-        menuBar.add(themeListMenu);
+        lafListMenu.setText("Look and Feel");
+        menuBar.add(lafListMenu);
 
         aboutMenu.setText("About");
         aboutMenu.setEnabled(false);
@@ -400,19 +404,19 @@ public class MainFrame extends JFrame {
 
     private void inputFileChooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputFileChooseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser(
-                inputPathTextField.getText());
+                actionBean.getInputFilePath());
         chooser.setMultiSelectionEnabled(false);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            inputPathTextField.setText(
+            actionBean.setInputFilePath(
                     chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_inputFileChooseButtonActionPerformed
 
     private void outputFileChooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputFileChooseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser(
-                outputPathTextField.getText());
+                actionBean.getOutputFilePath());
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            outputPathTextField.setText(
+            actionBean.setOutputFilePath(
                     chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_outputFileChooseButtonActionPerformed
@@ -430,32 +434,22 @@ public class MainFrame extends JFrame {
     }//GEN-LAST:event_showDetailsRadioButtonActionPerformed
 
     private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
-        final String inputFilePath = inputPathTextField.getText();
-        if (!new File(inputFilePath).isAbsolute()) {
-            JOptionPane.showMessageDialog(MainFrame.this,
-                    "Input file path is not an absolute path.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        final String outputFilePath = outputPathTextField.getText();
-        if (!new File(outputFilePath).isAbsolute()) {
-            JOptionPane.showMessageDialog(MainFrame.this,
-                    "Output file path is not an absolute path.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        final String inputFilePath = actionBean.getInputFilePath();
+        final String outputFilePath = actionBean.getOutputFilePath();
         try {
             switch (actionBean.getAction()) {
                 case Encode: {
                     final EncodingWorker encodingWorker = new EncodingWorker(
                             inputFilePath, outputFilePath,
                             optionsBean.toOptions());
+                    actionBean.setActionInProgress(true);
                     new Thread(encodingWorker).start();
                     break;
                 }
                 case Decode: {
                     final DecodingWorker decodingWorker = new DecodingWorker(
                             inputFilePath, outputFilePath);
+                    actionBean.setActionInProgress(true);
                     new Thread(decodingWorker).start();
                     break;
                 }
@@ -543,7 +537,7 @@ public class MainFrame extends JFrame {
                         + (System.currentTimeMillis() - startTime));
             } catch (final Exception ex) {
                 if (ex.getCause() instanceof OutOfMemoryError) {
-                    JOptionPane.showMessageDialog(MainFrame.this, 
+                    JOptionPane.showMessageDialog(MainFrame.this,
                             "Out of memory - try lowering mask sizes or "
                             + "increasing heap size.", "Error",
                             JOptionPane.ERROR_MESSAGE);
@@ -553,6 +547,7 @@ public class MainFrame extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
+            actionBean.setActionInProgress(false);
         }
     }
 
@@ -595,7 +590,7 @@ public class MainFrame extends JFrame {
                         + (System.currentTimeMillis() - startTime));
             } catch (final Exception ex) {
                 if (ex.getCause() instanceof OutOfMemoryError) {
-                    JOptionPane.showMessageDialog(MainFrame.this, 
+                    JOptionPane.showMessageDialog(MainFrame.this,
                             "Out of memory - try increasing heap size.",
                             "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
@@ -604,10 +599,11 @@ public class MainFrame extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
+            actionBean.setActionInProgress(false);
         }
     }
 
-    private void fillThemesMenu(final JMenu menu) {
+    private void fillLafsMenu(final JMenu menu) {
         try {
             final ButtonGroup buttonGroup = new ButtonGroup();
             final String currentLafName = UIManager.getLookAndFeel() == null
@@ -617,7 +613,7 @@ public class MainFrame extends JFrame {
                 final JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(
                         info.getName(), info.getName().equals(currentLafName));
                 menuItem.addActionListener(
-                        new ThemeSelector(this, info.getName()));
+                        new LafSelector(this, info.getName()));
                 buttonGroup.add(menuItem);
                 menu.add(menuItem);
             }
@@ -627,21 +623,21 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private static class ThemeSelector implements ActionListener {
+    private static class LafSelector implements ActionListener {
 
         private final JFrame frame;
-        private final String themeName;
+        private final String lafName;
 
-        public ThemeSelector(final JFrame frame, final String themeName) {
+        public LafSelector(final JFrame frame, final String lafName) {
             this.frame = frame;
-            this.themeName = themeName;
+            this.lafName = lafName;
         }
 
         public void select() {
             try {
                 for (final UIManager.LookAndFeelInfo info :
                         UIManager.getInstalledLookAndFeels()) {
-                    if (info.getName().equals(themeName)) {
+                    if (info.getName().equals(lafName)) {
                         UIManager.setLookAndFeel(info.getClassName());
                         if (frame != null) {
                             SwingUtilities.updateComponentTreeUI(frame);
@@ -671,7 +667,7 @@ public class MainFrame extends JFrame {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new ThemeSelector(null, "Nimbus").select();
+                new LafSelector(null, "Nimbus").select();
                 final MainFrame mainFrame = new MainFrame();
                 mainFrame.setVisible(true);
             }
@@ -690,6 +686,7 @@ public class MainFrame extends JFrame {
     private javax.swing.JButton inputFileChooseButton;
     private javax.swing.JLabel inputFileLabel;
     private javax.swing.JTextField inputPathTextField;
+    private javax.swing.JMenu lafListMenu;
     private javax.swing.JLabel lzpHighContextLengthLabel;
     private javax.swing.JSpinner lzpHighContextLengthSpinner;
     private javax.swing.JLabel lzpHighMaskSizeLabel;
@@ -714,7 +711,6 @@ public class MainFrame extends JFrame {
     private javax.swing.JSpinner ppmStepSpinner;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JRadioButton showDetailsRadioButton;
-    private javax.swing.JMenu themeListMenu;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }

@@ -62,7 +62,9 @@ public final class Coder {
         long amountProcessed = 0;
         while (!decoder.decode(callbackPeriod)) {
             amountProcessed += callbackPeriod;
-            callback.progressChanged(amountProcessed);
+            if (callback != null) {
+                callback.progressChanged(amountProcessed);
+            }
         }
     }
 
@@ -74,7 +76,9 @@ public final class Coder {
         long amountProcessed = 0;
         while (!encoder.encode(callbackPeriod)) {
             amountProcessed += callbackPeriod;
-            callback.progressChanged(amountProcessed);
+            if (callback != null) {
+                callback.progressChanged(amountProcessed);
+            }
         }
         encoder.flush();
     }
