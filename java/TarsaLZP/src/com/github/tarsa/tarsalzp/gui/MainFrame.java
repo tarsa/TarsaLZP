@@ -1,12 +1,40 @@
 package com.github.tarsa.tarsalzp.gui;
 
+import com.github.tarsa.tarsalzp.Options;
+import com.github.tarsa.tarsalzp.core.Coder;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import org.jdesktop.beansbinding.AutoBinding;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.Bindings;
 
 /**
  *
  * @author Piotr Tarsa
  */
-public class MainFrame extends javax.swing.JFrame {
+public class MainFrame extends JFrame {
 
     private static final long serialVersionUID = -3240444466539184363L;
 
@@ -62,8 +90,9 @@ public class MainFrame extends javax.swing.JFrame {
         showDetailsRadioButton = new javax.swing.JRadioButton();
         actionButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
+        themeListMenu = new javax.swing.JMenu();
+        fillThemesMenu(themeListMenu);
+        aboutMenu = new javax.swing.JMenu();
         actionBean.setOptionsBean(optionsBean);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -72,14 +101,17 @@ public class MainFrame extends javax.swing.JFrame {
         filenamesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Files"));
 
         inputFileLabel.setText("Input file");
+        inputFileLabel.setToolTipText("Input file path");
 
         outputFileLabel.setText("Output file");
+        outputFileLabel.setToolTipText("Output file path");
 
         inputPathTextField.setText("Enter path to input file here");
 
         outputPathTextField.setText("Enter path to output file here");
 
         inputFileChooseButton.setText("File Chooser");
+        inputFileChooseButton.setToolTipText("Browse filesystem for input file");
         inputFileChooseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inputFileChooseButtonActionPerformed(evt);
@@ -87,6 +119,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
 
         outputFileChooseButton.setText("File Chooser");
+        outputFileChooseButton.setToolTipText("Browse filesystem for output file");
         outputFileChooseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 outputFileChooseButtonActionPerformed(evt);
@@ -126,24 +159,38 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(outputFileChooseButton)))
         );
 
+        progressBar.setEnabled(false);
+
         optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
 
         lzpLowContextLengthLabel.setText("LZP Low Context Length");
 
         lzpLowMaskSizeLabel.setText("LZP Low Mask Size");
+        lzpLowMaskSizeLabel.setToolTipText("Model size is 2^(Mask Size) entries with 2 bytes per entry");
 
         lzpHighContextLengthLabel.setText("LZP High Context Length");
 
         lzpHighMaskSizeLabel.setText("LZP High Mask Size");
+        lzpHighMaskSizeLabel.setToolTipText("Model size is 2^(Mask Size) entries with 2 bytes per entry");
+
+        lzpLowContextLengthSpinner.setToolTipText("Value must be higher than PPM Order and not higher than LZP High Context Length");
+        lzpLowContextLengthSpinner.setEnabled(false);
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
         bindingGroup.addBinding(binding);
 
+        lzpLowMaskSizeSpinner.setToolTipText("Value must be between 15 and 30 (inclusive)");
+
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowMaskSize}"), lzpLowMaskSizeSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
+        lzpHighContextLengthSpinner.setToolTipText("Value must not be lower than LZP Low Context Length and not higher than 8");
+        lzpHighContextLengthSpinner.setEnabled(false);
+
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpHighContextLength}"), lzpHighContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
+
+        lzpHighMaskSizeSpinner.setToolTipText("Value must be between 15 and 30 (inclusive)");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpHighMaskSize}"), lzpHighMaskSizeSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
@@ -156,14 +203,22 @@ public class MainFrame extends javax.swing.JFrame {
 
         ppmLimitLabel.setText("PPM Limit");
 
+        ppmOrderSpinner.setToolTipText("Value must be not lower than 1 and not higher than 2 or LZP Low Context Length");
+
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmOrder}"), ppmOrderSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
+
+        ppmInitSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmInit}"), ppmInitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
+        ppmStepSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
+
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmStep}"), ppmStepSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
+
+        ppmLimitSpinner.setToolTipText("Value must be between PPM Init * 256 and 32767 - PPM Step (inclusive)");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmLimit}"), ppmLimitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
@@ -193,8 +248,8 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(ppmLimitLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ppmLimitSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                    .addComponent(ppmStepSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
+                    .addComponent(ppmLimitSpinner)
+                    .addComponent(ppmStepSpinner)
                     .addComponent(ppmInitSpinner)
                     .addComponent(ppmOrderSpinner))
                 .addContainerGap())
@@ -281,6 +336,12 @@ public class MainFrame extends javax.swing.JFrame {
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, actionBean, org.jdesktop.beansbinding.ELProperty.create("${valid}"), actionButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
         bindingGroup.addBinding(binding);
 
+        actionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout actionPanelLayout = new javax.swing.GroupLayout(actionPanel);
         actionPanel.setLayout(actionPanelLayout);
         actionPanelLayout.setHorizontalGroup(
@@ -296,11 +357,12 @@ public class MainFrame extends javax.swing.JFrame {
             .addComponent(actionSelectionPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jMenu1.setText("Theme");
-        menuBar.add(jMenu1);
+        themeListMenu.setText("Themes");
+        menuBar.add(themeListMenu);
 
-        jMenu2.setText("About");
-        menuBar.add(jMenu2);
+        aboutMenu.setText("About");
+        aboutMenu.setEnabled(false);
+        menuBar.add(aboutMenu);
 
         setJMenuBar(menuBar);
 
@@ -367,41 +429,256 @@ public class MainFrame extends javax.swing.JFrame {
         actionBean.setAction(ActionBean.Action.ShowOptions);
     }//GEN-LAST:event_showDetailsRadioButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+    private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
+        final String inputFilePath = inputPathTextField.getText();
+        if (!new File(inputFilePath).isAbsolute()) {
+            JOptionPane.showMessageDialog(MainFrame.this,
+                    "Input file path is not an absolute path.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        final String outputFilePath = outputPathTextField.getText();
+        if (!new File(outputFilePath).isAbsolute()) {
+            JOptionPane.showMessageDialog(MainFrame.this,
+                    "Output file path is not an absolute path.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+            switch (actionBean.getAction()) {
+                case Encode: {
+                    final EncodingWorker encodingWorker = new EncodingWorker(
+                            inputFilePath, outputFilePath,
+                            optionsBean.toOptions());
+                    new Thread(encodingWorker).start();
+                    break;
+                }
+                case Decode: {
+                    final DecodingWorker decodingWorker = new DecodingWorker(
+                            inputFilePath, outputFilePath);
+                    new Thread(decodingWorker).start();
+                    break;
+                }
+                case ShowOptions: {
+                    final BufferedInputStream inputStream =
+                            new BufferedInputStream(new FileInputStream(
+                            inputFilePath), 64 * 1024);
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            Coder.getOptions(inputStream),
+                            "Compression options",
+                            JOptionPane.INFORMATION_MESSAGE);
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (final Exception ex) {
+            JOptionPane.showMessageDialog(MainFrame.this, ex.getMessage(),
+                    "Exception thrown", JOptionPane.ERROR_MESSAGE);
         }
-        //</editor-fold>
+    }//GEN-LAST:event_actionButtonActionPerformed
+
+    abstract class CommonWorker extends SwingWorker<Object, Object> {
+
+        final InputStream inputStream;
+        final FileChannel inputFileChannel;
+        final OutputStream outputStream;
+        final long inputFileSize;
+        long startTime;
+        final Binding binding;
+
+        public CommonWorker(final String inputFilePath,
+                final String outputFilePath) throws IOException {
+            final FileInputStream fileInputStream =
+                    new FileInputStream(inputFilePath);
+            inputFileChannel = fileInputStream.getChannel();
+            this.inputStream = new BufferedInputStream(
+                    fileInputStream, 64 * 1024);
+            this.outputStream = new BufferedOutputStream(
+                    new FileOutputStream(outputFilePath), 64 * 1024);
+            inputFileSize = new File(inputFilePath).length();
+            progressBar.setEnabled(true);
+            binding = Bindings.createAutoBinding(
+                    AutoBinding.UpdateStrategy.READ, this,
+                    BeanProperty.create("progress"), progressBar,
+                    BeanProperty.create("value"));
+        }
+    }
+
+    class EncodingWorker extends CommonWorker {
+
+        final Options options;
+
+        public EncodingWorker(final String inputFilePath,
+                final String outputFilePath, final Options options)
+                throws IOException {
+            super(inputFilePath, outputFilePath);
+            this.options = options;
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            binding.bind();
+            startTime = System.currentTimeMillis();
+            Coder.encode(inputStream, outputStream, new Coder.Callback() {
+                @Override
+                public void progressChanged(final long processedSymbols) {
+                    if (inputFileSize != 0) {
+                        setProgress((int) (((double) processedSymbols)
+                                / inputFileSize * 100));
+                    }
+                }
+            }, 64 * 1024, options);
+            inputStream.close();
+            outputStream.close();
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            binding.unbind();
+            progressBar.setValue(0);
+            progressBar.setEnabled(false);
+            try {
+                get();
+                JOptionPane.showMessageDialog(MainFrame.this, "Time taken: "
+                        + (System.currentTimeMillis() - startTime));
+            } catch (final Exception ex) {
+                if (ex.getCause() instanceof OutOfMemoryError) {
+                    JOptionPane.showMessageDialog(MainFrame.this, 
+                            "Out of memory - try lowering mask sizes or "
+                            + "increasing heap size.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            ex.getMessage(), "Exception thrown",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    class DecodingWorker extends CommonWorker {
+
+        public DecodingWorker(final String inputFilePath,
+                final String outputFilePath) throws IOException {
+            super(inputFilePath, outputFilePath);
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            binding.bind();
+            startTime = System.currentTimeMillis();
+            Coder.decode(inputStream, outputStream, new Coder.Callback() {
+                @Override
+                public void progressChanged(final long processedSymbols) {
+                    if (inputFileSize != 0) {
+                        try {
+                            setProgress((int) ((double) inputFileChannel
+                                    .position() / inputFileSize * 100));
+                        } catch (final IOException ex) {
+                        }
+                    }
+                }
+            }, 64 * 1024);
+            inputStream.close();
+            outputStream.close();
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            binding.unbind();
+            progressBar.setValue(0);
+            progressBar.setEnabled(false);
+            try {
+                get();
+                JOptionPane.showMessageDialog(MainFrame.this, "Time taken: "
+                        + (System.currentTimeMillis() - startTime));
+            } catch (final Exception ex) {
+                if (ex.getCause() instanceof OutOfMemoryError) {
+                    JOptionPane.showMessageDialog(MainFrame.this, 
+                            "Out of memory - try increasing heap size.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            ex.getMessage(), "Exception thrown",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    private void fillThemesMenu(final JMenu menu) {
+        try {
+            final ButtonGroup buttonGroup = new ButtonGroup();
+            final String currentLafName = UIManager.getLookAndFeel() == null
+                    ? null : UIManager.getLookAndFeel().getName();
+            for (final UIManager.LookAndFeelInfo info :
+                    UIManager.getInstalledLookAndFeels()) {
+                final JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(
+                        info.getName(), info.getName().equals(currentLafName));
+                menuItem.addActionListener(
+                        new ThemeSelector(this, info.getName()));
+                buttonGroup.add(menuItem);
+                menu.add(menuItem);
+            }
+        } catch (final Exception ex) {
+            Logger.getLogger(MainFrame.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static class ThemeSelector implements ActionListener {
+
+        private final JFrame frame;
+        private final String themeName;
+
+        public ThemeSelector(final JFrame frame, final String themeName) {
+            this.frame = frame;
+            this.themeName = themeName;
+        }
+
+        public void select() {
+            try {
+                for (final UIManager.LookAndFeelInfo info :
+                        UIManager.getInstalledLookAndFeels()) {
+                    if (info.getName().equals(themeName)) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        if (frame != null) {
+                            SwingUtilities.updateComponentTreeUI(frame);
+                            frame.pack();
+                        }
+                        break;
+                    }
+                }
+            } catch (final Exception ex) {
+                Logger.getLogger(MainFrame.class.getName())
+                        .log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+            select();
+        }
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(final String args[]) {
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new MainFrame().setVisible(true);
+                new ThemeSelector(null, "Nimbus").select();
+                final MainFrame mainFrame = new MainFrame();
+                mainFrame.setVisible(true);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu aboutMenu;
     private com.github.tarsa.tarsalzp.gui.ActionBean actionBean;
     private javax.swing.JButton actionButton;
     private javax.swing.ButtonGroup actionButtonGroup;
@@ -413,8 +690,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton inputFileChooseButton;
     private javax.swing.JLabel inputFileLabel;
     private javax.swing.JTextField inputPathTextField;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JLabel lzpHighContextLengthLabel;
     private javax.swing.JSpinner lzpHighContextLengthSpinner;
     private javax.swing.JLabel lzpHighMaskSizeLabel;
@@ -439,6 +714,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner ppmStepSpinner;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JRadioButton showDetailsRadioButton;
+    private javax.swing.JMenu themeListMenu;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }

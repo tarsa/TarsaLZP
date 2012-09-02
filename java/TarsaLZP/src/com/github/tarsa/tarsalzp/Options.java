@@ -6,7 +6,7 @@ import java.io.Serializable;
  *
  * @author Piotr Tarsa
  */
-public class Options implements Serializable {
+public final class Options implements Serializable {
 
     private static final long serialVersionUID = 6954096913728221462L;
 
@@ -14,10 +14,8 @@ public class Options implements Serializable {
             final long lzpLowMaskSize, final long lzpHighContextLength,
             final long lzpHighMaskSize, final long ppmOrder, final long ppmInit,
             final long ppmStep, final long ppmLimit) {
-        final boolean valid = (lzpLowContextLength == -1
-                || lzpLowContextLength > ppmOrder)
+        final boolean valid = lzpLowContextLength > ppmOrder
                 && lzpLowContextLength <= lzpHighContextLength
-                && lzpHighContextLength > ppmOrder
                 && lzpHighContextLength <= 8
                 && lzpLowMaskSize >= 15
                 && lzpLowMaskSize <= 30
@@ -28,9 +26,9 @@ public class Options implements Serializable {
                 && ppmInit >= 1
                 && ppmInit <= 127
                 && ppmStep >= 1
-                && ppmStep <= 255
+                && ppmStep <= 127
                 && ppmLimit >= ppmInit * 256
-                && ppmLimit <= 65535 - ppmStep;
+                && ppmLimit <= 32767 - ppmStep;
         if (valid) {
             return new Options(lzpLowContextLength, lzpLowMaskSize,
                     lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
@@ -173,11 +171,11 @@ public class Options implements Serializable {
 
     @Override
     public String toString() {
-        return "Options{" + "lzpLowContextLength=" + lzpLowContextLength
+        return "Options[" + "lzpLowContextLength=" + lzpLowContextLength
                 + ", lzpLowMaskSize=" + lzpLowMaskSize
                 + ", lzpHighContextLength=" + lzpHighContextLength
                 + ", lzpHighMaskSize=" + lzpHighMaskSize + ", ppmOrder="
                 + ppmOrder + ", ppmInit=" + ppmInit + ", ppmStep=" + ppmStep
-                + ", ppmLimit=" + ppmLimit + '}';
+                + ", ppmLimit=" + ppmLimit + ']';
     }
 }

@@ -16,14 +16,18 @@
     </Component>
     <Menu class="javax.swing.JMenuBar" name="menuBar">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="themeListMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Theme"/>
+            <Property name="text" type="java.lang.String" value="Themes"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="fillThemesMenu(themeListMenu);"/>
+          </AuxValues>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu2">
+        <Menu class="javax.swing.JMenu" name="aboutMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="About"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Menu>
       </SubComponents>
@@ -135,11 +139,13 @@
         <Component class="javax.swing.JLabel" name="inputFileLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Input file"/>
+            <Property name="toolTipText" type="java.lang.String" value="Input file path"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="outputFileLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Output file"/>
+            <Property name="toolTipText" type="java.lang.String" value="Output file path"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="inputPathTextField">
@@ -155,6 +161,7 @@
         <Component class="javax.swing.JButton" name="inputFileChooseButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="File Chooser"/>
+            <Property name="toolTipText" type="java.lang.String" value="Browse filesystem for input file"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="inputFileChooseButtonActionPerformed"/>
@@ -163,6 +170,7 @@
         <Component class="javax.swing.JButton" name="outputFileChooseButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="File Chooser"/>
+            <Property name="toolTipText" type="java.lang.String" value="Browse filesystem for output file"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="outputFileChooseButtonActionPerformed"/>
@@ -171,6 +179,9 @@
       </SubComponents>
     </Container>
     <Component class="javax.swing.JProgressBar" name="progressBar">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Container class="javax.swing.JPanel" name="optionsPanel">
       <Properties>
@@ -208,8 +219,8 @@
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="ppmLimitSpinner" pref="70" max="32767" attributes="0"/>
-                      <Component id="ppmStepSpinner" pref="70" max="32767" attributes="0"/>
+                      <Component id="ppmLimitSpinner" max="32767" attributes="0"/>
+                      <Component id="ppmStepSpinner" max="32767" attributes="0"/>
                       <Component id="ppmInitSpinner" max="32767" attributes="0"/>
                       <Component id="ppmOrderSpinner" max="32767" attributes="0"/>
                   </Group>
@@ -260,6 +271,7 @@
         <Component class="javax.swing.JLabel" name="lzpLowMaskSizeLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="LZP Low Mask Size"/>
+            <Property name="toolTipText" type="java.lang.String" value="Model size is 2^(Mask Size) entries with 2 bytes per entry"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="lzpHighContextLengthLabel">
@@ -270,9 +282,14 @@
         <Component class="javax.swing.JLabel" name="lzpHighMaskSizeLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="LZP High Mask Size"/>
+            <Property name="toolTipText" type="java.lang.String" value="Model size is 2^(Mask Size) entries with 2 bytes per entry"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpLowContextLengthSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be higher than PPM Order and not higher than LZP High Context Length"/>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false">
               <Property name="name" type="java.lang.String" value=""/>
@@ -280,16 +297,26 @@
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpLowMaskSizeSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between 15 and 30 (inclusive)"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowMaskSize}" target="lzpLowMaskSizeSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpHighContextLengthSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must not be lower than LZP Low Context Length and not higher than 8"/>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighContextLength}" target="lzpHighContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpHighMaskSizeSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between 15 and 30 (inclusive)"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighMaskSize}" target="lzpHighMaskSizeSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
@@ -315,21 +342,33 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="ppmOrderSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be not lower than 1 and not higher than 2 or LZP Low Context Length"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${ppmOrder}" target="ppmOrderSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="ppmInitSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between 1 and 127 (inclusive)"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${ppmInit}" target="ppmInitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="ppmStepSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between 1 and 127 (inclusive)"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${ppmStep}" target="ppmStepSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="ppmLimitSpinner">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between PPM Init * 256 and 32767 - PPM Step (inclusive)"/>
+          </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${ppmLimit}" target="ppmLimitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
@@ -439,6 +478,9 @@
           <BindingProperties>
             <BindingProperty name="enabled" source="actionBean" sourcePath="${valid}" target="actionButton" targetPath="enabled" updateStrategy="0" immediately="false"/>
           </BindingProperties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="actionButtonActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

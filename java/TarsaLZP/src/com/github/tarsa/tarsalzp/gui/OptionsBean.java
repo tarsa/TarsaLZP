@@ -10,20 +10,20 @@ import java.io.Serializable;
  *
  * @author Piotr Tarsa
  */
-public class OptionsBean implements Serializable {
+public final class OptionsBean implements Serializable {
 
     private static final long serialVersionUID = -30172670080052117L;
     private transient final PropertyChangeSupport propertyChangeSupport =
             new PropertyChangeSupport(this);
-    private boolean valid = false;
-    private int lzpLowContextLength = 0;
-    private int lzpLowMaskSize = 0;
-    private int lzpHighContextLength = 0;
-    private int lzpHighMaskSize = 0;
-    private int ppmOrder = 0;
-    private int ppmInit = 0;
-    private int ppmStep = 0;
-    private int ppmLimit = 0;
+    private boolean valid = true;
+    private int lzpLowContextLength = 4;
+    private int lzpLowMaskSize = 24;
+    private int lzpHighContextLength = 8;
+    private int lzpHighMaskSize = 30;
+    private int ppmOrder = 2;
+    private int ppmInit = 1;
+    private int ppmStep = 60;
+    private int ppmLimit = 30000;
     public static final String PropValid = "valid";
     public static final String PropLzpLowContextLength =
             "lzpLowContextLength";

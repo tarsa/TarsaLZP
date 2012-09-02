@@ -8,7 +8,7 @@ import java.beans.PropertyChangeSupport;
  *
  * @author Piotr Tarsa
  */
-public class ActionBean {
+public final class ActionBean {
 
     public enum Action {
 
