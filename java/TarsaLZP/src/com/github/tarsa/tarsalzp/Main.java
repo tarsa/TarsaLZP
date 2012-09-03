@@ -8,9 +8,7 @@ import java.io.Console;
  * @author Piotr Tarsa
  */
 public class Main {
-    
-    public static final long HeaderValue = 2345174324078614718l;
-    
+
     /**
      * @param args the command line arguments
      */

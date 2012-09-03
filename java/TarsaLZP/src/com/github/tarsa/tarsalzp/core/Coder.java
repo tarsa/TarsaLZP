@@ -11,6 +11,8 @@ import java.io.OutputStream;
  */
 public final class Coder {
 
+    public static final long HeaderValue = 2345174324078614718l;
+
     public interface Callback {
 
         void progressChanged(final long processedSymbols);
@@ -27,7 +29,25 @@ public final class Coder {
             }
             header |= inputByte;
         }
-        final Options result = Options.fromPacked(header);
+        if (header != HeaderValue) {
+            throw new IOException("Wrong file header. Probably not a "
+                    + "compressed file.");
+        }
+        return getOptionsHeaderless(inputStream);
+    }
+
+    public static Options getOptionsHeaderless(final InputStream inputStream)
+            throws IOException {
+        long packedOptions = 0;
+        for (int i = 0; i < 8; i++) {
+            packedOptions <<= 8;
+            final int inputByte = inputStream.read();
+            if (inputByte == -1) {
+                throw new IOException("Unexpected end of file.");
+            }
+            packedOptions |= inputByte;
+        }
+        final Options result = Options.fromPacked(packedOptions);
         if (result == null) {
             throw new IllegalArgumentException("Invalid compression options.");
         } else {
@@ -61,13 +81,17 @@ public final class Coder {
             final long callbackPeriod, final Options options)
             throws IOException {
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
-        long header = options.toPacked();
+        long header = HeaderValue;
         for (int i = 0; i < 8; i++) {
-            outputStream.write((int) (header >>> 56) & 0xff);
+            encoder.outputStream.write((int) (header >>> 56) & 0xff);
             header <<= 8;
         }
+        long packedOptions = options.toPacked();
+        for (int i = 0; i < 8; i++) {
+            outputStream.write((int) (packedOptions >>> 56) & 0xff);
+            packedOptions <<= 8;
+        }
         doEncode(encoder, callback, callbackPeriod);
-        encoder.flush();
     }
 
     public static void encodeRaw(final InputStream inputStream,
@@ -76,9 +100,8 @@ public final class Coder {
             throws IOException {
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
         doEncode(encoder, callback, callbackPeriod);
-        encoder.flush();
     }
-    
+
     private static void doEncode(final Encoder encoder, final Callback callback,
             final long callbackPeriod) throws IOException {
         long amountProcessed = 0;
@@ -88,5 +111,6 @@ public final class Coder {
                 callback.progressChanged(amountProcessed);
             }
         }
+        encoder.flush();
     }
 }
