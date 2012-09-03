@@ -19,7 +19,7 @@ public final class OptionsBean implements Serializable {
     private int lzpLowContextLength = 4;
     private int lzpLowMaskSize = 24;
     private int lzpHighContextLength = 8;
-    private int lzpHighMaskSize = 30;
+    private int lzpHighMaskSize = 27;
     private int ppmOrder = 2;
     private int ppmInit = 1;
     private int ppmStep = 60;
