@@ -306,6 +306,7 @@ public class MainFrame extends JFrame {
 
         actionButtonGroup.add(showDetailsRadioButton);
         showDetailsRadioButton.setText("Show input file compression options");
+        showDetailsRadioButton.setToolTipText("Reads options from compressed input file and shows them");
         showDetailsRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showDetailsRadioButtonActionPerformed(evt);

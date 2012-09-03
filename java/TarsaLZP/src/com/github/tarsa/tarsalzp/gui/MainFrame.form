@@ -461,6 +461,7 @@
                   <ComponentRef name="actionButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Show input file compression options"/>
+                <Property name="toolTipText" type="java.lang.String" value="Reads options from compressed input file and shows them"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showDetailsRadioButtonActionPerformed"/>
