@@ -1,5 +1,6 @@
 package com.github.tarsa.tarsalzp.gui;
 
+import com.github.tarsa.tarsalzp.DelayedFileOutputStream;
 import com.github.tarsa.tarsalzp.Options;
 import com.github.tarsa.tarsalzp.core.Coder;
 import java.awt.EventQueue;
@@ -9,7 +10,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -487,7 +487,7 @@ public class MainFrame extends JFrame {
             this.inputStream = new BufferedInputStream(
                     fileInputStream, 64 * 1024);
             this.outputStream = new BufferedOutputStream(
-                    new FileOutputStream(outputFilePath), 64 * 1024);
+                    new DelayedFileOutputStream(outputFilePath), 64 * 1024);
             inputFileSize = new File(inputFilePath).length();
             progressBar.setEnabled(true);
             binding = Bindings.createAutoBinding(

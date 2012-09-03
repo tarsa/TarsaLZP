@@ -42,18 +42,6 @@ public final class Coder {
         decodeRaw(inputStream, outputStream, callback, callbackPeriod, options);
     }
 
-    public static void encode(final InputStream inputStream,
-            final OutputStream outputStream, final Callback callback,
-            final long callbackPeriod, final Options options)
-            throws IOException {
-        long header = options.toPacked();
-        for (int i = 0; i < 8; i++) {
-            outputStream.write((int) (header >>> 56) & 0xff);
-            header <<= 8;
-        }
-        encodeRaw(inputStream, outputStream, callback, callbackPeriod, options);
-    }
-
     public static void decodeRaw(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
             final long callbackPeriod, final Options options)
@@ -68,11 +56,31 @@ public final class Coder {
         }
     }
 
+    public static void encode(final InputStream inputStream,
+            final OutputStream outputStream, final Callback callback,
+            final long callbackPeriod, final Options options)
+            throws IOException {
+        final Encoder encoder = new Encoder(inputStream, outputStream, options);
+        long header = options.toPacked();
+        for (int i = 0; i < 8; i++) {
+            outputStream.write((int) (header >>> 56) & 0xff);
+            header <<= 8;
+        }
+        doEncode(encoder, callback, callbackPeriod);
+        encoder.flush();
+    }
+
     public static void encodeRaw(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
             final long callbackPeriod, final Options options)
             throws IOException {
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
+        doEncode(encoder, callback, callbackPeriod);
+        encoder.flush();
+    }
+    
+    private static void doEncode(final Encoder encoder, final Callback callback,
+            final long callbackPeriod) throws IOException {
         long amountProcessed = 0;
         while (!encoder.encode(callbackPeriod)) {
             amountProcessed += callbackPeriod;
@@ -80,6 +88,5 @@ public final class Coder {
                 callback.progressChanged(amountProcessed);
             }
         }
-        encoder.flush();
     }
 }
