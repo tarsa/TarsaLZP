@@ -510,7 +510,7 @@ public class MainFrame extends JFrame {
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
+        protected Object doInBackground() throws IOException {
             binding.bind();
             startTime = System.currentTimeMillis();
             Coder.encode(inputStream, outputStream, new Coder.Callback() {
@@ -560,7 +560,7 @@ public class MainFrame extends JFrame {
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
+        protected Object doInBackground() throws IOException {
             binding.bind();
             startTime = System.currentTimeMillis();
             Coder.decode(inputStream, outputStream, new Coder.Callback() {
@@ -575,6 +575,9 @@ public class MainFrame extends JFrame {
                     }
                 }
             }, 64 * 1024);
+            if (inputStream.read() != -1) {
+                throw new IOException("Not entire input was decoded.");
+            }
             inputStream.close();
             outputStream.close();
             return null;
