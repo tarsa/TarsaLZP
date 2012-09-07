@@ -1,0 +1,1 @@
+License: New BSD License. Sources will soon be updated to reflect that.
