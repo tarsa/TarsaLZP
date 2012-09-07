@@ -57,19 +57,27 @@ public final class Coder {
 
     public static void decode(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
-            final long callbackPeriod) throws IOException {
+            final long intervalLength) throws IOException {
+        if (intervalLength <= 0) {
+            throw new IllegalArgumentException(
+                    "Interval length has to be positive.");
+        }
         final Options options = getOptions(inputStream);
-        decodeRaw(inputStream, outputStream, callback, callbackPeriod, options);
+        decodeRaw(inputStream, outputStream, callback, intervalLength, options);
     }
 
     public static void decodeRaw(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
-            final long callbackPeriod, final Options options)
+            final long intervalLength, final Options options)
             throws IOException {
+        if (intervalLength <= 0) {
+            throw new IllegalArgumentException(
+                    "Interval length has to be positive.");
+        }
         final Decoder decoder = new Decoder(inputStream, outputStream, options);
         long amountProcessed = 0;
-        while (!decoder.decode(callbackPeriod)) {
-            amountProcessed += callbackPeriod;
+        while (!decoder.decode(intervalLength)) {
+            amountProcessed += intervalLength;
             if (callback != null) {
                 callback.progressChanged(amountProcessed);
             }
@@ -78,8 +86,12 @@ public final class Coder {
 
     public static void encode(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
-            final long callbackPeriod, final Options options)
+            final long intervalLength, final Options options)
             throws IOException {
+        if (intervalLength <= 0) {
+            throw new IllegalArgumentException(
+                    "Interval length has to be positive.");
+        }
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
         long header = HeaderValue;
         for (int i = 0; i < 8; i++) {
@@ -91,22 +103,26 @@ public final class Coder {
             outputStream.write((int) (packedOptions >>> 56) & 0xff);
             packedOptions <<= 8;
         }
-        doEncode(encoder, callback, callbackPeriod);
+        doEncode(encoder, callback, intervalLength);
     }
 
     public static void encodeRaw(final InputStream inputStream,
             final OutputStream outputStream, final Callback callback,
-            final long callbackPeriod, final Options options)
+            final long intervalLength, final Options options)
             throws IOException {
+        if (intervalLength <= 0) {
+            throw new IllegalArgumentException(
+                    "Interval length has to be positive.");
+        }
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
-        doEncode(encoder, callback, callbackPeriod);
+        doEncode(encoder, callback, intervalLength);
     }
 
     private static void doEncode(final Encoder encoder, final Callback callback,
-            final long callbackPeriod) throws IOException {
+            final long intervalLength) throws IOException {
         long amountProcessed = 0;
-        while (!encoder.encode(callbackPeriod)) {
-            amountProcessed += callbackPeriod;
+        while (!encoder.encode(intervalLength)) {
+            amountProcessed += intervalLength;
             if (callback != null) {
                 callback.progressChanged(amountProcessed);
             }
