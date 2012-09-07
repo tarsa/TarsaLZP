@@ -21,15 +21,10 @@ public class Main {
         System.err.println(output);
     }
 
-    private void printBanner() {
-        err("TarsaLZP");
-        err("Author: Piotr Tarsa");
-    }
-
     private void printHelp() {
         err("Syntax: command [option=value]*");
         err("Commands:");
-        err("\tgui           - show GUI");
+        err("\t[no command]  - print help and show GUI");
         err("\tencode        - encode input");
         err("\tdecode        - decode compressed stream");
         err("\tshowOptions   - read and show compression options only");
@@ -61,10 +56,11 @@ public class Main {
     }
 
     private void printError(final String cause) {
+        err("Error happened.");
         if (cause != null && !cause.trim().isEmpty()) {
             err(cause);
         }
-        printBanner();
+        err("");
         printHelp();
     }
 
@@ -133,48 +129,63 @@ public class Main {
         output.flush();
     }
 
-    private void run(final String[] args) throws IOException {
+    private void dispatchCommand(final String[] args) throws IOException {
+        final String command = args[0];
+        Map<String, String> optionsMap = convertOptions(args);
+        if (optionsMap == null) {
+            printError("Duplicated or wrongly formatted options.");
+        } else if ("encode".equalsIgnoreCase(command)) {
+            encode(optionsMap);
+        } else if ("decode".equalsIgnoreCase(command)) {
+            InputStream input = System.in;
+            OutputStream output = System.out;
+            for (final String option : optionsMap.keySet()) {
+                if ("fi".equalsIgnoreCase(option)) {
+                    input = new FileInputStream(optionsMap.get(option));
+                } else if ("fo".equalsIgnoreCase(option)) {
+                    output = new DelayedFileOutputStream(
+                            optionsMap.get(option));
+                } else {
+                    printError("Not suitable or unknown option: " + option);
+                    return;
+                }
+            }
+            Coder.decode(input, output, null, 64 * 1024);
+            output.flush();
+        } else if ("showOptions".equalsIgnoreCase(command)) {
+            InputStream input = System.in;
+            for (final String option : optionsMap.keySet()) {
+                if ("fi".equalsIgnoreCase(option)) {
+                    input = new FileInputStream(optionsMap.get(option));
+                } else {
+                    printError("Not suitable or unknown option: " + option);
+                    return;
+                }
+            }
+            final Options options = Coder.getOptions(input);
+            err(options.toString());
+        } else if ("gui".equalsIgnoreCase(command)) {
+            printError("`gui` command do not expect options.");
+        } else {
+            printError("Unknown command: " + command);
+        }
+    }
+
+    private void run(final String[] args) {
+        err("TarsaLZP");
+        err("Author: Piotr Tarsa");
+        err("");
         if (args.length == 0) {
             printHelp();
+            MainFrame.main(args);
         } else {
-            final String command = args[0];
-            Map<String, String> optionsMap = convertOptions(args);
-            if (optionsMap == null) {
-                printError("Duplicated or wrongly formatted options.");
-            } else if ("encode".equalsIgnoreCase(command)) {
-                encode(optionsMap);
-            } else if ("decode".equalsIgnoreCase(command)) {
-                InputStream input = System.in;
-                OutputStream output = System.out;
-                for (final String option : optionsMap.keySet()) {
-                    if ("fi".equalsIgnoreCase(option)) {
-                        input = new FileInputStream(optionsMap.get(option));
-                    } else if ("fo".equalsIgnoreCase(option)) {
-                        output = new DelayedFileOutputStream(
-                                optionsMap.get(option));
-                    } else {
-                        printError("Not suitable or unknown option: " + option);
-                        return;
-                    }
-                }
-                Coder.decode(input, output, null, 64 * 1024);
-                output.flush();
-            } else if ("showOptions".equalsIgnoreCase(command)) {
-                InputStream input = System.in;
-                for (final String option : optionsMap.keySet()) {
-                    if ("fi".equalsIgnoreCase(option)) {
-                        input = new FileInputStream(optionsMap.get(option));
-                    } else {
-                        printError("Not suitable or unknown option: " + option);
-                        return;
-                    }
-                }
-                final Options options = Coder.getOptions(input);
-                err(options.toString());
-            } else if ("gui".equalsIgnoreCase(command)) {
-                printError("`gui` command do not expect options.");
-            } else {
-                printError("Unknown command: " + command);
+            try {
+                dispatchCommand(args);
+            } catch (final OutOfMemoryError e) {
+                System.err.println("Out of memory error - try increasing heap "
+                        + "size or lowering mask sizes.");
+            } catch (final Exception e) {
+                System.err.println("Exception thrown: " + e.getMessage());
             }
         }
     }
@@ -183,17 +194,6 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
-        if (args.length == 1 && "gui".equalsIgnoreCase(args[0])) {
-            MainFrame.main(args);
-        } else {
-            try {
-                new Main().run(args);
-            } catch (final OutOfMemoryError e) {
-                System.err.println("Out of memory error - try increasing heap "
-                        + "size or lowering mask sizes.");
-            } catch (final Exception e) {
-                System.err.println("Exception thrown: " + e.getMessage());
-            }
-        }
+        new Main().run(args);
     }
 }
