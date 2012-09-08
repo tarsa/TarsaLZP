@@ -11,9 +11,10 @@ import java.io.OutputStream;
  */
 public final class Decoder extends Common {
 
-    private long rcBuffer;
-    private long rcRange;
+    private int rcBuffer;
+    private int rcRange;
     private boolean started;
+    private int nextHighBit = 0;
 
     public Decoder(final InputStream inputStream,
             final OutputStream outputStream, final Options options) {
@@ -21,35 +22,35 @@ public final class Decoder extends Common {
         started = false;
     }
 
+    private int inputByte() throws IOException {
+        final int inputByte = inputStream.read();
+        if (inputByte == -1) {
+            throw new IOException("Unexpected end of file.");
+        }
+        final int currentByte = (inputByte >> 1) + (nextHighBit << 7);
+        nextHighBit = inputByte & 1;
+        return currentByte;
+    }
+
     private void init() throws IOException {
         rcBuffer = 0;
         for (int i = 0; i < 4; i++) {
-            final int inputByte = inputStream.read();
-            if (inputByte == -1) {
-                throw new IOException("Unexpected end of file.");
-            }
-            rcBuffer <<= 8;
-            rcBuffer |= inputByte;
+            rcBuffer = (rcBuffer << 8) + inputByte();
         }
-        rcRange = 0xFFFFFFFFl;
+        rcRange = 0x7FFFFFFF;
         started = true;
     }
 
     private void normalize() throws IOException {
-        while (rcRange < 0x01000000) {
-            final int inputByte = inputStream.read();
-            if (inputByte == -1) {
-                throw new IOException("Unexpected end of file.");
-            }
-            rcBuffer <<= 8;
-            rcBuffer |= inputByte;
+        while (rcRange < 0x00800000) {
+            rcBuffer = (rcBuffer << 8) + inputByte();
             rcRange <<= 8;
         }
     }
 
     private boolean decodeFlag(final int probability) throws IOException {
         normalize();
-        final long rcHelper = (rcRange >> 16) * probability;
+        final int rcHelper = (rcRange >> 15) * probability;
         if (rcHelper > rcBuffer) {
             rcRange = rcHelper;
             return true;
@@ -138,8 +139,8 @@ public final class Decoder extends Common {
         rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] = 0;
         rangesGrouped[((getLastPpmContext() << 8) + mispredictedSymbol) >> 4] -=
                 mispredictedSymbolFrequency;
-        long rcHelper = rcBuffer / rcRange;
-        final long cumulativeFrequency = rcHelper;
+        int rcHelper = rcBuffer / rcRange;
+        final int cumulativeFrequency = rcHelper;
         int index;
         for (index = getLastPpmContext() << 4; rcHelper >= rangesGrouped[index];
                 index++) {

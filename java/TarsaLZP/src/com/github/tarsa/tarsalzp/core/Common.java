@@ -36,8 +36,8 @@ abstract class Common {
     final short[] rangesGrouped;
     final short[] rangesTotal;
     // SEE section
-    private final int[] seeLow;
-    private final int[] seeHigh;
+    private final short[] seeLow;
+    private final short[] seeHigh;
 
     public Common(final InputStream inputStream,
             final OutputStream outputStream, final Options options) {
@@ -76,13 +76,13 @@ abstract class Common {
         Arrays.fill(rangesGrouped, (short) (ppmInit * 16));
         Arrays.fill(rangesTotal, (short) (ppmInit * 256));
         // SEE init
-        seeLow = new int[16 * 256];
-        Arrays.fill(seeLow, 0x8000);
+        seeLow = new short[16 * 256];
+        Arrays.fill(seeLow, (short) 0x4000);
         if (onlyLowLzp) {
             seeHigh = null;
         } else {
-            seeHigh = new int[16 * 256];
-            Arrays.fill(seeHigh, 0x8000);
+            seeHigh = new short[16 * 256];
+            Arrays.fill(seeHigh, (short) 0x4000);
         }
     }
     // <editor-fold defaultstate="collapsed" desc="Contexts and hashes">
@@ -102,19 +102,19 @@ abstract class Common {
 
     void computeHashes() {
         long localContext = context;
-        long hash = 2166136261l;
+        int hash = -2128831035;
         for (int i = 0; i < lzpLowContextLength; i++) {
             hash = hash * 16777619;
-            hash = hash ^ (localContext & 0xFF);
+            hash = hash ^ (int) (localContext & 0xFF);
             localContext >>>= 8;
         }
-        hashLow = (int) (hash & lzpLowMask);
+        hashLow = hash & lzpLowMask;
         for (int i = lzpLowContextLength; i < lzpHighContextLength; i++) {
             hash = hash * 16777619;
-            hash = hash ^ (localContext & 0xFF);
+            hash = hash ^ (int) (localContext & 0xFF);
             localContext >>>= 8;
         }
-        hashHigh = (int) (hash & lzpHighMask);
+        hashHigh = hash & lzpHighMask;
     }
 
     int getLastPpmContext() {
@@ -444,7 +444,7 @@ abstract class Common {
     void updateSeeLow(final int state, final boolean match) {
         final int index = (historyLow << 8) + state;
         if (match) {
-            seeLow[index] += ((1 << 16) - seeLow[index]) >> 7;
+            seeLow[index] += ((1 << 15) - seeLow[index]) >> 7;
         } else {
             seeLow[index] -= seeLow[index] >> 7;
         }
@@ -454,7 +454,7 @@ abstract class Common {
     void updateSeeHigh(final int state, final boolean match) {
         final int index = (historyHigh << 8) + state;
         if (match) {
-            seeHigh[index] += ((1 << 16) - seeHigh[index]) >> 7;
+            seeHigh[index] += ((1 << 15) - seeHigh[index]) >> 7;
         } else {
             seeHigh[index] -= seeHigh[index] >> 7;
         }

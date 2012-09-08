@@ -11,8 +11,8 @@ import java.io.OutputStream;
  */
 public final class Encoder extends Common {
 
-    private long rcBuffer;
-    private long rcRange;
+    private int rcBuffer;
+    private int rcRange;
     private int xFFRunLength = 0;
     private int lastOutputByte = 0;
     private boolean delay = false;
@@ -22,38 +22,30 @@ public final class Encoder extends Common {
             final OutputStream outputStream, final Options options) {
         super(inputStream, outputStream, options);
         rcBuffer = 0;
-        rcRange = 0xFFFFFFFFl;
+        rcRange = 0x7FFFFFFF;
     }
 
     private void outputByte(final int octet) throws IOException {
-        if (carry) {
-            outputStream.write(lastOutputByte + 1);
-            for (int i = 0; i < xFFRunLength; i++) {
-                outputStream.write(0x00);
+        if (octet != 0xff) {
+            if (delay) {
+                outputStream.write(lastOutputByte + (carry ? 1 : 0));
             }
-            xFFRunLength = 0;
+            while (xFFRunLength > 0) {
+                xFFRunLength--;
+                outputStream.write(carry ? 0x00 : 0xff);
+            }
             lastOutputByte = octet;
             delay = true;
             carry = false;
-        } else if (octet == 0xff) {
-            xFFRunLength++;
         } else {
-            if (delay) {
-                outputStream.write(lastOutputByte);
-            }
-            for (int i = 0; i < xFFRunLength; i++) {
-                outputStream.write(0xff);
-            }
-            xFFRunLength = 0;
-            lastOutputByte = octet;
-            delay = true;
+            xFFRunLength++;
         }
     }
 
     private void normalize() throws IOException {
-        while (rcRange < 0x01000000l) {
-            outputByte((int) (rcBuffer >> 24));
-            rcBuffer = (rcBuffer << 8) & 0xFFFFFFFFl;
+        while (rcRange < 0x00800000) {
+            outputByte((int) (rcBuffer >> 23));
+            rcBuffer = (rcBuffer << 8) & 0x7FFFFFFF;
             rcRange <<= 8;
         }
     }
@@ -61,14 +53,14 @@ public final class Encoder extends Common {
     private void encodeFlag(final int probability, final boolean match)
             throws IOException {
         normalize();
-        final long rcHelper = (rcRange >> 16) * probability;
+        final int rcHelper = (rcRange >> 15) * probability;
         if (match) {
             rcRange = rcHelper;
         } else {
             rcBuffer += rcHelper;
-            if (rcBuffer > 0xFFFFFFFFl) {
+            if (rcBuffer < 0) {
                 carry = true;
-                rcBuffer = rcBuffer & 0xFFFFFFFFl;
+                rcBuffer = rcBuffer & 0x7FFFFFFF;
             }
             rcRange -= rcHelper;
         }
@@ -80,9 +72,9 @@ public final class Encoder extends Common {
             rcRange--;
         } else {
             rcBuffer += rcRange - 1;
-            if (rcBuffer > 0xFFFFFFFFl) {
+            if (rcBuffer < 0) {
                 carry = true;
-                rcBuffer = rcBuffer & 0xFFFFFFFFl;
+                rcBuffer = rcBuffer & 0x7FFFFFFF;
             }
             rcRange = 1;
         }
@@ -144,27 +136,27 @@ public final class Encoder extends Common {
         normalize();
         computePpmContext();
         final int index = (getLastPpmContext() << 8) + nextSymbol;
-        short cumulativeFrequency = 0;
+        short cumulativeExclusiveFrequency = 0;
         final int symbolGroup = index >> 4;
         for (int indexPartial = getLastPpmContext() << 4;
                 indexPartial < symbolGroup; indexPartial++) {
-            cumulativeFrequency += rangesGrouped[indexPartial];
+            cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
         }
         for (int indexPartial = symbolGroup << 4; indexPartial < index;
                 indexPartial++) {
-            cumulativeFrequency += rangesSingle[indexPartial];
+            cumulativeExclusiveFrequency += rangesSingle[indexPartial];
         }
         final short mispredictedSymbolFrequency =
                 rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol];
         if (nextSymbol > mispredictedSymbol) {
-            cumulativeFrequency -= mispredictedSymbolFrequency;
+            cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
         }
-        final long rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
+        final int rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
                 - mispredictedSymbolFrequency);
-        rcBuffer += rcHelper * cumulativeFrequency;
-        if (rcBuffer > 0xFFFFFFFFl) {
+        rcBuffer += rcHelper * cumulativeExclusiveFrequency;
+        if (rcBuffer < 0) {
             carry = true;
-            rcBuffer = rcBuffer & 0xFFFFFFFFl;
+            rcBuffer = rcBuffer & 0x7FFFFFFF;
         }
         rcRange = rcHelper * rangesSingle[index];
         updatePpm(index);
@@ -173,7 +165,7 @@ public final class Encoder extends Common {
     void flush() throws IOException {
         encodeSkewed(false);
         for (int i = 0; i < 5; i++) {
-            outputByte(((int) (rcBuffer >> 24)) & 0xFF);
+            outputByte(((int) (rcBuffer >> 23)) & 0xFF);
             rcBuffer <<= 8;
         }
     }
