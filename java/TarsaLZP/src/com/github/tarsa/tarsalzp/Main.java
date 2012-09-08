@@ -34,16 +34,7 @@ public class Main {
         err("General options:");
         err("\tfi=fileName   - read from file `fileName` (all modes)");
         err("\tfo=fileName   - write to file `fileName` (encode and decode)");
-        err("Encoding only options:");
-        err("\tlzpLowContextLength=value");
-        err("\tlzpLowMaskSize=value");
-        err("\tlzpHighContextLength=value");
-        err("\tlzpHighMaskSize=value");
-        err("\tppmOrder=value");
-        err("\tppmInit=value");
-        err("\tppmStep=value");
-        err("\tppmLimit=value");
-        err("Default compression options:");
+        err("Encoding only options (with default values):");
         final OptionsBean options = new OptionsBean();
         err("\tlzpLowContextLength=" + options.getLzpLowContextLength());
         err("\tlzpLowMaskSize=" + options.getLzpLowMaskSize());
