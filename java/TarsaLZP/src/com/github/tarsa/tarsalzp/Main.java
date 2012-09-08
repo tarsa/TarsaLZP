@@ -3,6 +3,9 @@ package com.github.tarsa.tarsalzp;
 import com.github.tarsa.tarsalzp.core.Coder;
 import com.github.tarsa.tarsalzp.gui.MainFrame;
 import com.github.tarsa.tarsalzp.gui.OptionsBean;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,14 +83,32 @@ public class Main {
         return optionsMap;
     }
 
+    private static class EncoderCallback implements Coder.Callback {
+
+        private final long fileSize;
+
+        public EncoderCallback(final long fileSize) {
+            this.fileSize = fileSize;
+        }
+
+        @Override
+        public void progressChanged(long processedSymbols) {
+            System.err.printf("\r%5.2f", 100. * processedSymbols / fileSize);
+            System.err.flush();
+        }
+    }
+
     private void encode(final Map<String, String> optionsMap)
             throws IOException {
         InputStream input = System.in;
         OutputStream output = System.out;
+        Coder.Callback callback = null;
         final OptionsBean optionsBean = new OptionsBean();
         for (final String option : optionsMap.keySet()) {
             if ("fi".equalsIgnoreCase(option)) {
                 input = new FileInputStream(optionsMap.get(option));
+                final long fileSize = new File(optionsMap.get(option)).length();
+                callback = new EncoderCallback(fileSize);
             } else if ("fo".equalsIgnoreCase(option)) {
                 output = new DelayedFileOutputStream(
                         optionsMap.get(option));
@@ -125,8 +146,13 @@ public class Main {
             printError("Wrong encoding options combination.");
             return;
         }
-        Coder.encode(input, output, null, 64 * 1024, options);
+        Coder.encode(new BufferedInputStream(input, 64 * 1024),
+                new BufferedOutputStream(output, 64 * 1024),
+                callback, 64 * 1024, options);
         output.flush();
+        if (callback != null) {
+            System.err.println("\rCompleted!");
+        }
     }
 
     private void dispatchCommand(final String[] args) throws IOException {
@@ -150,7 +176,8 @@ public class Main {
                     return;
                 }
             }
-            Coder.decode(input, output, null, 64 * 1024);
+            Coder.decode(new BufferedInputStream(input, 64 * 1024),
+                new BufferedOutputStream(output, 64 * 1024), null, 64 * 1024);
             output.flush();
         } else if ("showOptions".equalsIgnoreCase(command)) {
             InputStream input = System.in;
