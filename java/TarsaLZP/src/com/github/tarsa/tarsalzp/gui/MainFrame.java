@@ -462,6 +462,7 @@ public class MainFrame extends JFrame {
                             Coder.getOptions(inputStream),
                             "Compression options",
                             JOptionPane.INFORMATION_MESSAGE);
+                    inputStream.close();
                     break;
                 }
             }
@@ -575,11 +576,12 @@ public class MainFrame extends JFrame {
                     }
                 }
             }, 64 * 1024);
-            if (inputStream.read() != -1) {
-                throw new IOException("Not entire input was decoded.");
-            }
+            final boolean allDecoded = inputStream.read() == -1;
             inputStream.close();
             outputStream.close();
+            if (!allDecoded) {
+                throw new IOException("Not entire input was decoded.");
+            }
             return null;
         }
 

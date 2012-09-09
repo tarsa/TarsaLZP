@@ -91,18 +91,23 @@ public class Main {
 
     private void encode(final Map<String, String> optionsMap)
             throws IOException {
-        InputStream input = System.in;
-        OutputStream output = System.out;
+        InputStream input = new BufferedInputStream(System.in, 64 * 1024);
+        OutputStream output = new BufferedOutputStream(System.out, 64 * 1024);
+        boolean standardInput = true;
+        boolean standardOutput = true;
         Coder.Callback callback = null;
         final OptionsBean optionsBean = new OptionsBean();
         for (final String option : optionsMap.keySet()) {
             if ("fi".equalsIgnoreCase(option)) {
-                input = new FileInputStream(optionsMap.get(option));
+                input = new BufferedInputStream(new FileInputStream(
+                        optionsMap.get(option)), 64 * 1024);
+                standardInput = false;
                 final long fileSize = new File(optionsMap.get(option)).length();
                 callback = new EncoderCallback(fileSize);
             } else if ("fo".equalsIgnoreCase(option)) {
-                output = new DelayedFileOutputStream(
-                        optionsMap.get(option));
+                output = new BufferedOutputStream(new DelayedFileOutputStream(
+                        optionsMap.get(option)), 64 * 1024);
+                standardOutput = false;
             } else if ("lzpLowContextLength".equalsIgnoreCase(option)) {
                 optionsBean.setLzpLowContextLength(
                         Integer.parseInt(optionsMap.get(option)));
@@ -137,12 +142,16 @@ public class Main {
             printError("Wrong encoding options combination.");
             return;
         }
-        Coder.encode(new BufferedInputStream(input, 64 * 1024),
-                new BufferedOutputStream(output, 64 * 1024),
-                callback, 64 * 1024, options);
+        Coder.encode(input, output, callback, 64 * 1024, options);
         output.flush();
         if (callback != null) {
             System.err.println("\rCompleted!");
+        }
+        if (!standardInput) {
+            input.close();
+        }
+        if (!standardOutput) {
+            output.close();
         }
     }
 
@@ -154,14 +163,21 @@ public class Main {
         } else if ("encode".equalsIgnoreCase(command)) {
             encode(optionsMap);
         } else if ("decode".equalsIgnoreCase(command)) {
-            InputStream input = System.in;
-            OutputStream output = System.out;
+            InputStream input = new BufferedInputStream(System.in, 64 * 1024);
+            OutputStream output = new BufferedOutputStream(System.out,
+                    64 * 1024);
+            boolean standardInput = true;
+            boolean standardOutput = true;
             for (final String option : optionsMap.keySet()) {
                 if ("fi".equalsIgnoreCase(option)) {
-                    input = new FileInputStream(optionsMap.get(option));
+                    input = new BufferedInputStream(new FileInputStream(
+                            optionsMap.get(option)), 64 * 1024);
+                    standardInput = false;
                 } else if ("fo".equalsIgnoreCase(option)) {
-                    output = new DelayedFileOutputStream(
-                            optionsMap.get(option));
+                    output = new BufferedOutputStream(
+                            new DelayedFileOutputStream(optionsMap.get(option)),
+                            64 * 1024);
+                    standardOutput = false;
                 } else {
                     printError("Not suitable or unknown option: " + option);
                     return;
@@ -169,12 +185,23 @@ public class Main {
             }
             Coder.decode(new BufferedInputStream(input, 64 * 1024),
                 new BufferedOutputStream(output, 64 * 1024), null, 64 * 1024);
-            output.flush();
+            final boolean allDecoded = input.read() == -1;
+            if (!standardInput) {
+                input.close();
+            }
+            if (!standardOutput) {
+                output.close();
+            }
+            if (!allDecoded) {
+                throw new IOException("Not entire input was decoded.");
+            }
         } else if ("showOptions".equalsIgnoreCase(command)) {
             InputStream input = System.in;
+            boolean standardInput = true;
             for (final String option : optionsMap.keySet()) {
                 if ("fi".equalsIgnoreCase(option)) {
                     input = new FileInputStream(optionsMap.get(option));
+                    standardInput = false;
                 } else {
                     printError("Not suitable or unknown option: " + option);
                     return;
@@ -182,6 +209,9 @@ public class Main {
             }
             final Options options = Coder.getOptions(input);
             err(options.toString());
+            if (!standardInput) {
+                input.close();
+            }
         } else if ("gui".equalsIgnoreCase(command)) {
             printError("`gui` command do not expect options.");
         } else {
