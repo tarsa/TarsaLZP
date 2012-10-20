@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!--
+* Copyright (c) 2012, Piotr Tarsa
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* Redistributions of source code must retain the above copyright notice, this
+* list of conditions and the following disclaimer.
+*
+* Redistributions in binary form must reproduce the above copyright notice,
+* this list of conditions and the following disclaimer in the documentation
+* and/or other materials provided with the distribution.
+*
+* Neither the name of the author nor the names of its contributors may be used
+* to endorse or promote products derived from this software without specific
+* prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+-->
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+            LZP Low Context Length:
+        </td>
+        <td>
+            <input id="lzpLowContextLength" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            LZP Low Mask Size:
+        </td>
+        <td>
+            <input id="lzpLowMaskSize" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> LZP High Context Length:
+        </td>
+        <td>
+            <input id="lzpHighContextLength" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> LZP High Mask Size:
+        </td>
+        <td>
+            <input id="lzpHighMaskSize" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> PPM Order:
+        </td>
+        <td>
+            <input id="ppmOrder" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> PPM Init:
+        </td>
+        <td>
+            <input id="ppmInit" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> PPM Step:
+        </td>
+        <td>
+            <input id="ppmStep" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> PPM Limit:
+        </td>
+        <td>
+            <input id="ppmLimit" type="number"/>
+        </td>
+    </tr>
+    <tr>
+        <td> Options status:
+        </td>
+        <td>
+            <span id="status"></span>
+        </td>
+    </tr>
+</table>
+<input id="encode" name="mode" type="radio" value="encode" checked/><label for="encode">Encode</label>
+<input id="decode" name="mode" type="radio" value="decode"/><label for="decode">Decode</label>
+<input id="showOptions" name="mode" type="radio" value="showOptions"/><label for="showOptions">Show options</label>
+<br/>
+<input id="inputFileChooser" type="file"/>
+<input id="loadButton" type="button" value="Load contents from file"/>
+<input id="processButton" type="button" value="Process data"/>
+<input id="saveButton" type="button" value="Save results to file"/>
+<br/>
+<script src="js/eligrey/BlobBuilder.js" type="text/javascript"></script>
+<script src="js/eligrey/FileSaver.js" type="text/javascript"></script>
+<script src="js/prelude/Chunk.js" type="text/javascript"></script>
+<script src="js/prelude/Long.js" type="text/javascript"></script>
+<script src="js/prelude/Streams.js" type="text/javascript"></script>
+<script src="js/prelude/Utils.js" type="text/javascript"></script>
+<script src="js/Options.js" type="text/javascript"></script>
+<script src="js/OptionsBean.js" type="text/javascript"></script>
+<script src="js/core/Common.js" type="text/javascript"></script>
+<script src="js/core/Decoder.js" type="text/javascript"></script>
+<script src="js/core/Encoder.js" type="text/javascript"></script>
+<script src="js/core/Coder.js" type="text/javascript"></script>
+<script src="js/demo.js" type="text/javascript"></script>
+</body>
+</html>
