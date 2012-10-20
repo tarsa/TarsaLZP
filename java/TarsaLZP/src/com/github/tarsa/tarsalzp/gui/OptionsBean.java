@@ -73,9 +73,7 @@ public final class OptionsBean implements Serializable {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (!PropValid.equals(evt.getPropertyName())) {
-                setValid(Options.create(lzpLowContextLength, lzpLowMaskSize,
-                        lzpHighContextLength, lzpHighMaskSize, ppmOrder,
-                        ppmInit, ppmStep, ppmLimit) != null);
+                setValid(toOptions() != null);
             }
         }
     }

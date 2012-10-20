@@ -164,8 +164,8 @@ public final class Decoder extends Common {
         computePpmContext();
         final short mispredictedSymbolFrequency =
                 rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol];
-        rcRange = rcRange / (rangesTotal[getLastPpmContext()]
-                - mispredictedSymbolFrequency);
+        rcRange /= rangesTotal[getLastPpmContext()]
+                - mispredictedSymbolFrequency;
         rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] = 0;
         rangesGrouped[((getLastPpmContext() << 8) + mispredictedSymbol) >> 4] -=
                 mispredictedSymbolFrequency;

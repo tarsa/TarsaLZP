@@ -90,7 +90,7 @@ public final class Encoder extends Common {
             rcBuffer += rcHelper;
             if (rcBuffer < 0) {
                 carry = true;
-                rcBuffer = rcBuffer & 0x7FFFFFFF;
+                rcBuffer &= 0x7FFFFFFF;
             }
             rcRange -= rcHelper;
         }
@@ -104,7 +104,7 @@ public final class Encoder extends Common {
             rcBuffer += rcRange - 1;
             if (rcBuffer < 0) {
                 carry = true;
-                rcBuffer = rcBuffer & 0x7FFFFFFF;
+                rcBuffer &= 0x7FFFFFFF;
             }
             rcRange = 1;
         }
@@ -186,7 +186,7 @@ public final class Encoder extends Common {
         rcBuffer += rcHelper * cumulativeExclusiveFrequency;
         if (rcBuffer < 0) {
             carry = true;
-            rcBuffer = rcBuffer & 0x7FFFFFFF;
+            rcBuffer &= 0x7FFFFFFF;
         }
         rcRange = rcHelper * rangesSingle[index];
         updatePpm(index);

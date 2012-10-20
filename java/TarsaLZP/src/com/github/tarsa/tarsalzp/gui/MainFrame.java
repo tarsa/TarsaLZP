@@ -488,8 +488,22 @@ public class MainFrame extends JFrame {
                     final BufferedInputStream inputStream =
                             new BufferedInputStream(new FileInputStream(
                             inputFilePath), 64 * 1024);
+                    final Options options = Coder.getOptions(inputStream);
+                    final String optionsDescription = "Options:\n"
+                            + "LZP Low Context Length: " 
+                            + options.getLzpLowContextLength() + "\n"
+                            + "LZP Low Mask Size: " 
+                            + options.getLzpLowMaskSize() + "\n"
+                            + "LZP High Context Length: " 
+                            + options.getLzpHighContextLength() + "\n"
+                            + "LZP High Mask Size: " 
+                            + options.getLzpHighMaskSize() + "\n"
+                            + "PPM Order: " + options.getPpmOrder() + "\n"
+                            + "PPM Init: " + options.getPpmInit() + "\n"
+                            + "PPM Step: " + options.getPpmStep() + "\n"
+                            + "PPM Limit: " + options.getPpmLimit();
                     JOptionPane.showMessageDialog(MainFrame.this,
-                            Coder.getOptions(inputStream),
+                            optionsDescription,
                             "Compression options",
                             JOptionPane.INFORMATION_MESSAGE);
                     inputStream.close();
