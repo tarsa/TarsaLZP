@@ -190,7 +190,7 @@ function saveResults() {
     if (outputStream != null) {
         var bb = new BlobBuilder;
         outputStream.getChunksArray().forEach(function (chunk) {
-            bb.append(chunk.truncatedArray());
+            bb.append(chunk.truncatedBuffer());
         });
         var blob = bb.getBlob("example/binary");
         saveAs(blob, "filename");

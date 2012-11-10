@@ -30,13 +30,14 @@
  */
 function newChunk() {
     var ChunkSize = 64 * 1024;
-    var array = new Uint8Array(ChunkSize);
+    var buffer = new ArrayBuffer(ChunkSize);
+    var view = new Uint8Array(buffer);
     var position = 0;
 
     var self = {};
 
     self.write = function(value) {
-        array[position] = value;
+        view[position] = value;
         position++;
     };
 
@@ -44,8 +45,8 @@ function newChunk() {
         return position == ChunkSize;
     };
 
-    self.truncatedArray = function() {
-        return array.subarray(0, position);
+    self.truncatedBuffer = function() {
+        return buffer.slice(0, position);
     };
 
     return self;
