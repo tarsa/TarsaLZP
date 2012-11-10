@@ -106,15 +106,16 @@ public final class Coder {
             throws IOException {
         checkInterval(intervalLength);
         final Decoder decoder = new Decoder(inputStream, outputStream, options);
-        long amountProcessed = 0;
-        while (!decoder.decode(intervalLength)) {
-            amountProcessed += intervalLength;
+        long totalAmountProcessed = 0;
+        while (true) {
+            final long currentAmountProcessed = decoder.decode(intervalLength);
+            totalAmountProcessed += currentAmountProcessed;
             if (callback != null) {
-                callback.progressChanged(amountProcessed);
+                callback.progressChanged(totalAmountProcessed);
             }
-        }
-        if (callback != null) {
-            callback.progressChanged(amountProcessed);
+            if (currentAmountProcessed < intervalLength) {
+                break;
+            }
         }
     }
 
@@ -126,7 +127,7 @@ public final class Coder {
         final Encoder encoder = new Encoder(inputStream, outputStream, options);
         long header = HeaderValue;
         for (int i = 0; i < 8; i++) {
-            encoder.outputStream.write((int) (header >>> 56) & 0xff);
+            outputStream.write((int) (header >>> 56) & 0xff);
             header <<= 8;
         }
         long packedOptions = options.toPacked();
@@ -148,15 +149,16 @@ public final class Coder {
 
     private static void doEncode(final Encoder encoder, final Callback callback,
             final long intervalLength) throws IOException {
-        long amountProcessed = 0;
-        while (!encoder.encode(intervalLength)) {
-            amountProcessed += intervalLength;
+        long totalAmountProcessed = 0;
+        while (true) {
+            final long currentAmountProcessed = encoder.encode(intervalLength);
+            totalAmountProcessed += currentAmountProcessed;
             if (callback != null) {
-                callback.progressChanged(amountProcessed);
+                callback.progressChanged(totalAmountProcessed);
             }
-        }
-        if (callback != null) {
-            callback.progressChanged(amountProcessed);
+            if (currentAmountProcessed < intervalLength) {
+                break;
+            }
         }
         encoder.flush();
     }

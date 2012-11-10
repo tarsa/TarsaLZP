@@ -79,6 +79,14 @@ public final class Encoder extends Common {
             rcRange <<= 8;
         }
     }
+    
+    private void addWithCarry(final int cumulativeExclusiveFraction) {
+        rcBuffer += cumulativeExclusiveFraction;
+        if (rcBuffer < 0) {
+            carry = true;
+            rcBuffer &= 0x7FFFFFFF;
+        }
+    }
 
     private void encodeFlag(final int probability, final boolean match)
             throws IOException {
@@ -87,11 +95,7 @@ public final class Encoder extends Common {
         if (match) {
             rcRange = rcHelper;
         } else {
-            rcBuffer += rcHelper;
-            if (rcBuffer < 0) {
-                carry = true;
-                rcBuffer &= 0x7FFFFFFF;
-            }
+            addWithCarry(rcHelper);
             rcRange -= rcHelper;
         }
     }
@@ -101,62 +105,57 @@ public final class Encoder extends Common {
         if (flag) {
             rcRange--;
         } else {
-            rcBuffer += rcRange - 1;
-            if (rcBuffer < 0) {
-                carry = true;
-                rcBuffer &= 0x7FFFFFFF;
-            }
+            addWithCarry(rcRange - 1);
             rcRange = 1;
         }
     }
 
     private void encodeSingleOnlyLowLzp(final int nextSymbol)
             throws IOException {
-        computeHashes();
-        final int modelLowFrequency =
-                getSeeLow(getLzpStateLow(getLastHashLow()));
-        final int predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-        final boolean match = nextSymbol == predictedSymbol;
-        encodeFlag(modelLowFrequency, match);
-        updateSeeLow(getLzpStateLow(getLastHashLow()), match);
-        updateLzpStateLow(getLastHashLow(), nextSymbol, match);
-        if (!match) {
-            encodeSymbol(nextSymbol, predictedSymbol);
+        computeHashesOnlyLowLzp();
+        final int lzpStateLow = getLzpStateLow();
+        final int predictedSymbolLow = getLzpPredictedSymbolLow();
+        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final boolean matchLow = nextSymbol == predictedSymbolLow;
+        encodeFlag(modelLowFrequency, matchLow);
+        updateSeeLow(lzpStateLow, matchLow);
+        updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+        if (!matchLow) {
+            encodeSymbol(nextSymbol, predictedSymbolLow);
         }
         updateContext(nextSymbol);
     }
 
     private void encodeSingle(final int nextSymbol) throws IOException {
         computeHashes();
-        final int modelLowFrequency =
-                getSeeLow(getLzpStateLow(getLastHashLow()));
-        final int modelHighFrequency =
-                getSeeHigh(getLzpStateHigh(getLastHashHigh()));
-        boolean match;
-        int predictedSymbol;
+        final int lzpStateLow = getLzpStateLow();
+        final int predictedSymbolLow = getLzpPredictedSymbolLow();
+        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int lzpStateHigh = getLzpStateHigh();
+        final int predictedSymbolHigh = getLzpPredictedSymbolHigh();
+        final int modelHighFrequency = getSeeHigh(lzpStateHigh);
         if (modelLowFrequency >= modelHighFrequency) {
-            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
-            match = nextSymbol == predictedSymbol;
-            updateSeeHistoryHigh(match);
-            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
-            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-            match = nextSymbol == predictedSymbol;
-            encodeFlag(modelLowFrequency, match);
-            updateSeeLow(getLzpStateLow(getLastHashLow()), match);
-            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
+            final boolean matchHigh = nextSymbol == predictedSymbolHigh;
+            updateSeeHistoryHigh(matchHigh);
+            updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
+            final boolean matchLow = nextSymbol == predictedSymbolLow;
+            encodeFlag(modelLowFrequency, matchLow);
+            updateSeeLow(lzpStateLow, matchLow);
+            updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+            if (!matchLow) {
+                encodeSymbol(nextSymbol, predictedSymbolLow);
+            }
         } else {
-            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-            match = nextSymbol == predictedSymbol;
-            updateSeeHistoryLow(match);
-            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
-            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
-            match = nextSymbol == predictedSymbol;
-            encodeFlag(modelHighFrequency, match);
-            updateSeeHigh(getLzpStateHigh(getLastHashHigh()), match);
-            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
-        }
-        if (!match) {
-            encodeSymbol(nextSymbol, predictedSymbol);
+            final boolean matchLow = nextSymbol == predictedSymbolLow;
+            updateSeeHistoryLow(matchLow);
+            updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+            final boolean matchHigh = nextSymbol == predictedSymbolHigh;
+            encodeFlag(modelHighFrequency, matchHigh);
+            updateSeeHigh(lzpStateHigh, matchHigh);
+            updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
+            if (!matchHigh) {
+                encodeSymbol(nextSymbol, predictedSymbolHigh);
+            }
         }
         updateContext(nextSymbol);
     }
@@ -183,38 +182,31 @@ public final class Encoder extends Common {
         }
         final int rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
                 - mispredictedSymbolFrequency);
-        rcBuffer += rcHelper * cumulativeExclusiveFrequency;
-        if (rcBuffer < 0) {
-            carry = true;
-            rcBuffer &= 0x7FFFFFFF;
-        }
+        addWithCarry(rcHelper * cumulativeExclusiveFrequency);
         rcRange = rcHelper * rangesSingle[index];
         updatePpm(index);
     }
 
     void flush() throws IOException {
-        encodeSkewed(false);
         for (int i = 0; i < 5; i++) {
             outputByte(((int) (rcBuffer >> 23)) & 0xFF);
             rcBuffer <<= 8;
         }
     }
 
-    boolean encode(final long limit) throws IOException {
-        boolean endReached = false;
-        for (int i = 0; i < limit; i++) {
+    long encode(final long limit) throws IOException {
+        for (long i = 0; i < limit; i++) {
             final int symbol = inputStream.read();
+            encodeSkewed(symbol != -1);
             if (symbol == -1) {
-                endReached = true;
-                break;
+                return i;
             }
-            encodeSkewed(true);
             if (onlyLowLzp) {
                 encodeSingleOnlyLowLzp(symbol);
             } else {
                 encodeSingle(symbol);
             }
         }
-        return endReached;
+        return limit;
     }
 }

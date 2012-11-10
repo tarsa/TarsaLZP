@@ -104,56 +104,46 @@ public final class Decoder extends Common {
     }
 
     private int decodeSingleOnlyLowLzp() throws IOException {
-        computeHashes();
-        final int modelLowFrequency =
-                getSeeLow(getLzpStateLow(getLastHashLow()));
-        final int predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-        final boolean match = decodeFlag(modelLowFrequency);
-        updateSeeLow(getLzpStateLow(getLastHashLow()), match);
-        final int nextSymbol = match ? predictedSymbol
-                : decodeSymbol(predictedSymbol);
-        updateLzpStateLow(getLastHashLow(), nextSymbol, match);
+        computeHashesOnlyLowLzp();
+        final int lzpStateLow = getLzpStateLow();
+        final int predictedSymbolLow = getLzpPredictedSymbolLow();
+        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final boolean matchLow = decodeFlag(modelLowFrequency);
+        updateSeeLow(lzpStateLow, matchLow);
+        final int nextSymbol = matchLow ? predictedSymbolLow
+                : decodeSymbol(predictedSymbolLow);
+        updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         updateContext(nextSymbol);
         return nextSymbol;
     }
 
     private int decodeSingle() throws IOException {
         computeHashes();
-        final int modelLowFrequency =
-                getSeeLow(getLzpStateLow(getLastHashLow()));
-        final int modelHighFrequency =
-                getSeeHigh(getLzpStateHigh(getLastHashHigh()));
-        boolean match;
-        int predictedSymbol;
+        final int lzpStateLow = getLzpStateLow();
+        final int predictedSymbolLow = getLzpPredictedSymbolLow();
+        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int lzpStateHigh = getLzpStateHigh();
+        final int predictedSymbolHigh = getLzpPredictedSymbolHigh();
+        final int modelHighFrequency = getSeeHigh(lzpStateHigh);
         int nextSymbol;
         if (modelLowFrequency >= modelHighFrequency) {
-            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-            match = decodeFlag(modelLowFrequency);
-            updateSeeLow(getLzpStateLow(getLastHashLow()), match);
-            if (match) {
-                nextSymbol = predictedSymbol;
-            } else {
-                nextSymbol = decodeSymbol(predictedSymbol);
-            }
-            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
-            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
-            match = nextSymbol == predictedSymbol;
-            updateSeeHistoryHigh(match);
-            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
+            final boolean matchLow = decodeFlag(modelLowFrequency);
+            updateSeeLow(lzpStateLow, matchLow);
+            nextSymbol = matchLow ? predictedSymbolLow
+                    : decodeSymbol(predictedSymbolLow);
+            updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+            final boolean matchHigh = nextSymbol == predictedSymbolHigh;
+            updateSeeHistoryHigh(matchHigh);
+            updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
         } else {
-            predictedSymbol = getLzpPredictedSymbolHigh(getLastHashHigh());
-            match = decodeFlag(modelHighFrequency);
-            updateSeeHigh(getLzpStateHigh(getLastHashHigh()), match);
-            if (match) {
-                nextSymbol = predictedSymbol;
-            } else {
-                nextSymbol = decodeSymbol(predictedSymbol);
-            }
-            updateLzpStateHigh(getLastHashHigh(), nextSymbol, match);
-            predictedSymbol = getLzpPredictedSymbolLow(getLastHashLow());
-            match = nextSymbol == predictedSymbol;
-            updateSeeHistoryLow(match);
-            updateLzpStateLow(getLastHashLow(), nextSymbol, match);
+            final boolean matchHigh = decodeFlag(modelHighFrequency);
+            updateSeeHigh(lzpStateHigh, matchHigh);
+            nextSymbol = matchHigh ? predictedSymbolHigh
+                    : decodeSymbol(predictedSymbolHigh);
+            updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
+            final boolean matchLow = nextSymbol == predictedSymbolLow;
+            updateSeeHistoryLow(matchLow);
+            updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         }
         updateContext(nextSymbol);
         return nextSymbol;
@@ -190,21 +180,19 @@ public final class Decoder extends Common {
         return nextSymbol;
     }
 
-    boolean decode(final long limit) throws IOException {
+    long decode(final long limit) throws IOException {
         if (!started) {
             init();
         }
-        boolean endReached = false;
-        for (int i = 0; i < limit; i++) {
-            endReached = !decodeSkewed();
-            if (!endReached) {
+        for (long processed = 0; processed < limit; processed++) {
+            if (decodeSkewed()) {
                 final int symbol = onlyLowLzp ? decodeSingleOnlyLowLzp()
                         : decodeSingle();
                 outputStream.write(symbol);
             } else {
-                break;
+                return processed;
             }
         }
-        return endReached;
+        return limit;
     }
 }

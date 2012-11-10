@@ -129,6 +129,17 @@ abstract class Common {
     void computePpmContext() {
         lastPpmContext = (int) (context & ppmMask);
     }
+    
+    void computeHashesOnlyLowLzp() {
+        long localContext = context;
+        int hash = -2128831035;
+        for (int i = 0; i < lzpLowContextLength; i++) {
+            hash = hash * 16777619;
+            hash = hash ^ (int) (localContext & 0xFF);
+            localContext >>>= 8;
+        }
+        hashLow = hash & lzpLowMask;
+    }
 
     void computeHashes() {
         long localContext = context;
@@ -149,14 +160,6 @@ abstract class Common {
 
     int getLastPpmContext() {
         return lastPpmContext;
-    }
-
-    int getLastHashLow() {
-        return hashLow;
-    }
-
-    int getLastHashHigh() {
-        return hashHigh;
     }// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Calculating states">
     private static final int StateTable[][] = {
@@ -422,32 +425,32 @@ abstract class Common {
     }// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="LZP stuff">
 
-    int getLzpStateLow(final int hash) {
-        return (lzpLow[hash] >> 8) & 0xff;
+    int getLzpStateLow() {
+        return (lzpLow[hashLow] >> 8) & 0xff;
     }
 
-    int getLzpStateHigh(final int hash) {
-        return (lzpHigh[hash] >> 8) & 0xff;
+    int getLzpStateHigh() {
+        return (lzpHigh[hashHigh] >> 8) & 0xff;
     }
 
-    int getLzpPredictedSymbolLow(final int hash) {
-        return lzpLow[hash] & 0xff;
+    int getLzpPredictedSymbolLow() {
+        return lzpLow[hashLow] & 0xff;
     }
 
-    int getLzpPredictedSymbolHigh(final int hash) {
-        return lzpHigh[hash] & 0xff;
+    int getLzpPredictedSymbolHigh() {
+        return lzpHigh[hashHigh] & 0xff;
     }
 
-    void updateLzpStateLow(final int hash, final int input,
+    void updateLzpStateLow(final int lzpStateLow, final int input, 
             final boolean match) {
-        lzpLow[hash] = (short) ((getNextState(getLzpStateLow(hash), match) << 8)
+        lzpLow[hashLow] = (short) ((getNextState(lzpStateLow, match) << 8)
                 + input);
     }
 
-    void updateLzpStateHigh(final int hash, final int input,
+    void updateLzpStateHigh(final int lzpStateHigh, final int input,
             final boolean match) {
-        lzpHigh[hash] = (short) ((getNextState(getLzpStateHigh(hash),
-                match) << 8) + input);
+        lzpHigh[hashHigh] = (short) ((getNextState(lzpStateHigh, match) << 8)
+                + input);
     }// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="SEE stuff">
     private int historyLow = 0;
