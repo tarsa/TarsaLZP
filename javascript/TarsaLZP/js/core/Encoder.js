@@ -147,17 +147,23 @@ function newEncoder(inputStream, outputStream, options) {
         var cumulativeExclusiveFrequency = 0;
         var symbolGroup = index >> 4;
         var indexPartial;
-        for (indexPartial = self.getLastPpmContext() << 4; indexPartial < symbolGroup; indexPartial++) {
-            cumulativeExclusiveFrequency += self.getRangesGrouped()[indexPartial];
+        for (indexPartial = self.getLastPpmContext() << 4;
+             indexPartial < symbolGroup; indexPartial++) {
+            cumulativeExclusiveFrequency +=
+                self.getRangesGrouped()[indexPartial];
         }
-        for (indexPartial = symbolGroup << 4; indexPartial < index; indexPartial++) {
-            cumulativeExclusiveFrequency += self.getRangesSingle()[indexPartial];
+        for (indexPartial = symbolGroup << 4; indexPartial < index;
+             indexPartial++) {
+            cumulativeExclusiveFrequency +=
+                self.getRangesSingle()[indexPartial];
         }
-        var mispredictedSymbolFrequency = self.getRangesSingle()[(self.getLastPpmContext() << 8) + mispredictedSymbol];
+        var mispredictedSymbolFrequency = self.getRangesSingle()[
+            (self.getLastPpmContext() << 8) + mispredictedSymbol];
         if (nextSymbol > mispredictedSymbol) {
             cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
         }
-        var rcHelper = rcRange / (self.getRangesTotal()[self.getLastPpmContext()] - mispredictedSymbolFrequency) >> 0;
+        var rcHelper = rcRange / (self.getRangesTotal()[
+            self.getLastPpmContext()] - mispredictedSymbolFrequency) >> 0;
         _addWithCarry(rcHelper * cumulativeExclusiveFrequency);
         rcRange = rcHelper * self.getRangesSingle()[index];
         self.updatePpm(index);

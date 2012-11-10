@@ -159,7 +159,8 @@ function newOptionsBean() {
     });
 
     self.toOptions = function() {
-        return newOptions(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
+        return newOptions(lzpLowContextLength, lzpLowMaskSize,
+            lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
             ppmStep, ppmLimit);
     };
 

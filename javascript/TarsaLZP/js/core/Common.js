@@ -353,9 +353,9 @@ function newCommon(options) {
     self.computeHashes = function () {
         var localContext = Object.create(context);
         var hash = 18652613;
-        var i;
+        var i, newHash;
         for (i = 0; i < lzpLowContextLength; i++) {
-            var newHash = hash;
+            newHash = hash;
             newHash &= 0x3fffffff;
             newHash += (hash & 0x1fffffff) << 1;
             newHash &= 0x3fffffff;
@@ -374,7 +374,7 @@ function newCommon(options) {
         }
         hashLow = hash & lzpLowMask;
         for (i = lzpLowContextLength; i < lzpHighContextLength; i++) {
-            var newHash = hash;
+            newHash = hash;
             newHash &= 0x3fffffff;
             newHash += (hash & 0x1fffffff) << 1;
             newHash &= 0x3fffffff;
@@ -496,15 +496,18 @@ function newCommon(options) {
 
     self.rescalePpm = function () {
         var indexCurrent, groupCurrent;
-        for (indexCurrent = self.getLastPpmContext() << 8; indexCurrent < (self.getLastPpmContext() + 1) << 8;
+        for (indexCurrent = self.getLastPpmContext() << 8;
+             indexCurrent < (self.getLastPpmContext() + 1) << 8;
              indexCurrent++) {
-            rangesSingle[indexCurrent] -= (rangesSingle[indexCurrent] & 0xfffe) >> 1;
+            rangesSingle[indexCurrent] -=
+                (rangesSingle[indexCurrent] & 0xfffe) >> 1;
         }
         var totalFrequency = 0;
-        for (groupCurrent = self.getLastPpmContext() << 4; groupCurrent < (self.getLastPpmContext() + 1) << 4;
-             groupCurrent++) {
+        for (groupCurrent = self.getLastPpmContext() << 4; groupCurrent
+            < (self.getLastPpmContext() + 1) << 4; groupCurrent++) {
             var groupFrequency = 0;
-            for (indexCurrent = groupCurrent << 4; indexCurrent < (groupCurrent + 1) << 4; indexCurrent++) {
+            for (indexCurrent = groupCurrent << 4; indexCurrent
+                < (groupCurrent + 1) << 4; indexCurrent++) {
                 groupFrequency += rangesSingle[indexCurrent];
             }
             rangesGrouped[groupCurrent] = groupFrequency;

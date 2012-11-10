@@ -54,7 +54,8 @@ function statusToString(valid) {
     return valid ? "Valid" : "Invalid";
 }
 
-document.getElementById("status").innerText = statusToString(optionsBean.isValid());
+document.getElementById("status").innerText =
+    statusToString(optionsBean.isValid());
 
 lzpLowContextLength.addEventListener("input", function () {
     optionsBean.setLzpLowContextLength(lzpLowContextLength.value);
@@ -90,7 +91,8 @@ ppmLimit.addEventListener("input", function () {
 
 optionsBean.addChangeListener(function (propertyName) {
     if (propertyName == "valid") {
-        document.getElementById("status").innerText = statusToString(optionsBean.isValid());
+        document.getElementById("status").innerText =
+            statusToString(optionsBean.isValid());
     }
 });
 
@@ -142,10 +144,11 @@ function processData() {
     var showTime = true;
     setButtonsState(false);
     var startTime = new Date().getTime();
+    var options;
     try {
         if (encode.checked) {
             outputStream = newChunksArrayOutputStream();
-            var options = optionsBean.toOptions();
+            options = optionsBean.toOptions();
             if (options == null) {
                 alert("Invalid options.");
                 showTime = false;
@@ -158,11 +161,13 @@ function processData() {
             Coder.decode(inputStream, outputStream, null, 100000);
             outputStream.flush();
         } else if (showOptions.checked) {
-            var options = Coder.getOptions(inputStream);
+            options = Coder.getOptions(inputStream);
             var optionsDescription = "Options:\n"
-                + "LZP Low Context Length: " + options.getLzpLowContextLength() + "\n"
+                + "LZP Low Context Length: "
+                + options.getLzpLowContextLength() + "\n"
                 + "LZP Low Mask Size: " + options.getLzpLowMaskSize() + "\n"
-                + "LZP High Context Length: " + options.getLzpHighContextLength() + "\n"
+                + "LZP High Context Length: "
+                + options.getLzpHighContextLength() + "\n"
                 + "LZP High Mask Size: " + options.getLzpHighMaskSize() + "\n"
                 + "PPM Order: " + options.getPpmOrder() + "\n"
                 + "PPM Init: " + options.getPpmInit() + "\n"

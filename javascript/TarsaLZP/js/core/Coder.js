@@ -48,8 +48,8 @@ Coder = (function() {
             }
             header.d |= inputByte;
         }
-        if (header.a != HeaderValue.a || header.b != HeaderValue.b || header.c != HeaderValue.c
-            || header.d != HeaderValue.d) {
+        if (header.a != HeaderValue.a || header.b != HeaderValue.b
+            || header.c != HeaderValue.c || header.d != HeaderValue.d) {
             throw "Wrong file header. Probably not a compressed file.";
         }
         return self.getOptionsHeaderless(inputStream);
@@ -80,13 +80,16 @@ Coder = (function() {
         }
     }
 
-    self.decode = function(inputStream, outputStream, callback, intervalLength) {
+    self.decode = function(inputStream, outputStream, callback,
+                           intervalLength) {
         _checkInterval(intervalLength);
         var options = self.getOptions(inputStream);
-        self.decodeRaw(inputStream, outputStream, callback, intervalLength, options);
+        self.decodeRaw(inputStream, outputStream, callback, intervalLength,
+            options);
     };
 
-    self.decodeRaw = function(inputStream, outputStream, callback, intervalLength, options) {
+    self.decodeRaw = function(inputStream, outputStream, callback,
+                              intervalLength, options) {
         _checkInterval(intervalLength);
         var decoder = newDecoder(inputStream, outputStream, options);
         var amountProcessed = 0;
@@ -101,7 +104,8 @@ Coder = (function() {
         }
     };
 
-    self.encode = function(inputStream, outputStream, callback, intervalLength, options) {
+    self.encode = function(inputStream, outputStream, callback, intervalLength,
+                           options) {
         _checkInterval(intervalLength);
         var encoder = newEncoder(inputStream, outputStream, options);
         var header = self.getHeaderValue();
@@ -118,7 +122,8 @@ Coder = (function() {
         _doEncode(encoder, callback, intervalLength);
     };
 
-    self.encodeRaw = function(inputStream, outputStream, callback, intervalLength, options) {
+    self.encodeRaw = function(inputStream, outputStream, callback,
+                              intervalLength, options) {
         _checkInterval(intervalLength);
         var encoder = newEncoder(inputStream, outputStream, options);
         _doEncode(encoder, callback, intervalLength);

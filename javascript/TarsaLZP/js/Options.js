@@ -28,8 +28,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-function newOptions(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength, lzpHighMaskSize,
-                    ppmOrder, ppmInit, ppmStep, ppmLimit) {
+function newOptions(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength,
+                    lzpHighMaskSize, ppmOrder, ppmInit, ppmStep, ppmLimit) {
     var self = {};
 
     self.isValid = function() {
@@ -104,6 +104,6 @@ Options.fromPacked = function(packed) {
     var b = packed.b;
     var c = packed.c;
     var d = packed.d;
-    return newOptions((a & 0xff00) >> 8, a & 0xff, (b & 0xff00) >> 8, b & 0xff, ((c & 0x8000) >> 15) + 1,
-        (c & 0x7f00) >> 8, c & 0xff, d);
+    return newOptions((a & 0xff00) >> 8, a & 0xff, (b & 0xff00) >> 8, b & 0xff,
+        ((c & 0x8000) >> 15) + 1, (c & 0x7f00) >> 8, c & 0xff, d);
 };
