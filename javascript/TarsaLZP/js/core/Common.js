@@ -350,23 +350,32 @@ function newCommon(options) {
         lastPpmContext = context.d & ppmMask;
     };
 
+    self.computeHashesOnlyLowLzp = function() {
+        var localContext = Object.create(context);
+        var hash = 18652613;
+        var i, newHash;
+        for (i = 0; i < lzpLowContextLength; i++) {
+            newHash = hash;
+            newHash *= (1 + 2 + 16 + 128 + 256);
+            newHash &= 0x3fffffff;
+            newHash += (hash & 0x0000003f) << 24;
+            newHash ^= localContext.d & 0xff;
+            newHash &= 0x3fffffff;
+            hash = newHash;
+            localContext.shr8();
+        }
+        hashLow = hash & lzpLowMask;
+    };
+
     self.computeHashes = function () {
         var localContext = Object.create(context);
         var hash = 18652613;
         var i, newHash;
         for (i = 0; i < lzpLowContextLength; i++) {
             newHash = hash;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x1fffffff) << 1;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x03ffffff) << 4;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x007fffff) << 7;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x003fffff) << 8;
+            newHash *= (1 + 2 + 16 + 128 + 256);
             newHash &= 0x3fffffff;
             newHash += (hash & 0x0000003f) << 24;
-            newHash &= 0x3fffffff;
             newHash ^= localContext.d & 0xff;
             newHash &= 0x3fffffff;
             hash = newHash;
@@ -375,17 +384,9 @@ function newCommon(options) {
         hashLow = hash & lzpLowMask;
         for (i = lzpLowContextLength; i < lzpHighContextLength; i++) {
             newHash = hash;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x1fffffff) << 1;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x03ffffff) << 4;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x007fffff) << 7;
-            newHash &= 0x3fffffff;
-            newHash += (hash & 0x003fffff) << 8;
+            newHash *= (1 + 2 + 16 + 128 + 256);
             newHash &= 0x3fffffff;
             newHash += (hash & 0x0000003f) << 24;
-            newHash &= 0x3fffffff;
             newHash ^= localContext.d & 0xff;
             newHash &= 0x3fffffff;
             hash = newHash;
@@ -396,14 +397,6 @@ function newCommon(options) {
 
     self.getLastPpmContext = function () {
         return lastPpmContext;
-    };
-
-    self.getLastHashLow = function () {
-        return hashLow;
-    };
-
-    self.getLastHashHigh = function () {
-        return hashHigh;
     };
 
 // Calculating states
@@ -418,28 +411,29 @@ function newCommon(options) {
         return onlyLowLzp;
     };
 
-    self.getLzpStateLow = function (hash) {
-        return (lzpLow[hash] & 0xff00) >> 8;
+    self.getLzpStateLow = function () {
+        return (lzpLow[hashLow] & 0xff00) >> 8;
     };
 
-    self.getLzpStateHigh = function (hash) {
-        return (lzpHigh[hash] & 0xff00) >> 8;
+    self.getLzpStateHigh = function () {
+        return (lzpHigh[hashHigh] & 0xff00) >> 8;
     };
 
-    self.getLzpPredictedSymbolLow = function (hash) {
-        return lzpLow[hash] & 0xff;
+    self.getLzpPredictedSymbolLow = function () {
+        return lzpLow[hashLow] & 0xff;
     };
 
-    self.getLzpPredictedSymbolHigh = function (hash) {
-        return lzpHigh[hash] & 0xff;
+    self.getLzpPredictedSymbolHigh = function () {
+        return lzpHigh[hashHigh] & 0xff;
     };
 
-    self.updateLzpStateLow = function (hash, input, match) {
-        lzpLow[hash] = (self.getNextState(self.getLzpStateLow(hash), match) << 8) + input;
+    self.updateLzpStateLow = function (lzpStateLow, input, match) {
+        lzpLow[hashLow] = (self.getNextState(lzpStateLow, match) << 8) + input;
     };
 
-    self.updateLzpStateHigh = function (hash, input, match) {
-        lzpHigh[hash] = (self.getNextState(self.getLzpStateHigh(hash), match) << 8) + input;
+    self.updateLzpStateHigh = function (lzpStateHigh, input, match) {
+        lzpHigh[hashHigh] = (self.getNextState(lzpStateHigh, match) << 8)
+            + input;
     };
 
 // SEE section

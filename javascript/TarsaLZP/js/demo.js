@@ -58,35 +58,35 @@ document.getElementById("status").innerText =
     statusToString(optionsBean.isValid());
 
 lzpLowContextLength.addEventListener("input", function () {
-    optionsBean.setLzpLowContextLength(lzpLowContextLength.value);
+    optionsBean.setLzpLowContextLength(parseInt(lzpLowContextLength.value));
 }, false);
 
 lzpLowMaskSize.addEventListener("input", function () {
-    optionsBean.setLzpLowMaskSize(lzpLowMaskSize.value);
+    optionsBean.setLzpLowMaskSize(parseInt(lzpLowMaskSize.value));
 }, false);
 
 lzpHighContextLength.addEventListener("input", function () {
-    optionsBean.setLzpHighContextLength(lzpHighContextLength.value);
+    optionsBean.setLzpHighContextLength(parseInt(lzpHighContextLength.value));
 }, false);
 
 lzpHighMaskSize.addEventListener("input", function () {
-    optionsBean.setLzpHighMaskSize(lzpHighMaskSize.value);
+    optionsBean.setLzpHighMaskSize(parseInt(lzpHighMaskSize.value));
 }, false);
 
 ppmOrder.addEventListener("input", function () {
-    optionsBean.setPpmOrder(ppmOrder.value);
+    optionsBean.setPpmOrder(parseInt(ppmOrder.value));
 }, false);
 
 ppmInit.addEventListener("input", function () {
-    optionsBean.setPpmInit(ppmInit.value);
+    optionsBean.setPpmInit(parseInt(ppmInit.value));
 }, false);
 
 ppmStep.addEventListener("input", function () {
-    optionsBean.setPpmStep(ppmStep.value);
+    optionsBean.setPpmStep(parseInt(ppmStep.value));
 }, false);
 
 ppmLimit.addEventListener("input", function () {
-    optionsBean.setPpmLimit(ppmLimit.value);
+    optionsBean.setPpmLimit(parseInt(ppmLimit.value));
 }, false);
 
 optionsBean.addChangeListener(function (propertyName) {

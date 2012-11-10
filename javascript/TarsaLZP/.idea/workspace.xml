@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="93770825-26f6-4531-9039-600e3d313eb0" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Main.html" afterPath="$PROJECT_DIR$/Main.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/Options.js" afterPath="$PROJECT_DIR$/js/Options.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/OptionsBean.js" afterPath="$PROJECT_DIR$/js/OptionsBean.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/core/Coder.js" afterPath="$PROJECT_DIR$/js/core/Coder.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/core/Common.js" afterPath="$PROJECT_DIR$/js/core/Common.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/core/Decoder.js" afterPath="$PROJECT_DIR$/js/core/Decoder.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/core/Encoder.js" afterPath="$PROJECT_DIR$/js/core/Encoder.js" />
@@ -68,19 +64,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Long.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/prelude/Long.js">
+      <file leaf-file-name="Coder.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/core/Coder.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="14" selection-start="1224" selection-end="1224" vertical-scroll-proportion="0.0">
+            <state line="110" column="10" selection-start="4228" selection-end="4228" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Chunk.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/prelude/Chunk.js">
+      <file leaf-file-name="Options.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/Options.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="50" column="15" selection-start="2314" selection-end="2314" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -88,17 +84,50 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LICENSE.md" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/eligrey/LICENSE.md">
+      <file leaf-file-name="demo.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/demo.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="85" column="21" selection-start="3723" selection-end="3723" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ECMAScript.js2" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2" column="23" selection-start="79" selection-end="79" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FileSaver.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/eligrey/FileSaver.js">
+      <file leaf-file-name="OptionsBean.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/OptionsBean.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="109" column="4" selection-start="3457" selection-end="3457" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Long.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/prelude/Long.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="37" column="17" selection-start="1664" selection-end="1664" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BlobBuilder.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/eligrey/BlobBuilder.js">
           <provider selected="true" editor-type-id="text-editor">
             <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding>
@@ -111,18 +140,7 @@
       <file leaf-file-name="Encoder.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/core/Encoder.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="155" column="46" selection-start="6184" selection-end="6184" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Decoder.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/core/Decoder.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="186" column="20" selection-start="7464" selection-end="7464" vertical-scroll-proportion="0.0">
+            <state line="159" column="9" selection-start="6086" selection-end="6086" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -133,34 +151,16 @@
       <file leaf-file-name="Common.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/core/Common.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="509" column="16" selection-start="17066" selection-end="17066" vertical-scroll-proportion="0.0">
+            <state line="519" column="6" selection-start="17445" selection-end="17445" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Coder.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/core/Coder.js">
+      <file leaf-file-name="Decoder.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/js/core/Decoder.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="133" column="59" selection-start="5097" selection-end="5097" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Main.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Main.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="13" selection-start="1694" selection-end="1694" vertical-scroll-proportion="-6.814815">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="demo.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/js/demo.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="160" column="13" selection-start="5706" selection-end="5706" vertical-scroll-proportion="0.6431034">
+            <state line="133" column="52" selection-start="5146" selection-end="5146" vertical-scroll-proportion="-0.47241378">
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -193,12 +193,12 @@
         <option value="$PROJECT_DIR$/.idea/workspace.xml" />
         <option value="$PROJECT_DIR$/js/OptionsBean.js" />
         <option value="$PROJECT_DIR$/js/Options.js" />
-        <option value="$PROJECT_DIR$/js/core/Encoder.js" />
-        <option value="$PROJECT_DIR$/js/core/Decoder.js" />
-        <option value="$PROJECT_DIR$/js/core/Common.js" />
         <option value="$PROJECT_DIR$/js/core/Coder.js" />
         <option value="$PROJECT_DIR$/Main.html" />
+        <option value="$PROJECT_DIR$/js/core/Decoder.js" />
+        <option value="$PROJECT_DIR$/js/core/Encoder.js" />
         <option value="$PROJECT_DIR$/js/demo.js" />
+        <option value="$PROJECT_DIR$/js/core/Common.js" />
       </list>
     </option>
   </component>
@@ -575,6 +575,11 @@
       <created>1347657888041</created>
       <updated>1347657888041</updated>
     </task>
+    <task id="LOCAL-00001" summary="Code reformatting.">
+      <created>1352563384696</created>
+      <updated>1352563384696</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -599,12 +604,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="-4" width="1682" height="1055" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32964602" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32964602" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30752212" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -622,7 +628,6 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -721,31 +726,17 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.idea/copyright/profiles_settings.xml">
+    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/ant.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="16" selection-start="163" selection-end="163" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/OptionsBean.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="162" column="12" selection-start="4961" selection-end="4961" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/Options.js">
+    <entry file="file://$PROJECT_DIR$/Main.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="23" selection-start="3285" selection-end="3285" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state line="42" column="13" selection-start="1694" selection-end="1694" vertical-scroll-proportion="-6.814815">
+          <folding />
         </state>
       </provider>
     </entry>
@@ -763,24 +754,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/prelude/Long.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="14" selection-start="1224" selection-end="1224" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/prelude/Chunk.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/eligrey/LICENSE.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
         </state>
       </provider>
     </entry>
@@ -793,18 +772,68 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/core/Encoder.js">
+    <entry file="file://$PROJECT_DIR$/js/eligrey/BlobBuilder.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="155" column="46" selection-start="6184" selection-end="6184" vertical-scroll-proportion="0.0">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/core/Decoder.js">
+    <entry file="file://$PROJECT_DIR$/js/prelude/Long.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="186" column="20" selection-start="7464" selection-end="7464" vertical-scroll-proportion="0.0">
+        <state line="37" column="17" selection-start="1664" selection-end="1664" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/core/Encoder.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="159" column="9" selection-start="6086" selection-end="6086" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/core/Coder.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="110" column="10" selection-start="4228" selection-end="4228" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/Options.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="50" column="15" selection-start="2314" selection-end="2314" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="23" selection-start="79" selection-end="79" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/demo.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="85" column="21" selection-start="3723" selection-end="3723" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/OptionsBean.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="109" column="4" selection-start="3457" selection-end="3457" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
@@ -813,28 +842,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/core/Common.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="509" column="16" selection-start="17066" selection-end="17066" vertical-scroll-proportion="0.0">
+        <state line="519" column="6" selection-start="17445" selection-end="17445" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/core/Coder.js">
+    <entry file="file://$PROJECT_DIR$/js/core/Decoder.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="133" column="59" selection-start="5097" selection-end="5097" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="13" selection-start="1694" selection-end="1694" vertical-scroll-proportion="-6.814815">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/demo.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="160" column="13" selection-start="5706" selection-end="5706" vertical-scroll-proportion="0.6431034">
+        <state line="133" column="52" selection-start="5146" selection-end="5146" vertical-scroll-proportion="-0.47241378">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>

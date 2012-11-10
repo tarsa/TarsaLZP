@@ -94,48 +94,51 @@ function newEncoder(inputStream, outputStream, options) {
     }
 
     function _encodeSingleOnlyLowLzp(nextSymbol) {
-        self.computeHashes();
-        var modelLowFrequency = self.getSeeLow(self.getLzpStateLow(self.getLastHashLow()));
-        var predictedSymbol = self.getLzpPredictedSymbolLow(self.getLastHashLow());
-        var match = nextSymbol == predictedSymbol;
-        _encodeFlag(modelLowFrequency, match);
-        self.updateSeeLow(self.getLzpStateLow(self.getLastHashLow()), match);
-        self.updateLzpStateLow(self.getLastHashLow(), nextSymbol, match);
-        if (!match) {
-            _encodeSymbol(nextSymbol, predictedSymbol);
+        self.computeHashesOnlyLowLzp();
+        var lzpStateLow = self.getLzpStateLow();
+        var predictedSymbolLow = self.getLzpPredictedSymbolLow();
+        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var matchLow = nextSymbol == predictedSymbolLow;
+        _encodeFlag(modelLowFrequency, matchLow);
+        self.updateSeeLow(lzpStateLow, matchLow);
+        self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+        if (!matchLow) {
+            _encodeSymbol(nextSymbol, predictedSymbolLow);
         }
         self.updateContext(nextSymbol);
     }
 
     function _encodeSingle(nextSymbol) {
         self.computeHashes();
-        var modelLowFrequency = self.getSeeLow(self.getLzpStateLow(self.getLastHashLow()));
-        var modelHighFrequency = self.getSeeHigh(self.getLzpStateHigh(self.getLastHashHigh()));
-        var match;
-        var predictedSymbol;
+        var lzpStateLow = self.getLzpStateLow();
+        var predictedSymbolLow = self.getLzpPredictedSymbolLow();
+        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var lzpStateHigh = self.getLzpStateHigh();
+        var predictedSymbolHigh = self.getLzpPredictedSymbolHigh();
+        var modelHighFrequency = self.getSeeHigh(lzpStateHigh);
+        var matchLow, matchHigh;
         if (modelLowFrequency >= modelHighFrequency) {
-            predictedSymbol = self.getLzpPredictedSymbolHigh(self.getLastHashHigh());
-            match = nextSymbol == predictedSymbol;
-            self.updateSeeHistoryHigh(match);
-            self.updateLzpStateHigh(self.getLastHashHigh(), nextSymbol, match);
-            predictedSymbol = self.getLzpPredictedSymbolLow(self.getLastHashLow());
-            match = nextSymbol == predictedSymbol;
-            _encodeFlag(modelLowFrequency, match);
-            self.updateSeeLow(self.getLzpStateLow(self.getLastHashLow()), match);
-            self.updateLzpStateLow(self.getLastHashLow(), nextSymbol, match);
+            matchHigh = nextSymbol == predictedSymbolHigh;
+            self.updateSeeHistoryHigh(matchHigh);
+            self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
+            matchLow = nextSymbol == predictedSymbolLow;
+            _encodeFlag(modelLowFrequency, matchLow);
+            self.updateSeeLow(lzpStateLow, matchLow);
+            self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+            if (!matchLow) {
+                _encodeSymbol(nextSymbol, predictedSymbolLow);
+            }
         } else {
-            predictedSymbol = self.getLzpPredictedSymbolLow(self.getLastHashLow());
-            match = nextSymbol == predictedSymbol;
-            self.updateSeeHistoryLow(match);
-            self.updateLzpStateLow(self.getLastHashLow(), nextSymbol, match);
-            predictedSymbol = self.getLzpPredictedSymbolHigh(self.getLastHashHigh());
-            match = nextSymbol == predictedSymbol;
-            _encodeFlag(modelHighFrequency, match);
-            self.updateSeeHigh(self.getLzpStateHigh(self.getLastHashHigh()), match);
-            self.updateLzpStateHigh(self.getLastHashHigh(), nextSymbol, match);
-        }
-        if (!match) {
-            _encodeSymbol(nextSymbol, predictedSymbol);
+            matchLow = nextSymbol == predictedSymbolLow;
+            self.updateSeeHistoryLow(matchLow);
+            self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
+            matchHigh = nextSymbol == predictedSymbolHigh;
+            _encodeFlag(modelHighFrequency, matchHigh);
+            self.updateSeeHigh(lzpStateHigh, matchHigh);
+            self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
+            if (!matchHigh) {
+                _encodeSymbol(nextSymbol, predictedSymbolHigh);
+            }
         }
         self.updateContext(nextSymbol);
     }
