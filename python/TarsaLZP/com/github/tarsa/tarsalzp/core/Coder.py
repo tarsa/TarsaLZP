@@ -29,8 +29,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from ..prelude.Long import Long
-from ..Options import Options
+from com.github.tarsa.tarsalzp.prelude.Long import Long
+from com.github.tarsa.tarsalzp.Options import Options
 from Decoder import Decoder
 from Encoder import Encoder
 
@@ -39,24 +39,24 @@ __author__ = 'Piotr Tarsa'
 class Coder(object):
     HeaderValue = Long(0x208b, 0xbb9f, 0x5b12, 0x98be)
 
-    @classmethod
-    def getOptions(cls, inputStream):
+    @staticmethod
+    def getOptions(inputStream):
         header = Long(0, 0, 0, 0)
-        for i in range(0, 8):
+        for i in xrange(0, 8):
             header.shl8()
             inputByte = inputStream.readByte()
             if inputByte == -1:
                 raise IOError("Unexpected end of file.")
             header.d |= inputByte
-        if (header.a != cls.HeaderValue.a) | (header.b != cls.HeaderValue.b)\
-        | (header.c != cls.HeaderValue.c) | (header.d != cls.HeaderValue.d):
+        if (header.a != Coder.HeaderValue.a) | (header.b != Coder.HeaderValue.b)\
+        | (header.c != Coder.HeaderValue.c) | (header.d != Coder.HeaderValue.d):
             raise IOError("Wrong file header. Probably not a compressed file.")
-        return cls.getOptionsHeaderless(inputStream)
+        return Coder.getOptionsHeaderless(inputStream)
 
-    @classmethod
-    def getOptionsHeaderless(cls, inputStream):
+    @staticmethod
+    def getOptionsHeaderless(inputStream):
         packedOptions = Long(0, 0, 0, 0)
-        for i in range(0, 8):
+        for i in xrange(0, 8):
             packedOptions.shl8()
             inputByte = inputStream.readByte()
             if inputByte == -1:
@@ -73,52 +73,45 @@ class Coder(object):
         if intervalLength <= 0:
             raise ValueError("Interval length has to be positive.")
 
-    @classmethod
-    def decode(cls, inputStream, outputStream, callback, intervalLength):
-        cls.checkInterval(intervalLength)
-        options = cls.getOptions(inputStream)
-        cls.decodeRaw(inputStream, outputStream, callback, intervalLength,
+    @staticmethod
+    def decode(inputStream, outputStream, intervalLength):
+        Coder.checkInterval(intervalLength)
+        options = Coder.getOptions(inputStream)
+        Coder.decodeRaw(inputStream, outputStream, intervalLength,
             options)
 
-    @classmethod
-    def decodeRaw(cls, inputStream, outputStream, callback, intervalLength,
-                  options):
-        cls.checkInterval(intervalLength)
+    @staticmethod
+    def decodeRaw(inputStream, outputStream, intervalLength, options):
+        Coder.checkInterval(intervalLength)
         decoder = Decoder(inputStream, outputStream, options)
         amountProcessed = 0
         while not decoder.decode(intervalLength):
             amountProcessed += intervalLength
-            if callback is not None:
-                callback(amountProcessed)
 
-    @classmethod
-    def encode(cls, inputStream, outputStream, callback, intervalLength,
-               options):
-        cls.checkInterval(intervalLength)
+    @staticmethod
+    def encode(inputStream, outputStream, intervalLength, options):
+        Coder.checkInterval(intervalLength)
         encoder = Encoder(inputStream, outputStream, options)
-        header = Long(cls.HeaderValue.a, cls.HeaderValue.b, cls.HeaderValue.c,
-            cls.HeaderValue.d)
-        for i in range(0, 8):
+        header = Long(Coder.HeaderValue.a, Coder.HeaderValue.b,
+            Coder.HeaderValue.c, Coder.HeaderValue.d)
+        for i in xrange(0, 8):
             outputStream.writeByte(header.a >> 8)
             header.shl8()
         packedOptions = options.toPacked()
-        for i in range(0, 8):
+        for i in xrange(0, 8):
             outputStream.writeByte(packedOptions.a >> 8)
             packedOptions.shl8()
-        cls.doEncode(encoder, callback, intervalLength)
-
-    @classmethod
-    def encodeRaw(cls, inputStream, outputStream, callback, intervalLength,
-                  options):
-        cls.checkInterval(intervalLength)
-        encoder = Encoder(inputStream, outputStream, options)
-        cls.doEncode(encoder, callback, intervalLength)
+        Coder.doEncode(encoder, intervalLength)
 
     @staticmethod
-    def doEncode(encoder, callback, intervalLength):
+    def encodeRaw(inputStream, outputStream, intervalLength, options):
+        Coder.checkInterval(intervalLength)
+        encoder = Encoder(inputStream, outputStream, options)
+        Coder.doEncode(encoder, intervalLength)
+
+    @staticmethod
+    def doEncode(encoder, intervalLength):
         amountProcessed = 0
         while not encoder.encode(intervalLength):
             amountProcessed += intervalLength
-            if callback is not None:
-                callback(amountProcessed)
         encoder.flush()

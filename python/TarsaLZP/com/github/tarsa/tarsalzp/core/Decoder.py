@@ -51,7 +51,7 @@ class Decoder(Common):
 
     def init(self):
         self.rcBuffer = 0
-        for i in range(0, 4):
+        for i in xrange(0, 4):
             self.rcBuffer = (self.rcBuffer << 8) + self.inputByte()
         self.rcRange = 0x7fffffff
         self.started = True
@@ -158,7 +158,7 @@ class Decoder(Common):
         if not self.started:
             self.init()
         endReached = False
-        for i in range(0, limit):
+        for i in xrange(0, limit):
             endReached = not self.decodeSkewed()
             if not endReached:
                 symbol = self.decodeSingleOnlyLowLzp() if self.onlyLowLzp else\

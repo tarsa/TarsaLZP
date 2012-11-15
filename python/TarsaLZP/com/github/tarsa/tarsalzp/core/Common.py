@@ -30,7 +30,7 @@
 #
 
 import array
-from ..prelude.Long import Long
+from com.github.tarsa.tarsalzp.prelude.Long import Long
 
 __author__ = 'Piotr Tarsa'
 
@@ -311,7 +311,7 @@ class Common(object):
         lzpHighCount = 1 << self.lzpHighMaskSize
         self.lzpLowMask = lzpLowCount - 1
         self.lzpHighMask = lzpHighCount - 1
-        self.lzpLow = array.array("H", (0xffb5 for _ in range(0, lzpLowCount)))
+        self.lzpLow = array.array("H", (0xffb5 for _ in xrange(0, lzpLowCount)))
         self.onlyLowLzp = \
         (self.lzpLowContextLength == self.lzpHighContextLength)\
         & (self.lzpLowMaskSize == self.lzpHighMaskSize)
@@ -319,23 +319,23 @@ class Common(object):
             self.lzpHigh = None
         else:
             self.lzpHigh = array.array("H",
-                (0xffb5 for _ in range(0, lzpHighCount)))
+                (0xffb5 for _ in xrange(0, lzpHighCount)))
         # PPM init
         self.ppmMaskSize = 8 * self.ppmOrder
         self.ppmMask = (1 << self.ppmMaskSize) - 1
         self.rangesSingle = array.array("H",
-            (self.ppmInit for _ in range(0, 1 << (self.ppmMaskSize + 8))))
+            (self.ppmInit for _ in xrange(0, 1 << (self.ppmMaskSize + 8))))
         self.rangesGrouped = array.array("H",
-            (self.ppmInit * 16 for _ in range(0, 1 << (self.ppmMaskSize + 4))))
+            (self.ppmInit * 16 for _ in xrange(0, 1 << (self.ppmMaskSize + 4))))
         self.rangesTotal = array.array("H",
-            (self.ppmInit * 256 for _ in range(0, 1 << self.ppmMaskSize)))
+            (self.ppmInit * 256 for _ in xrange(0, 1 << self.ppmMaskSize)))
         # SEE init
-        self.seeLow = array.array("H", (0x4000 for _ in range(0, 16 * 256)))
+        self.seeLow = array.array("H", (0x4000 for _ in xrange(0, 16 * 256)))
         if self.onlyLowLzp:
             self.seeHigh = None
         else:
             self.seeHigh = array.array("H",
-                (0x4000 for _ in range(0, 16 * 256)))
+                (0x4000 for _ in xrange(0, 16 * 256)))
         # Contexts and hashes
         self.lastPpmContext = 0
         self.context = Long(0, 0, 0, 0)
@@ -360,7 +360,7 @@ class Common(object):
         localContext = Long(self.context.a, self.context.b, self.context.c,
             self.context.d)
         hash = 2166136261
-        for i in range(0, self.lzpLowContextLength):
+        for i in xrange(0, self.lzpLowContextLength):
             newHash = hash * 16777619
             newHash ^= localContext.d & 0xff
             newHash &= 0x3fffffff
@@ -372,14 +372,14 @@ class Common(object):
         localContext = Long(self.context.a, self.context.b, self.context.c,
             self.context.d)
         hash = 2166136261
-        for i in range(0, self.lzpLowContextLength):
+        for i in xrange(0, self.lzpLowContextLength):
             newHash = hash * 16777619
             newHash ^= localContext.d & 0xff
             newHash &= 0x3fffffff
             hash = newHash
             localContext.shr8()
         self.hashLow = hash & self.lzpLowMask
-        for i in range(self.lzpLowContextLength, self.lzpHighContextLength):
+        for i in xrange(self.lzpLowContextLength, self.lzpHighContextLength):
             newHash = hash * 16777619
             newHash ^= localContext.d & 0xff
             newHash &= 0x3fffffff
@@ -444,15 +444,15 @@ class Common(object):
 
     # PPM stuff
     def rescalePpm(self):
-        for indexCurrent in range(self.lastPpmContext << 8,
+        for indexCurrent in xrange(self.lastPpmContext << 8,
             (self.lastPpmContext + 1) << 8):
             self.rangesSingle[indexCurrent] -= \
             self.rangesSingle[indexCurrent] >> 1
         totalFrequency = 0
-        for groupCurrent in range(self.lastPpmContext << 4,
+        for groupCurrent in xrange(self.lastPpmContext << 4,
             (self.lastPpmContext + 1) << 4):
             groupFrequency = 0
-            for indexCurrent in range(groupCurrent << 4,
+            for indexCurrent in xrange(groupCurrent << 4,
                 (groupCurrent + 1) << 4):
                 groupFrequency += self.rangesSingle[indexCurrent]
             self.rangesGrouped[groupCurrent] = groupFrequency

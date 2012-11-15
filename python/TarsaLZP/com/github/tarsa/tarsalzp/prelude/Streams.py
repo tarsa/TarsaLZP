@@ -29,21 +29,27 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import array
+
 __author__ = 'Piotr Tarsa'
 
 class BufferedInputStream(object):
     Limit = 65536
     def __init__(self, input):
         self.input = input
-        self.buffer = bytearray((0 for _ in range(0,
-            BufferedInputStream.Limit)))
+        self.buffer = None
         self.position = 0
         self.limit = 0
 
     def readByte(self):
         while self.position == self.limit:
             self.position = 0
-            self.limit = self.input.readinto(self.buffer)
+            self.buffer = array.array("B")
+            try:
+                self.buffer.fromfile(self.input, BufferedInputStream.Limit)
+            except EOFError:
+                pass
+            self.limit = len(self.buffer)
             if not self.limit:
                 return -1
         result = self.buffer[self.position]
@@ -58,7 +64,7 @@ class BufferedOutputStreamWrapper(object):
     Limit = 65536
     def __init__(self, outputStream):
         self.outputStream = outputStream
-        self.buffer = bytearray((0 for _ in range(0,
+        self.buffer = array.array("B", (0 for _ in xrange(0,
             BufferedOutputStreamWrapper.Limit)))
         self.position = 0
         self.limit = len(self.buffer)
@@ -76,19 +82,20 @@ class BufferedOutputStreamWrapper(object):
     def close(self):
         self.outputStream.close()
 
+class OutputStream(object):
+    pass
 
-
-class FileOutputStream(object):
+class FileOutputStream(OutputStream):
     def __init__(self, fileHandle):
         self.output = fileHandle
 
     def writeByteArray(self, byteArray):
-        self.output.write(byteArray)
+        byteArray.tofile(self.output)
 
     def close(self):
         self.output.close()
 
-class DelayedFileOutputStream(object):
+class DelayedFileOutputStream(OutputStream):
     def __init__(self, fileName):
         self.fileName = fileName
         self.initialized = False
@@ -98,7 +105,7 @@ class DelayedFileOutputStream(object):
         if not self.initialized:
             self.initialized = True
             self.output = open(self.fileName, mode = "w+b", buffering = 65536)
-        self.output.write(byteArray)
+        byteArray.tofile(self.output)
 
     def close(self):
         if self.initialized:

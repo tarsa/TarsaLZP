@@ -29,11 +29,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from .prelude.Streams import *
-from .core.Coder import Coder
+from com.github.tarsa.tarsalzp.prelude.Streams import *
+from com.github.tarsa.tarsalzp.core.Coder import Coder
 from Options import Options
 from sys import stderr
 import sys
+from time import time
 
 __author__ = 'Piotr Tarsa'
 
@@ -121,7 +122,7 @@ class Main(object):
         if not options.isValid():
             self.err("Wrong encoding options combination.")
             return
-        Coder.encode(inputStream, outputStream, None, 65536, options)
+        Coder.encode(inputStream, outputStream, 65536, options)
         outputStream.flush()
         if not standardInput:
             inputStream.close()
@@ -148,7 +149,7 @@ class Main(object):
             else:
                 self.err("Not suitable or unknown option: " + keyOriginal)
                 return
-        Coder.decode(inputStream, outputStream, None, 65536)
+        Coder.decode(inputStream, outputStream, 65536)
         outputStream.flush()
         allDecoded = inputStream.readByte() == -1
         if not standardInput:
@@ -203,7 +204,6 @@ class Main(object):
                 self.err("Out of memory error - try lowering mask sizes.")
 
     def main(self):
-        from time import time
         start = time()
         self.run(sys.argv)
         self.err("Time taken: " + str(time() - start) + "s")
