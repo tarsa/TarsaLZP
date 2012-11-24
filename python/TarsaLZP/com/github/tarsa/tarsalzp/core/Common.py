@@ -31,10 +31,12 @@
 
 import array
 from com.github.tarsa.tarsalzp.prelude.Long import Long
+from Lg2 import Lg2
 
 __author__ = 'Piotr Tarsa'
 
 class Common(object):
+    CostScale = 7
     # Calculating states
     StateTable = [
         [1, 241, 0, 0, 0, 0],
@@ -329,6 +331,7 @@ class Common(object):
             (self.ppmInit * 16 for _ in xrange(0, 1 << (self.ppmMaskSize + 4))))
         self.rangesTotal = array.array("H",
             (self.ppmInit * 256 for _ in xrange(0, 1 << self.ppmMaskSize)))
+        self.recentCost = 8 << self.CostScale + 14
         # SEE init
         self.seeLow = array.array("H", (0x4000 for _ in xrange(0, 16 * 256)))
         if self.onlyLowLzp:
@@ -465,3 +468,11 @@ class Common(object):
         self.rangesTotal[self.lastPpmContext] += self.ppmStep
         if self.rangesTotal[self.lastPpmContext] > self.ppmLimit:
             self.rescalePpm()
+
+    def useFixedProbabilities(self):
+        return self.recentCost > 8 << self.CostScale + 14
+
+    def updateRecentCost(self, symbolFrequency, totalFrequency):
+        self.recentCost -= self.recentCost >> self.CostScale
+        self.recentCost += Lg2.nLog2(totalFrequency)
+        self.recentCost -= Lg2.nLog2(symbolFrequency)

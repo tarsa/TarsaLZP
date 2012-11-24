@@ -136,20 +136,27 @@ class Encoder(Common):
         self.normalize()
         self.computePpmContext()
         index = (self.lastPpmContext << 8) + nextSymbol
-        cumulativeExclusiveFrequency = 0
-        symbolGroup = index >> 4
-        for indexPartial in xrange(self.lastPpmContext << 4, symbolGroup):
-            cumulativeExclusiveFrequency += self.rangesGrouped[indexPartial]
-        for indexPartial in xrange(symbolGroup << 4, index):
-            cumulativeExclusiveFrequency += self.rangesSingle[indexPartial]
-        mispredictedSymbolFrequency = \
-        self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
-        if nextSymbol > mispredictedSymbol:
-            cumulativeExclusiveFrequency -= mispredictedSymbolFrequency
-        rcHelper = self.rcRange / (self.rangesTotal[self.lastPpmContext]
-                                   - mispredictedSymbolFrequency)
-        self.addWithCarry(rcHelper * cumulativeExclusiveFrequency)
-        self.rcRange = rcHelper * self.rangesSingle[index]
+        if not self.useFixedProbabilities():
+            cumulativeExclusiveFrequency = 0
+            symbolGroup = index >> 4
+            for indexPartial in xrange(self.lastPpmContext << 4, symbolGroup):
+                cumulativeExclusiveFrequency += self.rangesGrouped[indexPartial]
+            for indexPartial in xrange(symbolGroup << 4, index):
+                cumulativeExclusiveFrequency += self.rangesSingle[indexPartial]
+            mispredictedSymbolFrequency = \
+            self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
+            if nextSymbol > mispredictedSymbol:
+                cumulativeExclusiveFrequency -= mispredictedSymbolFrequency
+            rcHelper = self.rcRange / (self.rangesTotal[self.lastPpmContext]
+                                       - mispredictedSymbolFrequency)
+            self.addWithCarry(rcHelper * cumulativeExclusiveFrequency)
+            self.rcRange = rcHelper * self.rangesSingle[index]
+        else:
+            self.rcRange /= 255
+            self.addWithCarry(self.rcRange * (nextSymbol
+                - (1 if nextSymbol > mispredictedSymbol else 0)))
+        self.updateRecentCost(self.rangesSingle[index],
+            self.rangesTotal[self.lastPpmContext])
         self.updatePpm(index)
 
     def flush(self):

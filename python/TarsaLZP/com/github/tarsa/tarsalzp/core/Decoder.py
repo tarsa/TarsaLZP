@@ -127,30 +127,40 @@ class Decoder(Common):
     def decodeSymbol(self, mispredictedSymbol):
         self.normalize()
         self.computePpmContext()
-        mispredictedSymbolFrequency = \
-        self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
-        self.rcRange /= \
-        self.rangesTotal[self.lastPpmContext] - mispredictedSymbolFrequency
-        self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol] = 0
-        self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
-        >> 4] -= mispredictedSymbolFrequency
-        rcHelper = self.rcBuffer / self.rcRange
-        cumulativeFrequency = rcHelper
-        index = self.lastPpmContext << 4
-        while rcHelper >= self.rangesGrouped[index]:
-            rcHelper -= self.rangesGrouped[index]
-            index += 1
-        index <<= 4
-        while rcHelper >= self.rangesSingle[index]:
-            rcHelper -= self.rangesSingle[index]
-            index += 1
-        self.rcBuffer -= (cumulativeFrequency - rcHelper) * self.rcRange
-        self.rcRange *= self.rangesSingle[index]
-        nextSymbol = index & 0xff
-        self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol] = \
-        mispredictedSymbolFrequency
-        self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
-        >> 4] += mispredictedSymbolFrequency
+        if not self.useFixedProbabilities():
+            mispredictedSymbolFrequency = \
+            self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
+            self.rcRange /= \
+            self.rangesTotal[self.lastPpmContext] - mispredictedSymbolFrequency
+            self.rangesSingle[(self.lastPpmContext << 8)
+            + mispredictedSymbol] = 0
+            self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
+            >> 4] -= mispredictedSymbolFrequency
+            rcHelper = self.rcBuffer / self.rcRange
+            cumulativeFrequency = rcHelper
+            index = self.lastPpmContext << 4
+            while rcHelper >= self.rangesGrouped[index]:
+                rcHelper -= self.rangesGrouped[index]
+                index += 1
+            index <<= 4
+            while rcHelper >= self.rangesSingle[index]:
+                rcHelper -= self.rangesSingle[index]
+                index += 1
+            self.rcBuffer -= (cumulativeFrequency - rcHelper) * self.rcRange
+            self.rcRange *= self.rangesSingle[index]
+            nextSymbol = index & 0xff
+            self.rangesSingle[(self.lastPpmContext << 8)
+            + mispredictedSymbol] = mispredictedSymbolFrequency
+            self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
+            >> 4] += mispredictedSymbolFrequency
+        else:
+            self.rcRange /= 255
+            rcHelper = self.rcBuffer / self.rcRange
+            self.rcBuffer -= rcHelper * self.rcRange
+            nextSymbol = rcHelper + (1 if rcHelper >= mispredictedSymbol else 0)
+            index = (self.lastPpmContext << 8) + nextSymbol
+        self.updateRecentCost(self.rangesSingle[index],
+            self.rangesTotal[self.lastPpmContext])
         self.updatePpm(index)
         return nextSymbol
 
