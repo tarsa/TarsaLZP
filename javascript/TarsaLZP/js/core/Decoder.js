@@ -139,37 +139,50 @@ function newDecoder(inputStream, outputStream, options) {
     function _decodeSymbol(mispredictedSymbol) {
         _normalize();
         self.computePpmContext();
-        var mispredictedSymbolFrequency = self.getRangesSingle()[
-            (self.getLastPpmContext() << 8) + mispredictedSymbol];
-        rcRange = rcRange / (self.getRangesTotal()[self.getLastPpmContext()]
-            - mispredictedSymbolFrequency) >> 0;
-        self.getRangesSingle()[(self.getLastPpmContext() << 8)
-            + mispredictedSymbol] = 0;
-        self.getRangesGrouped()[((self.getLastPpmContext() << 8)
-            + mispredictedSymbol) >> 4] -=
-            mispredictedSymbolFrequency;
-        var rcHelper = rcBuffer / rcRange >> 0;
-        var cumulativeFrequency = rcHelper;
         var index;
-        for (index = self.getLastPpmContext() << 4;
-             rcHelper >= self.getRangesGrouped()[index]; index++) {
-            rcHelper -= self.getRangesGrouped()[index];
+        var nextSymbol;
+        var rcHelper;
+        if (!self.useFixedProbabilities()) {
+            var mispredictedSymbolFrequency = self.getRangesSingle()[
+                (self.getLastPpmContext() << 8) + mispredictedSymbol];
+            rcRange = rcRange / (self.getRangesTotal()[self.getLastPpmContext()]
+                - mispredictedSymbolFrequency) >> 0;
+            self.getRangesSingle()[(self.getLastPpmContext() << 8)
+                + mispredictedSymbol] = 0;
+            self.getRangesGrouped()[((self.getLastPpmContext() << 8)
+                + mispredictedSymbol) >> 4] -=
+                mispredictedSymbolFrequency;
+            rcHelper = rcBuffer / rcRange >> 0;
+            var cumulativeFrequency = rcHelper;
+            for (index = self.getLastPpmContext() << 4;
+                 rcHelper >= self.getRangesGrouped()[index]; index++) {
+                rcHelper -= self.getRangesGrouped()[index];
+            }
+            for (index <<= 4; rcHelper >= self.getRangesSingle()[index];
+                 index++) {
+                rcHelper -= self.getRangesSingle()[index];
+            }
+            rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
+            rcRange *= self.getRangesSingle()[index];
+            nextSymbol = index & 0xff;
+            self.getRangesSingle()[(self.getLastPpmContext() << 8)
+                + mispredictedSymbol] = mispredictedSymbolFrequency;
+            self.getRangesGrouped()[((self.getLastPpmContext() << 8)
+                + mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
+        } else {
+            rcRange = rcRange / 255 >> 0;
+            rcHelper = rcBuffer / rcRange >> 0;
+            rcBuffer -= rcHelper * rcRange;
+            nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
+            index = (self.getLastPpmContext() << 8) + nextSymbol;
         }
-        for (index <<= 4; rcHelper >= self.getRangesSingle()[index]; index++) {
-            rcHelper -= self.getRangesSingle()[index];
-        }
-        rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
-        rcRange *= self.getRangesSingle()[index];
-        var nextSymbol = index & 0xff;
-        self.getRangesSingle()[(self.getLastPpmContext() << 8)
-            + mispredictedSymbol] = mispredictedSymbolFrequency;
-        self.getRangesGrouped()[((self.getLastPpmContext() << 8)
-            + mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
+        self.updateRecentCost(self.getRangesSingle()[index],
+            self.getRangesTotal()[self.getLastPpmContext()]);
         self.updatePpm(index);
         return nextSymbol;
     }
 
-    self.decode = function(limit) {
+    self.decode = function (limit) {
         if (!started) {
             _init();
         }

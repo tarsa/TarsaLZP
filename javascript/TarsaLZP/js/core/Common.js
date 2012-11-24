@@ -55,6 +55,7 @@ function newCommon(options) {
         fillArray(lzpHigh, 0xffb5);
     }
     // PPM section
+    var CostScale = 7;
     var ppmMaskSize = ppmOrder * 8;
     var ppmMask = (1 << ppmMaskSize) - 1;
     var rangesSingle = new Int16Array(1 << ppmMaskSize + 8);
@@ -63,6 +64,7 @@ function newCommon(options) {
     fillArray(rangesGrouped, ppmInit * 16);
     var rangesTotal = new Int16Array(1 << ppmMaskSize);
     fillArray(rangesTotal, ppmInit * 256);
+    var recentCost = 8 << CostScale + 14;
     // SEE section
     var seeLow = new Int16Array(16 * 256);
     fillArray(seeLow, 0x4000);
@@ -517,6 +519,16 @@ function newCommon(options) {
         if (rangesTotal[self.getLastPpmContext()] > ppmLimit) {
             self.rescalePpm();
         }
+    };
+
+    self.useFixedProbabilities = function() {
+        return recentCost > 8 << CostScale + 14;
+    };
+
+    self.updateRecentCost = function(symbolFrequency, totalFrequency) {
+        recentCost -= recentCost >> CostScale;
+        recentCost += Lg2.nLog2(totalFrequency);
+        recentCost -= Lg2.nLog2(symbolFrequency);
     };
 
     return self;

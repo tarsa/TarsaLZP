@@ -99,9 +99,6 @@ Coder = (function() {
                 callback(amountProcessed);
             }
         }
-        if (callback != null) {
-            callback(amountProcessed);
-        }
     };
 
     self.encode = function(inputStream, outputStream, callback, intervalLength,
@@ -136,9 +133,6 @@ Coder = (function() {
             if (callback != null) {
                 callback(amountProcessed);
             }
-        }
-        if (callback != null) {
-            callback(amountProcessed);
         }
         encoder.flush();
     }
