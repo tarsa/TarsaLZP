@@ -20,11 +20,11 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>DebugP</name>
+                    <name>DebugO</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>ReleaseP</name>
+                    <name>ReleaseO</name>
                     <type>1</type>
                 </confElem>
             </confList>

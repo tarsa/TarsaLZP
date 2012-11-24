@@ -339,6 +339,10 @@ extern "C" {
         lzpLowMask = lzpLowCount - 1;
         lzpHighMask = lzpHighCount - 1;
         lzpLow = malloc(sizeof (uint16_t) * lzpLowCount);
+        if (lzpLow == NULL) {
+            err("Memory allocation failure.");
+            exit(EXIT_FAILURE);
+        }
         for (int32_t i = 0; i < lzpLowCount; i++) {
             lzpLow[i] = 0xffb5;
         }
@@ -348,6 +352,10 @@ extern "C" {
             lzpHigh = NULL;
         } else {
             lzpHigh = malloc(sizeof (uint16_t) * lzpHighCount);
+            if (lzpHigh == NULL) {
+                err("Memory allocation failure.");
+                exit(EXIT_FAILURE);
+            }
             for (int32_t i = 0; i < lzpHighCount; i++) {
                 lzpHigh[i] = 0xffb5;
             }
@@ -357,16 +365,28 @@ extern "C" {
         ppmMask = (1 << ppmMaskSize) - 1;
         int32_t const rangesSingleCount = 1 << ppmMaskSize + 8;
         rangesSingle = malloc(sizeof (int16_t) * rangesSingleCount);
+        if (rangesSingle == NULL) {
+            err("Memory allocation failure.");
+            exit(EXIT_FAILURE);
+        }
         for (int32_t i = 0; i < rangesSingleCount; i++) {
             rangesSingle[i] = ppmInit;
         }
         int32_t const rangesGroupedCount = 1 << ppmMaskSize + 4;
         rangesGrouped = malloc(sizeof (int16_t) * rangesGroupedCount);
+        if (rangesGrouped == NULL) {
+            err("Memory allocation failure.");
+            exit(EXIT_FAILURE);
+        }
         for (int32_t i = 0; i < rangesGroupedCount; i++) {
             rangesGrouped[i] = ppmInit * 16;
         }
         int32_t const rangesTotalCount = 1 << ppmMaskSize;
         rangesTotal = malloc(sizeof (int16_t) * rangesTotalCount);
+        if (rangesTotal == NULL) {
+            err("Memory allocation failure.");
+            exit(EXIT_FAILURE);
+        }
         for (int32_t i = 0; i < rangesTotalCount; i++) {
             rangesTotal[i] = ppmInit * 256;
         }
@@ -419,7 +439,7 @@ extern "C" {
             localContext >>= 8;
         }
         hashLowNext = hash & lzpLowMask;
-#ifdef GCC_PREFETCH
+#ifndef NO_PREFETCH
         __builtin_prefetch(lzpLow + hashLowNext, 0, 2);
 #endif
     }    
@@ -450,7 +470,7 @@ extern "C" {
             localContext >>= 8;
         }
         hashLowNext = hash & lzpLowMask;
-#ifdef GCC_PREFETCH
+#ifndef NO_PREFETCH
         __builtin_prefetch(lzpLow + hashLowNext);
 #endif
         for (int32_t i = lzpLowContextLength; i < lzpHighContextLength; i++) {
@@ -459,7 +479,7 @@ extern "C" {
             localContext >>= 8;
         }
         hashHighNext = hash & lzpHighMask;
-#ifdef GCC_PREFETCH
+#ifndef NO_PREFETCH
         __builtin_prefetch(lzpHigh + hashHighNext);
 #endif
     }

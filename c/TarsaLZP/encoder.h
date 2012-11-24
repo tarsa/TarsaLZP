@@ -56,7 +56,9 @@ extern "C" {
         lastOutputByte = 0;
         delay = false;
         carry = false;
+#ifndef NO_PREFETCH
         computeHashesForNextIteration(0);
+#endif
     }
 
     void encoderOutputByte(int32_t const octet) {
@@ -227,4 +229,3 @@ extern "C" {
 #endif
 
 #endif	/* ENCODER_H */
-

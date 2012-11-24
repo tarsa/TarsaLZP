@@ -37,6 +37,7 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "err.h"
 #include "streams.h"
 
 #ifdef	__cplusplus
@@ -56,7 +57,7 @@ extern "C" {
     int32_t decoderInputByte() {
         int32_t const inputByte = inputRead();
         if (inputByte == -1) {
-            fputs("Unexpected end of file.", stderr);
+            err("Unexpected end of file.");
             exit(EXIT_FAILURE);
         }
         int32_t const currentByte = (inputByte >> 1) + (nextHighBit << 7);

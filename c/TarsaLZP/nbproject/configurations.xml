@@ -8,6 +8,7 @@
       <itemPath>common.h</itemPath>
       <itemPath>decoder.h</itemPath>
       <itemPath>encoder.h</itemPath>
+      <itemPath>err.h</itemPath>
       <itemPath>options.h</itemPath>
       <itemPath>streams.h</itemPath>
     </logicalFolder>
@@ -41,15 +42,22 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <stripSymbols>true</stripSymbols>
           <standard>3</standard>
           <commandLine>-march=native</commandLine>
+          <preprocessorList>
+            <Elem>NO_PREFETCH</Elem>
+            <Elem>NO_VECTOR</Elem>
+          </preprocessorList>
           <warningLevel>3</warningLevel>
         </cTool>
         <ccTool>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </ccTool>
         <fortranCompilerTool>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </fortranCompilerTool>
@@ -57,6 +65,9 @@
           <warningLevel>3</warningLevel>
           <commandLine>-march=native</commandLine>
         </asmTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
     </conf>
     <conf name="Release" type="1">
@@ -67,17 +78,24 @@
       <compileType>
         <cTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <standard>3</standard>
           <commandLine>-march=native</commandLine>
+          <preprocessorList>
+            <Elem>NO_PREFETCH</Elem>
+            <Elem>NO_VECTOR</Elem>
+          </preprocessorList>
           <warningLevel>3</warningLevel>
         </cTool>
         <ccTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </fortranCompilerTool>
@@ -86,27 +104,30 @@
           <warningLevel>3</warningLevel>
           <commandLine>-march=native</commandLine>
         </asmTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
     </conf>
-    <conf name="DebugP" type="1">
+    <conf name="DebugO" type="1">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
       </toolsSet>
       <compileType>
         <cTool>
+          <stripSymbols>true</stripSymbols>
           <standard>3</standard>
           <commandLine>-march=native</commandLine>
-          <preprocessorList>
-            <Elem>GCC_PREFETCH</Elem>
-          </preprocessorList>
           <warningLevel>3</warningLevel>
         </cTool>
         <ccTool>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </ccTool>
         <fortranCompilerTool>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </fortranCompilerTool>
@@ -114,9 +135,12 @@
           <warningLevel>3</warningLevel>
           <commandLine>-march=native</commandLine>
         </asmTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
     </conf>
-    <conf name="ReleaseP" type="1">
+    <conf name="ReleaseO" type="1">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
@@ -124,20 +148,20 @@
       <compileType>
         <cTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <standard>3</standard>
           <commandLine>-march=native</commandLine>
-          <preprocessorList>
-            <Elem>GCC_PREFETCH</Elem>
-          </preprocessorList>
           <warningLevel>3</warningLevel>
         </cTool>
         <ccTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
           <commandLine>-march=native</commandLine>
           <warningLevel>3</warningLevel>
         </fortranCompilerTool>
@@ -146,6 +170,9 @@
           <warningLevel>3</warningLevel>
           <commandLine>-march=native</commandLine>
         </asmTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
       </compileType>
     </conf>
   </confs>

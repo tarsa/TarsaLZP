@@ -38,6 +38,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "err.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -90,11 +92,15 @@ extern "C" {
     void outputFlush() {
         if ((!outputWriteStarted) && outputWriteToFile) {
             output = fopen(outputWriteFilename, "wb");
+            if (output == NULL) {
+                err("Can't open output file.");
+                exit(EXIT_FAILURE);
+            }
         }
         outputWriteStarted = true;
         if (fwrite(outputBuffer, 1, outputBufferPosition, output)
                 != outputBufferPosition) {
-            fputs("Error while writing to output.", stderr);
+            err("Error while writing to output.");
             exit(EXIT_FAILURE);
         };
         outputBufferPosition = 0;
@@ -114,4 +120,3 @@ extern "C" {
 #endif
 
 #endif	/* STREAMS_H */
-

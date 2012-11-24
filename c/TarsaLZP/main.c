@@ -34,13 +34,9 @@
 #include <string.h>
 
 #include "coder.h"
+#include "err.h"
 #include "options.h"
 #include "streams.h"
-
-void err(char const * const output) {
-    fputs(output, stderr);
-    fputs("\n", stderr);
-}
 
 void printHelp() {
     err("Syntax: command [option=value]*");
@@ -107,6 +103,10 @@ void mainEncode(int const argc, char const * const * const argv) {
         if (strncmp(arg, "fi=", 3) == 0) {
             checkParameter(&inputFileSet);
             input = fopen(arg + 3, "rb");
+            if (input == NULL) {
+                err("Can't open input file.");
+                exit(EXIT_FAILURE);
+            }
         } else if (strncmp(arg, "fo=", 3) == 0) {
             checkParameter(&outputFileSet);
             outputWriteFilename = arg + 3;
@@ -163,6 +163,10 @@ void mainDecode(int const argc, char const * const * const argv) {
         if (strncmp(arg, "fi=", 3) == 0) {
             checkParameter(&inputFileSet);
             input = fopen(arg + 3, "rb");
+            if (input == NULL) {
+                err("Can't open input file.");
+                exit(EXIT_FAILURE);
+            }
         } else if (strncmp(arg, "fo=", 3) == 0) {
             checkParameter(&outputFileSet);
             outputWriteFilename = arg + 3;
@@ -195,6 +199,10 @@ void showOptions(int const argc, char const * const * const argv) {
         if (strncmp(arg, "fi=", 3) == 0) {
             checkParameter(&inputFileSet);
             input = fopen(arg + 3, "rb");
+            if (input == NULL) {
+                err("Can't open input file.");
+                exit(EXIT_FAILURE);
+            }
         } else {
             fprintf(stderr, "Not suitable or unknown option: %s\n", arg);
             exit(EXIT_FAILURE);

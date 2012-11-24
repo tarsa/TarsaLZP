@@ -5,5 +5,5 @@
 #
 # Debug configuration
 # Release configuration
-# DebugP configuration
-# ReleaseP configuration
+# DebugO configuration
+# ReleaseO configuration

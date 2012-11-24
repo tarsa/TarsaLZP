@@ -70,7 +70,7 @@
         </environment>
       </runprofile>
     </conf>
-    <conf name="DebugP" type="1">
+    <conf name="DebugO" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <platform>2</platform>
@@ -104,7 +104,7 @@
         </environment>
       </runprofile>
     </conf>
-    <conf name="ReleaseP" type="1">
+    <conf name="ReleaseO" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <platform>2</platform>

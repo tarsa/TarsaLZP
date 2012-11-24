@@ -36,10 +36,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "streams.h"
-#include "options.h"
 #include "encoder.h"
+#include "err.h"
 #include "decoder.h"
+#include "options.h"
+#include "streams.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -53,14 +54,14 @@ extern "C" {
             packedOptions <<= 8;
             int32_t const inputByte = inputRead();
             if (inputByte == -1) {
-                fputs("Unexpected end of file.", stderr);
+                err("Unexpected end of file.");
                 exit(EXIT_FAILURE);
             }
             packedOptions |= inputByte;
         }
         optionsLoad(packedOptions);
         if (!optionsValid()) {
-            fputs("Invalid compression options.", stderr);
+            err("Invalid compression options.");
             exit(EXIT_FAILURE);
         }
     }
@@ -71,13 +72,13 @@ extern "C" {
             header <<= 8;
             int32_t const inputByte = inputRead();
             if (inputByte == -1) {
-                fputs("Unexpected end of file.", stderr);
+                err("Unexpected end of file.");
                 exit(EXIT_FAILURE);
             }
             header |= inputByte;
         }
         if (header != HeaderValue) {
-            fputs("Wrong file header. Probably not a compressed file.", stderr);
+            err("Wrong file header. Probably not a compressed file.");
             exit(EXIT_FAILURE);
         }
         coderReadOptionsHeaderless();
@@ -120,4 +121,3 @@ extern "C" {
 #endif
 
 #endif	/* CODER_H */
-
