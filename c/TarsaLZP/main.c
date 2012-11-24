@@ -45,6 +45,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include "coder.h"
 #include "err.h"
 #include "options.h"
@@ -155,6 +160,14 @@ void mainEncode(int const argc, char const * const * const argv) {
         err("Wrong encoding options combination.");
         exit(EXIT_FAILURE);
     }
+#ifdef _WIN32
+    if (input == stdin) {
+        setmode(fileno(stdin), O_BINARY);
+    }
+    if (output == stdout) {
+        setmode(fileno(stdout), O_BINARY);
+    }
+#endif        
     coderEncode();
     outputFlush();
     fclose(input);
@@ -188,6 +201,14 @@ void mainDecode(int const argc, char const * const * const argv) {
             exit(EXIT_FAILURE);
         }
     }
+#ifdef _WIN32
+    if (input == stdin) {
+        setmode(fileno(stdin), O_BINARY);
+    }
+    if (output == stdout) {
+        setmode(fileno(stdout), O_BINARY);
+    }
+#endif        
     coderDecode();
     outputFlush();
     bool const allDecoded = inputRead() == -1;
@@ -220,6 +241,11 @@ void showOptions(int const argc, char const * const * const argv) {
             exit(EXIT_FAILURE);
         }
     }
+#ifdef _WIN32
+    if (input == stdin) {
+        setmode(fileno(stdin), O_BINARY);
+    }
+#endif        
     coderReadOptions();
     fclose(input);
     fprintf(stderr, "lzpLowContextLength=%d\n", lzpLowContextLength);
