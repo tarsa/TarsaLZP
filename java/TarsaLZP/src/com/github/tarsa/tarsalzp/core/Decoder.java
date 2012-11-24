@@ -152,30 +152,40 @@ public final class Decoder extends Common {
     private int decodeSymbol(final int mispredictedSymbol) throws IOException {
         normalize();
         computePpmContext();
-        final short mispredictedSymbolFrequency =
-                rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol];
-        rcRange /= rangesTotal[getLastPpmContext()]
-                - mispredictedSymbolFrequency;
-        rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] = 0;
-        rangesGrouped[((getLastPpmContext() << 8) + mispredictedSymbol) >> 4] -=
-                mispredictedSymbolFrequency;
-        int rcHelper = rcBuffer / rcRange;
-        final int cumulativeFrequency = rcHelper;
         int index;
-        for (index = getLastPpmContext() << 4; rcHelper >= rangesGrouped[index];
-                index++) {
-            rcHelper -= rangesGrouped[index];
+        int nextSymbol;
+        if (!useFixedProbabilities()) {
+            final short mispredictedSymbolFrequency = rangesSingle[
+                    (getLastPpmContext() << 8) + mispredictedSymbol];
+            rcRange /= rangesTotal[getLastPpmContext()]
+                    - mispredictedSymbolFrequency;
+            rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] = 0;
+            rangesGrouped[((getLastPpmContext() << 8) + 
+                    mispredictedSymbol) >> 4] -= mispredictedSymbolFrequency;
+            int rcHelper = rcBuffer / rcRange;
+            final int cumulativeFrequency = rcHelper;
+            for (index = getLastPpmContext() << 4; rcHelper 
+                    >= rangesGrouped[index]; index++) {
+                rcHelper -= rangesGrouped[index];
+            }
+            for (index <<= 4; rcHelper >= rangesSingle[index]; index++) {
+                rcHelper -= rangesSingle[index];
+            }
+            rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
+            rcRange *= rangesSingle[index];
+            nextSymbol = index & 0xff;
+            rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] =
+                    mispredictedSymbolFrequency;
+            rangesGrouped[((getLastPpmContext() << 8) + 
+                    mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
+        } else {
+            rcRange /= 255;
+            final int rcHelper = rcBuffer / rcRange;
+            rcBuffer -= rcHelper * rcRange;
+            nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
+            index = (getLastPpmContext() << 8) + nextSymbol;
         }
-        for (index <<= 4; rcHelper >= rangesSingle[index]; index++) {
-            rcHelper -= rangesSingle[index];
-        }
-        rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
-        rcRange *= rangesSingle[index];
-        final int nextSymbol = index & 0xff;
-        rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] =
-                mispredictedSymbolFrequency;
-        rangesGrouped[((getLastPpmContext() << 8) + mispredictedSymbol) >> 4] +=
-                mispredictedSymbolFrequency;
+        updateRecentCost(rangesSingle[index], rangesTotal[getLastPpmContext()]);
         updatePpm(index);
         return nextSymbol;
     }

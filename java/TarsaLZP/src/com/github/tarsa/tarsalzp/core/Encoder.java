@@ -79,7 +79,7 @@ public final class Encoder extends Common {
             rcRange <<= 8;
         }
     }
-    
+
     private void addWithCarry(final int cumulativeExclusiveFraction) {
         rcBuffer += cumulativeExclusiveFraction;
         if (rcBuffer < 0) {
@@ -165,25 +165,32 @@ public final class Encoder extends Common {
         normalize();
         computePpmContext();
         final int index = (getLastPpmContext() << 8) + nextSymbol;
-        short cumulativeExclusiveFrequency = 0;
-        final int symbolGroup = index >> 4;
-        for (int indexPartial = getLastPpmContext() << 4;
-                indexPartial < symbolGroup; indexPartial++) {
-            cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
+        if (!useFixedProbabilities()) {
+            short cumulativeExclusiveFrequency = 0;
+            final int symbolGroup = index >> 4;
+            for (int indexPartial = getLastPpmContext() << 4;
+                    indexPartial < symbolGroup; indexPartial++) {
+                cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
+            }
+            for (int indexPartial = symbolGroup << 4; indexPartial < index;
+                    indexPartial++) {
+                cumulativeExclusiveFrequency += rangesSingle[indexPartial];
+            }
+            final short mispredictedSymbolFrequency = rangesSingle[
+                    (getLastPpmContext() << 8) + mispredictedSymbol];
+            if (nextSymbol > mispredictedSymbol) {
+                cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
+            }
+            final int rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
+                    - mispredictedSymbolFrequency);
+            addWithCarry(rcHelper * cumulativeExclusiveFrequency);
+            rcRange = rcHelper * rangesSingle[index];
+        } else {
+            rcRange /= 255;
+            addWithCarry(rcRange *
+                    (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
-        for (int indexPartial = symbolGroup << 4; indexPartial < index;
-                indexPartial++) {
-            cumulativeExclusiveFrequency += rangesSingle[indexPartial];
-        }
-        final short mispredictedSymbolFrequency =
-                rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol];
-        if (nextSymbol > mispredictedSymbol) {
-            cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
-        }
-        final int rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
-                - mispredictedSymbolFrequency);
-        addWithCarry(rcHelper * cumulativeExclusiveFrequency);
-        rcRange = rcHelper * rangesSingle[index];
+        updateRecentCost(rangesSingle[index], rangesTotal[getLastPpmContext()]);
         updatePpm(index);
     }
 

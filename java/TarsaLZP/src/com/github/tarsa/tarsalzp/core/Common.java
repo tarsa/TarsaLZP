@@ -60,11 +60,13 @@ abstract class Common {
     private final short[] lzpLow;
     private final short[] lzpHigh;
     // PPM section
+    private final int CostScale = 7;
     private final int ppmMaskSize;
     private final int ppmMask;
     final short[] rangesSingle;
     final short[] rangesGrouped;
     final short[] rangesTotal;
+    private int recentCost;
     // SEE section
     private final short[] seeLow;
     private final short[] seeHigh;
@@ -105,6 +107,7 @@ abstract class Common {
         Arrays.fill(rangesSingle, (short) (ppmInit));
         Arrays.fill(rangesGrouped, (short) (ppmInit * 16));
         Arrays.fill(rangesTotal, (short) (ppmInit * 256));
+        recentCost = 8 << CostScale + 14;
         // SEE init
         seeLow = new short[16 * 256];
         Arrays.fill(seeLow, (short) 0x4000);
@@ -129,7 +132,7 @@ abstract class Common {
     void computePpmContext() {
         lastPpmContext = (int) (context & ppmMask);
     }
-    
+
     void computeHashesOnlyLowLzp() {
         long localContext = context;
         int hash = -2128831035;
@@ -441,7 +444,7 @@ abstract class Common {
         return lzpHigh[hashHigh] & 0xff;
     }
 
-    void updateLzpStateLow(final int lzpStateLow, final int input, 
+    void updateLzpStateLow(final int lzpStateLow, final int input,
             final boolean match) {
         lzpLow[hashLow] = (short) ((getNextState(lzpStateLow, match) << 8)
                 + input);
@@ -521,6 +524,16 @@ abstract class Common {
         if (rangesTotal[getLastPpmContext()] > ppmLimit) {
             rescalePpm();
         }
+    }
+
+    boolean useFixedProbabilities() {
+        return recentCost > 8 << CostScale + 14;
+    }
+
+    void updateRecentCost(final int symbolFrequency, final int totalFrequency) {
+        recentCost -= recentCost >> CostScale;
+        recentCost += Lg2.nLog2(totalFrequency);
+        recentCost -= Lg2.nLog2(symbolFrequency);
     }
     // </editor-fold>  
 }
