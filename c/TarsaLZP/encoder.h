@@ -201,8 +201,12 @@ extern "C" {
     }
 
     void encodeSingleOnlyLowLzp(int32_t const nextSymbol) {
+#ifndef NO_PREFETCH
         shiftHashesOnlyLowLzp();
         computeHashesOnlyLowLzpForNextIteration(nextSymbol);
+#else
+        computeHashesOnlyLowLzp();
+#endif
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
         int32_t const modelLowFrequency = getSeeLow(lzpStateLow);
@@ -217,8 +221,12 @@ extern "C" {
     }
 
     void encodeSingle(int32_t const nextSymbol) {
+#ifndef NO_PREFETCH
         shiftHashes();
         computeHashesForNextIteration(nextSymbol);
+#else
+        computeHashes();
+#endif
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
         int32_t const modelLowFrequency = getSeeLow(lzpStateLow);

@@ -9,6 +9,7 @@
       <itemPath>decoder.h</itemPath>
       <itemPath>encoder.h</itemPath>
       <itemPath>err.h</itemPath>
+      <itemPath>lg2.h</itemPath>
       <itemPath>options.h</itemPath>
       <itemPath>streams.h</itemPath>
     </logicalFolder>
