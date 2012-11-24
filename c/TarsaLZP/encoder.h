@@ -35,6 +35,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#ifndef NO_VECTOR
+#include <xmmintrin.h>
+#endif
 
 #include "common.h"
 #include "streams.h"
@@ -42,7 +45,15 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
+
+#ifndef NO_VECTOR
+
+    union {
+        uint16_t w[8];
+        __m128i v8;
+    } __attribute__((aligned(128))) masksA[16], masksB[16];
+#endif
+
     int32_t xFFRunLength;
     int32_t lastOutputByte;
     bool delay;
@@ -58,6 +69,16 @@ extern "C" {
         carry = false;
 #ifndef NO_PREFETCH
         computeHashesForNextIteration(0);
+#endif
+#ifndef NO_VECTOR
+        for (int32_t i = 0; i < 16; i++) {
+            for (int32_t j = 0; j < 8; j++) {
+                masksA[i].w[j] = j < i ? 0xffff : 0x0000;
+            }
+            for (int32_t j = 0; j < 8; j++) {
+                masksB[i].w[j] = j < i - 8 ? 0xffff : 0x0000;
+            }
+        }
 #endif
     }
 
@@ -85,7 +106,7 @@ extern "C" {
             rcRange <<= 8;
         }
     }
-    
+
     void encoderAddWithCarry(int32_t const cumulativeExclusiveFraction) {
         rcBuffer += cumulativeExclusiveFraction;
         if (rcBuffer < 0) {
@@ -120,25 +141,62 @@ extern "C" {
         encoderNormalize();
         computePpmContext();
         int32_t const index = (lastPpmContext << 8) + nextSymbol;
-        int16_t cumulativeExclusiveFrequency = 0;
-        int32_t const symbolGroup = index >> 4;
-        for (int32_t indexPartial = lastPpmContext << 4;
-                indexPartial < symbolGroup; indexPartial++) {
-            cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
+        if (!useFixedProbabilities()) {
+            int16_t cumulativeExclusiveFrequency = 0;
+            int32_t const symbolGroup = index >> 4;
+#ifndef NO_VECTOR
+
+            union {
+                __v8hi v8;
+                __v16qi v16;
+                __m128i m;
+                uint32_t v[4];
+            } a, b, c;
+            a.m = __builtin_ia32_pxor128(a.m, a.m);
+            b.m = masksA[symbolGroup & 15].v8;
+            c.v8 = *(__v8hi*) (rangesGrouped + (lastPpmContext << 4));
+            b.m = __builtin_ia32_pand128(b.m, c.m);
+            a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
+            b.m = masksB[symbolGroup & 15].v8;
+            c.v8 = *(__v8hi*) (rangesGrouped + (lastPpmContext << 4) + 8);
+            b.m = __builtin_ia32_pand128(b.m, c.m);
+            a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
+            b.m = masksA[nextSymbol & 15].v8;
+            c.v8 = *(__v8hi*) (rangesSingle + (symbolGroup << 4));
+            b.m = __builtin_ia32_pand128(b.m, c.m);
+            a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
+            b.m = masksB[nextSymbol & 15].v8;
+            c.v8 = *(__v8hi*) (rangesSingle + (symbolGroup << 4) + 8);
+            b.m = __builtin_ia32_pand128(b.m, c.m);
+            a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
+            uint32_t const packedSum = a.v[0] + a.v[1] + a.v[2] + a.v[3];
+            cumulativeExclusiveFrequency += (packedSum & 0xffff)
+                    + (packedSum >> 16);
+#else
+            for (int32_t indexPartial = lastPpmContext << 4;
+                    indexPartial < symbolGroup; indexPartial++) {
+                cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
+            }
+            for (int32_t indexPartial = symbolGroup << 4; indexPartial < index;
+                    indexPartial++) {
+                cumulativeExclusiveFrequency += rangesSingle[indexPartial];
+            }
+#endif
+            int16_t const mispredictedSymbolFrequency =
+                    rangesSingle[(lastPpmContext << 8) + mispredictedSymbol];
+            if (nextSymbol > mispredictedSymbol) {
+                cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
+            }
+            int32_t const rcHelper = rcRange / (rangesTotal[lastPpmContext]
+                    - mispredictedSymbolFrequency);
+            encoderAddWithCarry(rcHelper * cumulativeExclusiveFrequency);
+            rcRange = rcHelper * rangesSingle[index];
+        } else {
+            rcRange /= 255;
+            encoderAddWithCarry(rcRange *
+                    (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
-        for (int32_t indexPartial = symbolGroup << 4; indexPartial < index;
-                indexPartial++) {
-            cumulativeExclusiveFrequency += rangesSingle[indexPartial];
-        }
-        int16_t const mispredictedSymbolFrequency =
-                rangesSingle[(lastPpmContext << 8) + mispredictedSymbol];
-        if (nextSymbol > mispredictedSymbol) {
-            cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
-        }
-        int32_t const rcHelper = rcRange / (rangesTotal[lastPpmContext]
-                - mispredictedSymbolFrequency);
-        encoderAddWithCarry(rcHelper * cumulativeExclusiveFrequency);
-        rcRange = rcHelper * rangesSingle[index];
+        updateRecentCost(rangesSingle[index], rangesTotal[lastPpmContext]);
         updatePpm(index);
     }
 

@@ -35,12 +35,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
+#include "err.h"
+#include "lg2.h"
 #include "options.h"
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#define CostScale 7
 
     // LZP section
     bool onlyLowLzp;
@@ -54,6 +59,7 @@ extern "C" {
     int16_t * rangesSingle;
     int16_t * rangesGrouped;
     int16_t * rangesTotal;
+    int32_t recentCost;
     // SEE section
     int32_t historyLow;
     int32_t historyHigh;
@@ -390,6 +396,7 @@ extern "C" {
         for (int32_t i = 0; i < rangesTotalCount; i++) {
             rangesTotal[i] = ppmInit * 256;
         }
+        recentCost = 8 << CostScale + 14;
         // SEE init
         historyLow = 0;
         historyHigh = 0;
@@ -427,9 +434,9 @@ extern "C" {
             hash = hash ^ (int32_t) (localContext & 0xFF);
             localContext >>= 8;
         }
-        hashLow = hash & lzpLowMask;        
+        hashLow = hash & lzpLowMask;
     }
-    
+
     void computeHashesOnlyLowLzpForNextIteration(int32_t const nextSymbol) {
         uint64_t localContext = context << 8 | nextSymbol;
         int32_t hash = -2128831035;
@@ -442,7 +449,7 @@ extern "C" {
 #ifndef NO_PREFETCH
         __builtin_prefetch(lzpLow + hashLowNext, 0, 2);
 #endif
-    }    
+    }
 
     void computeHashes() {
         uint64_t localContext = context;
@@ -460,7 +467,7 @@ extern "C" {
         }
         hashHigh = hash & lzpHighMask;
     }
-    
+
     void computeHashesForNextIteration(int32_t const nextSymbol) {
         uint64_t localContext = context << 8 | nextSymbol;
         int32_t hash = -2128831035;
@@ -483,12 +490,12 @@ extern "C" {
         __builtin_prefetch(lzpHigh + hashHighNext);
 #endif
     }
-    
+
     void shiftHashes() {
         hashLow = hashLowNext;
         hashHigh = hashHighNext;
     }
-    
+
     void shiftHashesOnlyLowLzp() {
         hashLow = hashLowNext;
     }
@@ -595,6 +602,17 @@ extern "C" {
         if (rangesTotal[lastPpmContext] > ppmLimit) {
             rescalePpm();
         }
+    }
+
+    bool useFixedProbabilities() {
+        return recentCost > 8 << CostScale + 14;
+    }
+
+    void updateRecentCost(int32_t const symbolFrequency,
+            int32_t const totalFrequency) {
+        recentCost -= recentCost >> CostScale;
+        recentCost += nLog2(totalFrequency);
+        recentCost -= nLog2(symbolFrequency);
     }
 
 #ifdef	__cplusplus

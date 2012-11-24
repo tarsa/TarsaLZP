@@ -29,6 +29,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef NO_PREFETCH
+#pragma message "Prefetching enabled"
+#else
+#pragma message "Prefetching disabled"
+#endif
+
+#ifndef NO_VECTOR
+#pragma message "Vector optimizations enabled"
+#else
+#pragma message "Vector optimizations disabled"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
