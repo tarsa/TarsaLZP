@@ -40,7 +40,7 @@ function newEncoder(inputStream, outputStream, options) {
     var self = Object.create(_super);
 
     function _outputByte(octet) {
-        if (octet != 0xff) {
+        if (octet != 0xff || carry) {
             if (delay) {
                 outputStream.write(lastOutputByte + (carry ? 1 : 0));
             }

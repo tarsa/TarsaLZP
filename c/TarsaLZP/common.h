@@ -508,19 +508,19 @@ extern "C" {
 
     // LZP stuff
 
-    int getLzpStateLow() {
+    int32_t getLzpStateLow() {
         return (lzpLow[hashLow] >> 8) & 0xff;
     }
 
-    int getLzpStateHigh() {
+    int32_t getLzpStateHigh() {
         return (lzpHigh[hashHigh] >> 8) & 0xff;
     }
 
-    int getLzpPredictedSymbolLow() {
+    int32_t getLzpPredictedSymbolLow() {
         return lzpLow[hashLow] & 0xff;
     }
 
-    int getLzpPredictedSymbolHigh() {
+    int32_t getLzpPredictedSymbolHigh() {
         return lzpHigh[hashHigh] & 0xff;
     }
 

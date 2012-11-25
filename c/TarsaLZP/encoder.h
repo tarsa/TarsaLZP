@@ -83,7 +83,7 @@ extern "C" {
     }
 
     void encoderOutputByte(int32_t const octet) {
-        if (octet != 0xff) {
+        if (octet != 0xff || carry) {
             if (delay) {
                 outputWrite(lastOutputByte + (carry ? 1 : 0));
             }

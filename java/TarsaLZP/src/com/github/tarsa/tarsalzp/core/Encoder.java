@@ -56,7 +56,7 @@ public final class Encoder extends Common {
     }
 
     private void outputByte(final int octet) throws IOException {
-        if (octet != 0xff) {
+        if (octet != 0xff || carry) {
             if (delay) {
                 outputStream.write(lastOutputByte + (carry ? 1 : 0));
             }

@@ -44,7 +44,7 @@ class Encoder(Common):
         self.carry = False
 
     def outputByte(self, octet):
-        if octet != 0xff:
+        if octet != 0xff or self.carry:
             if self.delay:
                 self.outputStream.writeByte(self.lastOutputByte +
                                             (1 if self.carry else 0))
