@@ -64,13 +64,10 @@ class Encoder(Common):
             self.rcRange <<= 8
 
     def addWithCarry(self, value):
-        distanceToMax = 0x7fffffff - self.rcBuffer
-        if value > distanceToMax:
-            self.rcBuffer = ((self.rcBuffer & 0x3fffffff) +
-            (value & 0x3fffffff)) ^ ((self.rcBuffer ^ value) & 0x40000000)
+        self.rcBuffer += value
+        if self.rcBuffer > 0x7fffffff:
             self.carry = True
-        else:
-            self.rcBuffer += value
+            self.rcBuffer &= 0x7fffffff
 
     def encodeFlag(self, probability, match):
         self.normalize()

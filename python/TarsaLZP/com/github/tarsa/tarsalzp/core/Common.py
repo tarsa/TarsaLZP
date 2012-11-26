@@ -323,14 +323,13 @@ class Common(object):
             self.lzpHigh = array.array("H",
                 (0xffb5 for _ in xrange(0, lzpHighCount)))
         # PPM init
-        self.ppmMaskSize = 8 * self.ppmOrder
-        self.ppmMask = (1 << self.ppmMaskSize) - 1
+        ppmMaskSize = 8 * self.ppmOrder
         self.rangesSingle = array.array("H",
-            (self.ppmInit for _ in xrange(0, 1 << (self.ppmMaskSize + 8))))
+            (self.ppmInit for _ in xrange(0, 1 << (ppmMaskSize + 8))))
         self.rangesGrouped = array.array("H",
-            (self.ppmInit * 16 for _ in xrange(0, 1 << (self.ppmMaskSize + 4))))
+            (self.ppmInit * 16 for _ in xrange(0, 1 << (ppmMaskSize + 4))))
         self.rangesTotal = array.array("H",
-            (self.ppmInit * 256 for _ in xrange(0, 1 << self.ppmMaskSize)))
+            (self.ppmInit * 256 for _ in xrange(0, 1 << ppmMaskSize)))
         self.recentCost = 8 << self.CostScale + 14
         # SEE init
         self.seeLow = array.array("H", (0x4000 for _ in xrange(0, 16 * 256)))
@@ -341,7 +340,8 @@ class Common(object):
                 (0x4000 for _ in xrange(0, 16 * 256)))
         # Contexts and hashes
         self.lastPpmContext = 0
-        self.context = Long(0, 0, 0, 0)
+        self.context = array.array("B", (0 for _ in xrange(0, 8)))
+        self.contextIndex = 0
         self.hashLow = 0
         self.hashHigh = 0
         # SEE stuff
@@ -353,41 +353,42 @@ class Common(object):
     # Contexts and hashes
 
     def updateContext(self, input):
-        self.context.shl8()
-        self.context.d |= input
+        self.contextIndex = (self.contextIndex - 1) & 7
+        self.context[self.contextIndex] = input
 
     def computePpmContext(self):
-        self.lastPpmContext = self.context.d & self.ppmMask
+        self.lastPpmContext = self.context[self.contextIndex]
+        if self.ppmOrder == 2:
+            self.lastPpmContext = (self.lastPpmContext << 8) \
+            + self.context[(self.contextIndex + 1) & 7]
 
     def computeHashesOnlyLowLzp(self):
-        localContext = Long(self.context.a, self.context.b, self.context.c,
-            self.context.d)
+        localIndex = self.contextIndex
         hash = 2166136261
         for i in xrange(0, self.lzpLowContextLength):
             newHash = hash * 16777619
-            newHash ^= localContext.d & 0xff
+            newHash ^= self.context[localIndex]
             newHash &= 0x3fffffff
             hash = newHash
-            localContext.shr8()
+            localIndex = (localIndex + 1) & 7
         self.hashLow = hash & self.lzpLowMask
 
     def computeHashes(self):
-        localContext = Long(self.context.a, self.context.b, self.context.c,
-            self.context.d)
+        localIndex = self.contextIndex
         hash = 2166136261
         for i in xrange(0, self.lzpLowContextLength):
             newHash = hash * 16777619
-            newHash ^= localContext.d & 0xff
+            newHash ^= self.context[localIndex]
             newHash &= 0x3fffffff
             hash = newHash
-            localContext.shr8()
+            localIndex = (localIndex + 1) & 7
         self.hashLow = hash & self.lzpLowMask
         for i in xrange(self.lzpLowContextLength, self.lzpHighContextLength):
             newHash = hash * 16777619
-            newHash ^= localContext.d & 0xff
+            newHash ^= self.context[localIndex]
             newHash &= 0x3fffffff
             hash = newHash
-            localContext.shr8()
+            localIndex = (localIndex + 1) & 7
         self.hashHigh = hash & self.lzpHighMask
 
     # Calculating states

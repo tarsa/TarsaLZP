@@ -57,7 +57,6 @@ function newCommon(options) {
     // PPM section
     var CostScale = 7;
     var ppmMaskSize = ppmOrder * 8;
-    var ppmMask = (1 << ppmMaskSize) - 1;
     var rangesSingle = new Int16Array(1 << ppmMaskSize + 8);
     fillArray(rangesSingle, ppmInit);
     var rangesGrouped = new Int16Array(1 << ppmMaskSize + 4);
@@ -76,7 +75,9 @@ function newCommon(options) {
     var historyHighMask = 15;
     // Contexts and hashes
     var lastPpmContext = 0;
-    var context = new Long(0, 0, 0, 0);
+    var context = new Uint8Array(8);
+    fillArray(context, 0);
+    var contextIndex = 0;
     var hashLow = 0;
     var hashHigh = 0;
     // Calculating states
@@ -344,55 +345,56 @@ function newCommon(options) {
 // Contexts and Hashes
 
     self.updateContext = function (input) {
-        context.shl8();
-        context.d |= input;
+        contextIndex = (contextIndex - 1) & 7;
+        context[contextIndex] = input;
     };
 
     self.computePpmContext = function () {
-        lastPpmContext = context.d & ppmMask;
+        lastPpmContext = context[contextIndex];
+        if (ppmOrder == 2) {
+            lastPpmContext = (lastPpmContext << 8)
+                + (context[(contextIndex + 1) & 7]);
+        }
     };
 
     self.computeHashesOnlyLowLzp = function() {
-        var localContext = Object.create(context);
+        var localIndex = contextIndex;
         var hash = 18652613;
         var i, newHash;
         for (i = 0; i < lzpLowContextLength; i++) {
             newHash = hash;
             newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash &= 0x3fffffff;
             newHash += (hash & 0x0000003f) << 24;
-            newHash ^= localContext.d & 0xff;
+            newHash ^= context[localIndex];
             newHash &= 0x3fffffff;
             hash = newHash;
-            localContext.shr8();
+            localIndex = (localIndex + 1) & 7;
         }
         hashLow = hash & lzpLowMask;
     };
 
     self.computeHashes = function () {
-        var localContext = Object.create(context);
+        var localIndex = contextIndex;
         var hash = 18652613;
         var i, newHash;
         for (i = 0; i < lzpLowContextLength; i++) {
             newHash = hash;
             newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash &= 0x3fffffff;
             newHash += (hash & 0x0000003f) << 24;
-            newHash ^= localContext.d & 0xff;
+            newHash ^= context[localIndex];
             newHash &= 0x3fffffff;
             hash = newHash;
-            localContext.shr8();
+            localIndex = (localIndex + 1) & 7;
         }
         hashLow = hash & lzpLowMask;
         for (i = lzpLowContextLength; i < lzpHighContextLength; i++) {
             newHash = hash;
             newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash &= 0x3fffffff;
             newHash += (hash & 0x0000003f) << 24;
-            newHash ^= localContext.d & 0xff;
+            newHash ^= context[localIndex];
             newHash &= 0x3fffffff;
             hash = newHash;
-            localContext.shr8();
+            localIndex = (localIndex + 1) & 7;
         }
         hashHigh = hash & lzpHighMask;
     };
