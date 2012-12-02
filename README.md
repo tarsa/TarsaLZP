@@ -26,7 +26,7 @@ All tests are performed on following system:
 - RAM: 8 GiB A-Data DDR3 RAM @ CL5, 1000 MHz
 - OS: Ubuntu 12.04 64-bit
 
-Results on [enwik8] [1] (command line interface implementations) - revision b69b99d775981668b8b09a71f181db3959955640
+Encoding speed on [enwik8] [1] (command line interface implementations) - revision SHA: b69b99d775981668b8b09a71f181db3959955640
 <table>
   <thead>
     <tr>
@@ -82,7 +82,7 @@ Results on [enwik8] [1] (command line interface implementations) - revision b69b
   </tbody>
 </table>
 
-Results on [enwik8] [1] (JavaScript in browsers) - revision b69b99d775981668b8b09a71f181db3959955640
+Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision SHA: b69b99d775981668b8b09a71f181db3959955640
 <table>
   <thead>
     <tr>
