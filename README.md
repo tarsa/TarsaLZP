@@ -1,5 +1,5 @@
-License: New BSD License
-Copyright (c) 2012, Piotr Tarsa
+- License: New BSD License
+- Copyright (c) 2012, Piotr Tarsa
 
 ##Project description
 
@@ -34,7 +34,7 @@ Encoding speed on [enwik8] [1] (command line interface implementations) - revisi
       <th>Real time</th>
       <th>User time</th>
       <th>Sys time</th>
-      <th>Execution platform</th>
+      <th>Execution environment</th>
       <th>Notes</th>
     </tr>
   </thead>
@@ -86,10 +86,10 @@ Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [b69b99d] [2]
 <table>
   <thead>
     <tr>
-      <td>Browser</td>
-      <td>Reported time</td>
-      <td>Browser version</td>
-      <td>Notes</td>
+      <th>Browser</th>
+      <th>Reported time</th>
+      <th>Browser version</th>
+      <th>Notes</th>
     </tr>
   </thead>
   <tbody>
@@ -110,6 +110,62 @@ Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [b69b99d] [2]
       <td>180.985s</td>
       <td>17.0</td>
       <td>Three runs average</td>
+    </tr>
+  </tbody>
+</table>
+
+Encoding speed on [enwik9] [1] (command line interface implementations) - revision [b69b99d] [2]:
+<table>
+  <thead>
+    <tr>
+      <th>Language</th>
+      <th>Real time</th>
+      <th>User time</th>
+      <th>Sys time</th>
+      <th>Execution environment</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>C</td>
+      <td>71.553s</td>
+      <td>70.545s</td>
+      <td>0.791s</td>
+      <td>GNU GCC 4.6.3</td>
+      <td>Three runs average, SSE optimizations (vectors and prefetching)</td>
+    </tr>
+    <tr>
+      <td>C</td>
+      <td>115.379s</td>
+      <td>114.378s</td>
+      <td>0.800s</td>
+      <td>GNU GCC 4.6.3</td>
+      <td>Three runs average, no SSE optimizations</td>
+    </tr>
+    <tr>
+      <td>Java</td>
+      <td>197.634s</td>
+      <td>196.535s</td>
+      <td>1.204s</td>
+      <td>Oracle JDK 7 update 9</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>1186.708s</td>
+      <td>1177.413s</td>
+      <td>7.060s</td>
+      <td>PyPy 1.9.0</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>16858.427s</td>
+      <td>16850.569s</td>
+      <td>2.932s</td>
+      <td>CPython 2.7.3</td>
+      <td>Single run, without -OO</td>
     </tr>
   </tbody>
 </table>
