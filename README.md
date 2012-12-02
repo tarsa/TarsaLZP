@@ -170,6 +170,26 @@ Encoding speed on [enwik9] [1] (command line interface implementations) - revisi
   </tbody>
 </table>
 
+Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [2]:
+<table>
+  <thead>
+    <tr>
+      <th>Browser</th>
+      <th>Reported time</th>
+      <th>Browser version</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Chrome</td>
+      <td>456.905s</td>
+      <td>23.0.1271.95</td>
+      <td>Three runs average</td>
+    </tr>
+  </tbody>
+</table>
+
 I have failed to get working the following execution environments:
 
  - ShedSkin (Python)
