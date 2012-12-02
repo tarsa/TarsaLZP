@@ -26,7 +26,7 @@ All tests are performed on following system:
 - RAM: 8 GiB A-Data DDR3 RAM @ CL5, 1000 MHz
 - OS: Ubuntu 12.04 64-bit
 
-Results on enwik8:
+Results on [enwik8] [1] (command line interface implementations) - revision b69b99d775981668b8b09a71f181db3959955640:
 <table>
   <thead>
     <tr>
@@ -77,7 +77,39 @@ Results on enwik8:
       <td>1751.693s</td>
       <td>0.424s</td>
       <td>CPython 2.7.3</td>
-      <td>Single run</td>
+      <td>Single run, -OO</td>
+    </tr>
+  </tbody>
+</table>
+
+Results on [enwik8] [1] (JavaScript in browsers) - revision b69b99d775981668b8b09a71f181db3959955640:
+<table>
+  <thead>
+    <tr>
+      <td>Browser</td>
+      <td>Reported time</td>
+      <td>Browser version</td>
+      <td>Notes</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Chrome</td>
+      <td>54.770s</td>
+      <td>23.0.1271.95</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Opera</td>
+      <td>144.922s</td>
+      <td>12.11 (build 1661)</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Firefox</td>
+      <td>180.985s</td>
+      <td>17.0</td>
+      <td>Three runs average</td>
     </tr>
   </tbody>
 </table>
@@ -87,4 +119,11 @@ I have failed to get working the following execution environments:
  - ShedSkin (Python)
  - GNU GCJ (Java)
  - Jython (Python)
+
+
+
+References
+----------
+
+  [1]: http://mattmahoney.net/dc/textdata.html "LTCB: About the Test data"
 
