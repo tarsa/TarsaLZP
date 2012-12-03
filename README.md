@@ -193,6 +193,12 @@ Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [2]
       <td>12.11 (build 1661)</td>
       <td>Three runs average</td>
     </tr>
+    <tr>
+      <td>Firefox</td>
+      <td>1703.568s</td>
+      <td>17.0</td>
+      <td>Three runs average</td>
+    </tr>
   </tbody>
 </table>
 
