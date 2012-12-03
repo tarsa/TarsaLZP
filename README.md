@@ -187,6 +187,12 @@ Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [2]
       <td>23.0.1271.95</td>
       <td>Three runs average</td>
     </tr>
+    <tr>
+      <td>Opera</td>
+      <td>1305.686s</td>
+      <td>12.11 (build 1661)</td>
+      <td>Three runs average</td>
+    </tr>
   </tbody>
 </table>
 
