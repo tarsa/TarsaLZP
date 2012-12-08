@@ -80,6 +80,20 @@ function newCommon(options) {
     var contextIndex = 0;
     var hashLow = 0;
     var hashHigh = 0;
+    var precomputedHashes = (function (n) {
+        var self = new Int32Array(n);
+        var hash, i;
+        for (i = 0; i < n; i++) {
+            hash = 18652613;
+            hash = hash * (1 + 2 + 16 + 128 + 256) + ((hash & 0x3f) << 24);
+            hash &= 0x3fffffff;
+            hash ^= i;
+            hash = hash * (1 + 2 + 16 + 128 + 256) + ((hash & 0x3f) << 24);
+            hash &= 0x3fffffff;
+            self[i] = hash;
+        }
+        return self;
+    })(256);
     // Calculating states
     var StateTable = [
         [1, 241, 0, 0, 0, 0],
@@ -358,42 +372,39 @@ function newCommon(options) {
     };
 
     self.computeHashesOnlyLowLzp = function() {
-        var localIndex = contextIndex;
-        var hash = 18652613;
-        var i, newHash;
-        for (i = 0; i < lzpLowContextLength; i++) {
-            newHash = hash;
-            newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash += (hash & 0x0000003f) << 24;
-            newHash ^= context[localIndex];
-            newHash &= 0x3fffffff;
-            hash = newHash;
+        var localIndex = (contextIndex + 1) & 7;
+        var hash = precomputedHashes[context[contextIndex]];
+        var i = 1;
+        while (true) {
+            hash ^= context[localIndex];
             localIndex = (localIndex + 1) & 7;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash = hash * (1 + 2 + 16 + 128 + 256) + ((hash & 0x3f) << 24);
+            hash &= 0x3fffffff;
         }
         hashLow = hash & lzpLowMask;
     };
 
     self.computeHashes = function () {
-        var localIndex = contextIndex;
-        var hash = 18652613;
-        var i, newHash;
-        for (i = 0; i < lzpLowContextLength; i++) {
-            newHash = hash;
-            newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash += (hash & 0x0000003f) << 24;
-            newHash ^= context[localIndex];
-            newHash &= 0x3fffffff;
-            hash = newHash;
+        var localIndex = (contextIndex + 1) & 7;
+        var hash = precomputedHashes[context[contextIndex]];
+        var i = 1;
+        while (true) {
+            hash ^= context[localIndex];
             localIndex = (localIndex + 1) & 7;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash = hash * (1 + 2 + 16 + 128 + 256) + ((hash & 0x3f) << 24);
+            hash &= 0x3fffffff;
         }
         hashLow = hash & lzpLowMask;
-        for (i = lzpLowContextLength; i < lzpHighContextLength; i++) {
-            newHash = hash;
-            newHash *= (1 + 2 + 16 + 128 + 256);
-            newHash += (hash & 0x0000003f) << 24;
-            newHash ^= context[localIndex];
-            newHash &= 0x3fffffff;
-            hash = newHash;
+        while (i++ < lzpHighContextLength) {
+            hash = hash * (1 + 2 + 16 + 128 + 256) + ((hash & 0x3f) << 24);
+            hash &= 0x3fffffff;
+            hash ^= context[localIndex];
             localIndex = (localIndex + 1) & 7;
         }
         hashHigh = hash & lzpHighMask;

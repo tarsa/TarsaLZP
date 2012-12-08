@@ -67,6 +67,12 @@ abstract class Common {
     final short[] rangesGrouped;
     final short[] rangesTotal;
     private int recentCost;
+    // Contexts and hashes section
+    private int lastPpmContext;
+    private long context;
+    private int hashLow;
+    private int hashHigh;
+    private final int[] precomputedHashes = new int[256];
     // SEE section
     private final short[] seeLow;
     private final short[] seeHigh;
@@ -117,13 +123,20 @@ abstract class Common {
             seeHigh = new short[16 * 256];
             Arrays.fill(seeHigh, (short) 0x4000);
         }
+        // Contexts and hashes init
+        lastPpmContext = 0;
+        context = 0;
+        hashLow = 0;
+        hashHigh = 0;
+        for (int i = 0; i < 256; i++) {
+            int hash = -2128831035;
+            hash *= 16777619;
+            hash ^= i;
+            hash *= 16777619;
+            precomputedHashes[i] = hash;
+        }
     }
     // <editor-fold defaultstate="collapsed" desc="Contexts and hashes">
-    private int lastPpmContext = 0;
-    private long context = 0;
-    private int hashLow = 0;
-    private int hashHigh = 0;
-
     void updateContext(final int input) {
         context <<= 8;
         context |= input;
@@ -133,29 +146,37 @@ abstract class Common {
         lastPpmContext = (int) (context & ppmMask);
     }
 
-    void computeHashesOnlyLowLzp() {
-        long localContext = context;
-        int hash = -2128831035;
-        for (int i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int) (localContext & 0xFF);
-            localContext >>>= 8;
+    void computeHashesOnlyLowLzp() {        
+        long localContext = context >>> 8;
+        int hash = precomputedHashes[(int)(context & 0xFF)];
+        int i = 1;
+        while (true) {
+            hash ^= (int) (localContext & 0xFF);
+            localContext >>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLow = hash & lzpLowMask;
     }
 
     void computeHashes() {
-        long localContext = context;
-        int hash = -2128831035;
-        for (int i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int) (localContext & 0xFF);
+        long localContext = context >>> 8;
+        int hash = precomputedHashes[(int)(context & 0xFF)];
+        int i = 1;
+        while (true) {
+            hash ^= (int) (localContext & 0xFF);
             localContext >>>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLow = hash & lzpLowMask;
-        for (int i = lzpLowContextLength; i < lzpHighContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int) (localContext & 0xFF);
+        while (i++ < lzpHighContextLength) {
+            hash *= 16777619;
+            hash ^= (int) (localContext & 0xFF);
             localContext >>>= 8;
         }
         hashHigh = hash & lzpHighMask;

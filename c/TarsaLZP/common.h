@@ -74,6 +74,7 @@ extern "C" {
     int32_t hashHigh;
     int32_t hashLowNext;
     int32_t hashHighNext;
+    int32_t precomputedHashes[256];
     // States
     int32_t const StateTable[256][6] = {
         {1, 241, 0, 0, 0, 0},
@@ -408,11 +409,18 @@ extern "C" {
                 seeHigh[i] = 0x4000;
             }
         }
-        // Contexts and hashes
+        // Contexts and hashes init
         lastPpmContext = 0;
         context = 0;
         hashLow = 0;
         hashHigh = 0;
+        for (int32_t i = 0; i < 256; i++) {
+            int32_t hash = -2128831035;
+            hash *= 16777619;
+            hash ^= i;
+            hash *= 16777619;
+            precomputedHashes[i] = hash;
+        }
     }
 
     // Contexts and hashes
@@ -427,23 +435,31 @@ extern "C" {
     }
 
     void computeHashesOnlyLowLzp() {
-        uint64_t localContext = context;
-        int32_t hash = -2128831035;
-        for (int32_t i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        uint64_t localContext = context >> 8;
+        int32_t hash = precomputedHashes[context & 0xFF];
+        int32_t i = 1;
+        while (true) {
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLow = hash & lzpLowMask;
     }
 
     void computeHashesOnlyLowLzpForNextIteration(int32_t const nextSymbol) {
-        uint64_t localContext = context << 8 | nextSymbol;
-        int32_t hash = -2128831035;
-        for (int32_t i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        uint64_t localContext = context;
+        int32_t hash = precomputedHashes[nextSymbol];
+        int32_t i = 1;
+        while (true) {
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLowNext = hash & lzpLowMask;
 #ifndef NO_PREFETCH
@@ -452,37 +468,45 @@ extern "C" {
     }
 
     void computeHashes() {
-        uint64_t localContext = context;
-        int32_t hash = -2128831035;
-        for (int32_t i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        uint64_t localContext = context >> 8;
+        int32_t hash = precomputedHashes[context & 0xFF];
+        int32_t i = 1;
+        while (true) {
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLow = hash & lzpLowMask;
-        for (int32_t i = lzpLowContextLength; i < lzpHighContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        while (i++ < lzpHighContextLength) {
+            hash *= 16777619;
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
         }
         hashHigh = hash & lzpHighMask;
     }
 
     void computeHashesForNextIteration(int32_t const nextSymbol) {
-        uint64_t localContext = context << 8 | nextSymbol;
-        int32_t hash = -2128831035;
-        for (int32_t i = 0; i < lzpLowContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        uint64_t localContext = context;
+        int32_t hash = precomputedHashes[nextSymbol];
+        int32_t i = 1;
+        while (true) {
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
+            if (++i == lzpLowContextLength) {
+                break;
+            }
+            hash *= 16777619;
         }
         hashLowNext = hash & lzpLowMask;
 #ifndef NO_PREFETCH
         __builtin_prefetch(lzpLow + hashLowNext);
 #endif
-        for (int32_t i = lzpLowContextLength; i < lzpHighContextLength; i++) {
-            hash = hash * 16777619;
-            hash = hash ^ (int32_t) (localContext & 0xFF);
+        while (i++ < lzpHighContextLength) {
+            hash *= 16777619;
+            hash ^= (int32_t) (localContext & 0xFF);
             localContext >>= 8;
         }
         hashHighNext = hash & lzpHighMask;

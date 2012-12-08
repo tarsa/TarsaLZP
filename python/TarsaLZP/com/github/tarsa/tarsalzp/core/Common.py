@@ -30,7 +30,6 @@
 #
 
 import array
-from com.github.tarsa.tarsalzp.prelude.Long import Long
 from Lg2 import Lg2
 
 __author__ = 'Piotr Tarsa'
@@ -344,6 +343,9 @@ class Common(object):
         self.contextIndex = 0
         self.hashLow = 0
         self.hashHigh = 0
+        self.precomputedHashes = array.array("l",
+            ((((2166136261 * 16777619) ^ i) * 16777619) & 0x7fffffff
+                for i in xrange(256)))
         # SEE stuff
         self.historyLow = 0
         self.historyHigh = 0
@@ -363,31 +365,37 @@ class Common(object):
             + self.context[(self.contextIndex + 1) & 7]
 
     def computeHashesOnlyLowLzp(self):
-        localIndex = self.contextIndex
-        hash = 2166136261
-        for i in xrange(0, self.lzpLowContextLength):
-            newHash = hash * 16777619
-            newHash ^= self.context[localIndex]
-            newHash &= 0x3fffffff
-            hash = newHash
+        localIndex = (self.contextIndex + 1) & 7
+        hash = self.precomputedHashes[self.context[self.contextIndex]]
+        i = 1
+        while True:
+            hash ^= self.context[localIndex]
             localIndex = (localIndex + 1) & 7
+            i += 1
+            if i == self.lzpLowContextLength:
+                break
+            hash *= 16777619
+            hash &= 0x3fffffff
         self.hashLow = hash & self.lzpLowMask
 
     def computeHashes(self):
-        localIndex = self.contextIndex
-        hash = 2166136261
-        for i in xrange(0, self.lzpLowContextLength):
-            newHash = hash * 16777619
-            newHash ^= self.context[localIndex]
-            newHash &= 0x3fffffff
-            hash = newHash
+        localIndex = (self.contextIndex + 1) & 7
+        hash = self.precomputedHashes[self.context[self.contextIndex]]
+        i = 1
+        while True:
+            hash ^= self.context[localIndex]
             localIndex = (localIndex + 1) & 7
+            i += 1
+            if i == self.lzpLowContextLength:
+                break
+            hash *= 16777619
+            hash &= 0x3fffffff
         self.hashLow = hash & self.lzpLowMask
-        for i in xrange(self.lzpLowContextLength, self.lzpHighContextLength):
-            newHash = hash * 16777619
-            newHash ^= self.context[localIndex]
-            newHash &= 0x3fffffff
-            hash = newHash
+        while i < self.lzpHighContextLength:
+            i += 1
+            hash *= 16777619
+            hash &= 0x3fffffff
+            hash ^= self.context[localIndex]
             localIndex = (localIndex + 1) & 7
         self.hashHigh = hash & self.lzpHighMask
 
