@@ -158,13 +158,13 @@ class Encoder(Common):
 
     def flush(self):
         self.encodeSkewed(False)
-        for i in xrange(0, 5):
+        for i in xrange(5):
             self.outputByte((self.rcBuffer >> 23) & 0xff)
             self.rcBuffer = (self.rcBuffer & 0x007fffff) << 8
 
     def encode(self, limit):
         endReached = False
-        for i in xrange(0, limit):
+        for i in xrange(limit):
             symbol = self.inputStream.readByte()
             if symbol == -1:
                 endReached = True

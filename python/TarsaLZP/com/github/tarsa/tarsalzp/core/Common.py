@@ -312,7 +312,7 @@ class Common(object):
         lzpHighCount = 1 << self.lzpHighMaskSize
         self.lzpLowMask = lzpLowCount - 1
         self.lzpHighMask = lzpHighCount - 1
-        self.lzpLow = array.array("H", (0xffb5 for _ in xrange(0, lzpLowCount)))
+        self.lzpLow = array.array("H", (0xffb5 for _ in xrange(lzpLowCount)))
         self.onlyLowLzp = \
         (self.lzpLowContextLength == self.lzpHighContextLength)\
         & (self.lzpLowMaskSize == self.lzpHighMaskSize)
@@ -320,26 +320,26 @@ class Common(object):
             self.lzpHigh = None
         else:
             self.lzpHigh = array.array("H",
-                (0xffb5 for _ in xrange(0, lzpHighCount)))
+                (0xffb5 for _ in xrange(lzpHighCount)))
         # PPM init
         ppmMaskSize = 8 * self.ppmOrder
         self.rangesSingle = array.array("H",
-            (self.ppmInit for _ in xrange(0, 1 << (ppmMaskSize + 8))))
+            (self.ppmInit for _ in xrange(1 << (ppmMaskSize + 8))))
         self.rangesGrouped = array.array("H",
-            (self.ppmInit * 16 for _ in xrange(0, 1 << (ppmMaskSize + 4))))
+            (self.ppmInit * 16 for _ in xrange(1 << (ppmMaskSize + 4))))
         self.rangesTotal = array.array("H",
-            (self.ppmInit * 256 for _ in xrange(0, 1 << ppmMaskSize)))
+            (self.ppmInit * 256 for _ in xrange(1 << ppmMaskSize)))
         self.recentCost = 8 << self.CostScale + 14
         # SEE init
-        self.seeLow = array.array("H", (0x4000 for _ in xrange(0, 16 * 256)))
+        self.seeLow = array.array("H", (0x4000 for _ in xrange(16 * 256)))
         if self.onlyLowLzp:
             self.seeHigh = None
         else:
             self.seeHigh = array.array("H",
-                (0x4000 for _ in xrange(0, 16 * 256)))
+                (0x4000 for _ in xrange(16 * 256)))
         # Contexts and hashes
         self.lastPpmContext = 0
-        self.context = array.array("B", (0 for _ in xrange(0, 8)))
+        self.context = array.array("B", (0 for _ in xrange(8)))
         self.contextIndex = 0
         self.hashLow = 0
         self.hashHigh = 0

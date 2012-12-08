@@ -64,7 +64,7 @@ class BufferedOutputStreamWrapper(object):
     Limit = 65536
     def __init__(self, outputStream):
         self.outputStream = outputStream
-        self.buffer = array.array("B", (0 for _ in xrange(0,
+        self.buffer = array.array("B", (0 for _ in xrange(
             BufferedOutputStreamWrapper.Limit)))
         self.position = 0
         self.limit = len(self.buffer)

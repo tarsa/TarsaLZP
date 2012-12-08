@@ -42,7 +42,7 @@ class Coder(object):
     @staticmethod
     def getOptions(inputStream):
         header = Long(0, 0, 0, 0)
-        for i in xrange(0, 8):
+        for i in xrange(8):
             header.shl8()
             inputByte = inputStream.readByte()
             if inputByte == -1:
@@ -56,7 +56,7 @@ class Coder(object):
     @staticmethod
     def getOptionsHeaderless(inputStream):
         packedOptions = Long(0, 0, 0, 0)
-        for i in xrange(0, 8):
+        for i in xrange(8):
             packedOptions.shl8()
             inputByte = inputStream.readByte()
             if inputByte == -1:
@@ -94,11 +94,11 @@ class Coder(object):
         encoder = Encoder(inputStream, outputStream, options)
         header = Long(Coder.HeaderValue.a, Coder.HeaderValue.b,
             Coder.HeaderValue.c, Coder.HeaderValue.d)
-        for i in xrange(0, 8):
+        for i in xrange(8):
             outputStream.writeByte(header.a >> 8)
             header.shl8()
         packedOptions = options.toPacked()
-        for i in xrange(0, 8):
+        for i in xrange(8):
             outputStream.writeByte(packedOptions.a >> 8)
             packedOptions.shl8()
         Coder.doEncode(encoder, intervalLength)
