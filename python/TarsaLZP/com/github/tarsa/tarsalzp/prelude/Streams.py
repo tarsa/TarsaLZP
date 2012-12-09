@@ -104,7 +104,7 @@ class DelayedFileOutputStream(OutputStream):
     def writeByteArray(self, byteArray):
         if not self.initialized:
             self.initialized = True
-            self.output = open(self.fileName, mode = "w+b", buffering = 65536)
+            self.output = open(self.fileName, "w+b")
         byteArray.tofile(self.output)
 
     def close(self):

@@ -91,8 +91,7 @@ class Main(object):
         for keyOriginal in optionsMap:
             key = keyOriginal.lower()
             if key == "fi":
-                fileHandle = open(optionsMap[keyOriginal], mode="rb",
-                    buffering=65536)
+                fileHandle = open(optionsMap[keyOriginal], "rb")
                 inputStream = BufferedInputStream(fileHandle)
                 standardInput = False
             elif key == "fo":
@@ -137,8 +136,7 @@ class Main(object):
         for keyOriginal in optionsMap:
             key = keyOriginal.lower()
             if key == "fi":
-                fileHandle = open(optionsMap[keyOriginal], mode="rb",
-                    buffering=65536)
+                fileHandle = open(optionsMap[keyOriginal], "rb")
                 inputStream = BufferedInputStream(fileHandle)
                 standardInput = False
             elif key == "fo":
@@ -165,8 +163,7 @@ class Main(object):
         for keyOriginal in optionsMap:
             key = keyOriginal.lower()
             if key == "fi":
-                fileHandle = open(optionsMap[keyOriginal], mode="rb",
-                    buffering=65536)
+                fileHandle = open(optionsMap[keyOriginal], "rb")
                 inputStream = BufferedInputStream(fileHandle)
                 standardInput = False
             else:
