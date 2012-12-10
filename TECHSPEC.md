@@ -25,6 +25,14 @@ The complete compression scheme consists of four main parts:
 
  - Before encoding each input byte and after encoding the last byte, a flag is coded that indicated if there is an end of symbols
 
+####State tables
+
+ - State tables provide a compact way to store quantized match histories
+ - States are organized into finite state machine
+ - In this implementation states are symmetric, ie for any state that describes a match history, there is a state for an inverse match history, ie with matches and misses swapped
+ - State table is generated using generator and ad-hoc values
+ - State table is focused on states describing either skewed or short match histories, there are no states describing long and balanced match histories
+
 ####LZP models
 
  - Consider the most recently processed symbols as a context
