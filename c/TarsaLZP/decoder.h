@@ -52,6 +52,9 @@ extern "C" {
         __common__();
         started = false;
         nextHighBit = 0;
+#ifndef NO_PREFETCH
+        computeHashesForNextIteration(0);
+#endif        
     }
 
     int32_t decoderInputByte() {
@@ -143,6 +146,13 @@ extern "C" {
             nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
             index = (lastLiteralCoderContext << 8) + nextSymbol;
         }
+#ifndef NO_PREFETCH    
+        if (onlyLowLzp) {
+            computeHashesOnlyLowLzpForNextIteration(nextSymbol);
+        } else {
+            computeHashesForNextIteration(nextSymbol);
+        }
+#endif         
         updateRecentCost(rangesSingle[index],
                 rangesTotal[lastLiteralCoderContext]);
         updateLiteralCoder(index);
@@ -150,21 +160,34 @@ extern "C" {
     }
 
     int32_t decodeSingleOnlyLowLzp() {
+#ifndef NO_PREFETCH
+        shiftHashesOnlyLowLzp();
+#else
         computeHashesOnlyLowLzp();
+#endif        
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
         int32_t const modelLowFrequency = getApmLow(lzpStateLow);
         bool const matchLow = decodeFlag(modelLowFrequency);
-        updateApmLow(lzpStateLow, matchLow);
+#ifndef NO_PREFETCH            
+        if (matchLow) {
+            computeHashesOnlyLowLzpForNextIteration(predictedSymbolLow);
+        }
+#endif  
         int32_t const nextSymbol = matchLow ? predictedSymbolLow
                 : decodeSymbol(predictedSymbolLow);
+        updateApmLow(lzpStateLow, matchLow);
         updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         updateContext(nextSymbol);
         return nextSymbol;
     }
 
     int32_t decodeSingle() {
+#ifndef NO_PREFETCH
+        shiftHashes();
+#else
         computeHashes();
+#endif        
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
         int32_t const modelLowFrequency = getApmLow(lzpStateLow);
@@ -174,18 +197,28 @@ extern "C" {
         int32_t nextSymbol;
         if (modelLowFrequency >= modelHighFrequency) {
             bool const matchLow = decodeFlag(modelLowFrequency);
-            updateApmLow(lzpStateLow, matchLow);
+#ifndef NO_PREFETCH            
+            if (matchLow) {
+                computeHashesForNextIteration(predictedSymbolLow);
+            }
+#endif            
             nextSymbol = matchLow ? predictedSymbolLow
                     : decodeSymbol(predictedSymbolLow);
+            updateApmLow(lzpStateLow, matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             bool const matchHigh = nextSymbol == predictedSymbolHigh;
             updateApmHistoryHigh(matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
         } else {
             bool const matchHigh = decodeFlag(modelHighFrequency);
-            updateApmHigh(lzpStateHigh, matchHigh);
+#ifndef NO_PREFETCH            
+            if (matchHigh) {
+                computeHashesForNextIteration(predictedSymbolHigh);
+            }
+#endif
             nextSymbol = matchHigh ? predictedSymbolHigh
                     : decodeSymbol(predictedSymbolHigh);
+            updateApmHigh(lzpStateHigh, matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             bool const matchLow = nextSymbol == predictedSymbolLow;
             updateApmHistoryLow(matchLow);
