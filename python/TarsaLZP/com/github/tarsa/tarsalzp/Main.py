@@ -59,10 +59,10 @@ class Main(object):
         self.err("\tlzpLowMaskSize=" + str(options.lzpLowMaskSize))
         self.err("\tlzpHighContextLength=" + str(options.lzpHighContextLength))
         self.err("\tlzpHighMaskSize=" + str(options.lzpHighMaskSize))
-        self.err("\tppmOrder=" + str(options.ppmOrder))
-        self.err("\tppmInit=" + str(options.ppmInit))
-        self.err("\tppmStep=" + str(options.ppmStep))
-        self.err("\tppmLimit=" + str(options.ppmLimit))
+        self.err("\tliteralCoderOrder=" + str(options.literalCoderOrder))
+        self.err("\tliteralCoderInit=" + str(options.literalCoderInit))
+        self.err("\tliteralCoderStep=" + str(options.literalCoderStep))
+        self.err("\tliteralCoderLimit=" + str(options.literalCoderLimit))
 
     def printError(self, cause):
         self.err("Error happened.")
@@ -107,14 +107,14 @@ class Main(object):
                 options.lzpHighContextLength = int(optionsMap[keyOriginal])
             elif key == "lzpHighMaskSize".lower():
                 options.lzpHighMaskSize = int(optionsMap[keyOriginal])
-            elif key == "ppmOrder".lower():
-                options.ppmOrder = int(optionsMap[keyOriginal])
-            elif key == "ppmInit".lower():
-                options.ppmInit = int(optionsMap[keyOriginal])
-            elif key == "ppmStep".lower():
-                options.ppmStep = int(optionsMap[keyOriginal])
-            elif key == "ppmLimit".lower():
-                options.ppmLimit = int(optionsMap[keyOriginal])
+            elif key == "literalCoderOrder".lower():
+                options.literalCoderOrder = int(optionsMap[keyOriginal])
+            elif key == "literalCoderInit".lower():
+                options.literalCoderInit = int(optionsMap[keyOriginal])
+            elif key == "literalCoderStep".lower():
+                options.literalCoderStep = int(optionsMap[keyOriginal])
+            elif key == "literalCoderLimit".lower():
+                options.literalCoderLimit = int(optionsMap[keyOriginal])
             else:
                 self.err("Not suitable or unknown option: " + keyOriginal)
                 return

@@ -105,14 +105,14 @@ public class MainFrame extends JFrame {
         lzpLowMaskSizeSpinner = new javax.swing.JSpinner();
         lzpHighContextLengthSpinner = new javax.swing.JSpinner();
         lzpHighMaskSizeSpinner = new javax.swing.JSpinner();
-        ppmOrderLabel = new javax.swing.JLabel();
-        ppmInitLabel = new javax.swing.JLabel();
-        ppmStepLabel = new javax.swing.JLabel();
-        ppmLimitLabel = new javax.swing.JLabel();
-        ppmOrderSpinner = new javax.swing.JSpinner();
-        ppmInitSpinner = new javax.swing.JSpinner();
-        ppmStepSpinner = new javax.swing.JSpinner();
-        ppmLimitSpinner = new javax.swing.JSpinner();
+        literalCoderOrderLabel = new javax.swing.JLabel();
+        literalCoderInitLabel = new javax.swing.JLabel();
+        literalCoderStepLabel = new javax.swing.JLabel();
+        literalCoderLimitLabel = new javax.swing.JLabel();
+        literalCoderOrderSpinner = new javax.swing.JSpinner();
+        literalCoderInitSpinner = new javax.swing.JSpinner();
+        literalCoderStepSpinner = new javax.swing.JSpinner();
+        literalCoderLimitSpinner = new javax.swing.JSpinner();
         actionPanel = new javax.swing.JPanel();
         actionSelectionPanel = new javax.swing.JPanel();
         encodeRadioButton = new javax.swing.JRadioButton();
@@ -209,7 +209,7 @@ public class MainFrame extends JFrame {
         lzpHighMaskSizeLabel.setText("LZP High Mask Size");
         lzpHighMaskSizeLabel.setToolTipText("Model size is 2^(Mask Size) entries with 2 bytes per entry");
 
-        lzpLowContextLengthSpinner.setToolTipText("Value must be higher than PPM Order and not higher than LZP High Context Length");
+        lzpLowContextLengthSpinner.setToolTipText("Value must be higher than Literal Coder Order and not higher than LZP High Context Length");
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
         bindingGroup.addBinding(binding);
@@ -229,32 +229,32 @@ public class MainFrame extends JFrame {
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpHighMaskSize}"), lzpHighMaskSizeSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
-        ppmOrderLabel.setText("PPM Order");
+        literalCoderOrderLabel.setText("Literal Coder Order");
 
-        ppmInitLabel.setText("PPM Init");
+        literalCoderInitLabel.setText("Literal Coder Init");
 
-        ppmStepLabel.setText("PPM Step");
+        literalCoderStepLabel.setText("Literal Coder Step");
 
-        ppmLimitLabel.setText("PPM Limit");
+        literalCoderLimitLabel.setText("Literal Coder Limit");
 
-        ppmOrderSpinner.setToolTipText("Value must be not lower than 1 and not higher than 2 or LZP Low Context Length");
+        literalCoderOrderSpinner.setToolTipText("Value must be not lower than 1 and not higher than 2 or LZP Low Context Length");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmOrder}"), ppmOrderSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderOrder}"), literalCoderOrderSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
         bindingGroup.addBinding(binding);
 
-        ppmInitSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
+        literalCoderInitSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmInit}"), ppmInitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderInit}"), literalCoderInitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
-        ppmStepSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
+        literalCoderStepSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmStep}"), ppmStepSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderStep}"), literalCoderStepSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
-        ppmLimitSpinner.setToolTipText("Value must be between PPM Init * 256 and 32767 - PPM Step (inclusive)");
+        literalCoderLimitSpinner.setToolTipText("Value must be between Literal Coder Init * 256 and 32767 - Literal Coder Step (inclusive)");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${ppmLimit}"), ppmLimitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderLimit}"), literalCoderLimitSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
         javax.swing.GroupLayout optionsPanelLayout = new javax.swing.GroupLayout(optionsPanel);
@@ -276,16 +276,16 @@ public class MainFrame extends JFrame {
                     .addComponent(lzpLowContextLengthSpinner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ppmInitLabel)
-                    .addComponent(ppmOrderLabel)
-                    .addComponent(ppmStepLabel)
-                    .addComponent(ppmLimitLabel))
+                    .addComponent(literalCoderInitLabel)
+                    .addComponent(literalCoderOrderLabel)
+                    .addComponent(literalCoderStepLabel)
+                    .addComponent(literalCoderLimitLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ppmLimitSpinner)
-                    .addComponent(ppmStepSpinner)
-                    .addComponent(ppmInitSpinner)
-                    .addComponent(ppmOrderSpinner))
+                    .addComponent(literalCoderLimitSpinner)
+                    .addComponent(literalCoderStepSpinner)
+                    .addComponent(literalCoderInitSpinner)
+                    .addComponent(literalCoderOrderSpinner))
                 .addContainerGap())
         );
         optionsPanelLayout.setVerticalGroup(
@@ -293,27 +293,27 @@ public class MainFrame extends JFrame {
             .addGroup(optionsPanelLayout.createSequentialGroup()
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lzpLowContextLengthSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppmOrderLabel)
-                    .addComponent(ppmOrderSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(literalCoderOrderLabel)
+                    .addComponent(literalCoderOrderSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lzpLowContextLengthLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lzpLowMaskSizeLabel)
                     .addComponent(lzpLowMaskSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppmInitLabel)
-                    .addComponent(ppmInitSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(literalCoderInitLabel)
+                    .addComponent(literalCoderInitSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lzpHighContextLengthLabel)
                     .addComponent(lzpHighContextLengthSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppmStepLabel)
-                    .addComponent(ppmStepSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(literalCoderStepLabel)
+                    .addComponent(literalCoderStepSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lzpHighMaskSizeLabel)
                     .addComponent(lzpHighMaskSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ppmLimitLabel)
-                    .addComponent(ppmLimitSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(literalCoderLimitLabel)
+                    .addComponent(literalCoderLimitSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         actionSelectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Action"));
@@ -353,7 +353,7 @@ public class MainFrame extends JFrame {
                     .addComponent(encodeRadioButton)
                     .addComponent(decodeRadioButton)
                     .addComponent(showDetailsRadioButton))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
         actionSelectionPanelLayout.setVerticalGroup(
             actionSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -383,8 +383,9 @@ public class MainFrame extends JFrame {
             actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(actionPanelLayout.createSequentialGroup()
                 .addComponent(actionSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(actionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(actionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         actionPanelLayout.setVerticalGroup(
             actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -452,18 +453,6 @@ public class MainFrame extends JFrame {
         }
     }//GEN-LAST:event_outputFileChooseButtonActionPerformed
 
-    private void encodeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodeRadioButtonActionPerformed
-        actionBean.setAction(ActionBean.Action.Encode);
-    }//GEN-LAST:event_encodeRadioButtonActionPerformed
-
-    private void decodeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decodeRadioButtonActionPerformed
-        actionBean.setAction(ActionBean.Action.Decode);
-    }//GEN-LAST:event_decodeRadioButtonActionPerformed
-
-    private void showDetailsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDetailsRadioButtonActionPerformed
-        actionBean.setAction(ActionBean.Action.ShowOptions);
-    }//GEN-LAST:event_showDetailsRadioButtonActionPerformed
-
     private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
         final String inputFilePath = actionBean.getInputFilePath();
         final String outputFilePath = actionBean.getOutputFilePath();
@@ -471,50 +460,62 @@ public class MainFrame extends JFrame {
             switch (actionBean.getAction()) {
                 case Encode: {
                     final EncodingWorker encodingWorker = new EncodingWorker(
-                            inputFilePath, outputFilePath,
-                            optionsBean.toOptions());
+                        inputFilePath, outputFilePath,
+                        optionsBean.toOptions());
                     actionBean.setActionInProgress(true);
                     new Thread(encodingWorker).start();
                     break;
                 }
                 case Decode: {
                     final DecodingWorker decodingWorker = new DecodingWorker(
-                            inputFilePath, outputFilePath);
+                        inputFilePath, outputFilePath);
                     actionBean.setActionInProgress(true);
                     new Thread(decodingWorker).start();
                     break;
                 }
                 case ShowOptions: {
                     final BufferedInputStream inputStream =
-                            new BufferedInputStream(new FileInputStream(
-                            inputFilePath), 64 * 1024);
-                    final Options options = Coder.getOptions(inputStream);
-                    final String optionsDescription = "Options:\n"
-                            + "LZP Low Context Length: " 
-                            + options.getLzpLowContextLength() + "\n"
-                            + "LZP Low Mask Size: " 
-                            + options.getLzpLowMaskSize() + "\n"
-                            + "LZP High Context Length: " 
-                            + options.getLzpHighContextLength() + "\n"
-                            + "LZP High Mask Size: " 
-                            + options.getLzpHighMaskSize() + "\n"
-                            + "PPM Order: " + options.getPpmOrder() + "\n"
-                            + "PPM Init: " + options.getPpmInit() + "\n"
-                            + "PPM Step: " + options.getPpmStep() + "\n"
-                            + "PPM Limit: " + options.getPpmLimit();
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                            optionsDescription,
-                            "Compression options",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    inputStream.close();
-                    break;
-                }
+                    new BufferedInputStream(new FileInputStream(
+                        inputFilePath), 64 * 1024);
+                final Options options = Coder.getOptions(inputStream);
+                final String optionsDescription = "Options:" 
+                + "\nLZP Low Context Length: "
+                + options.getLzpLowContextLength() 
+                + "\nLZP Low Mask Size: "
+                + options.getLzpLowMaskSize() 
+                + "\nLZP High Context Length: "
+                + options.getLzpHighContextLength()
+                + "\nLZP High Mask Size: "
+                + options.getLzpHighMaskSize() 
+                + "\nLiteral Coder Order: " + options.getLiteralCoderOrder() 
+                + "\nLiteral Coder Init: " + options.getLiteralCoderInit() 
+                + "\nLiteral Coder Step: " + options.getLiteralCoderStep() 
+                + "\nLiteral Coder Limit: " + options.getLiteralCoderLimit();
+                JOptionPane.showMessageDialog(MainFrame.this,
+                    optionsDescription,
+                    "Compression options",
+                    JOptionPane.INFORMATION_MESSAGE);
+                inputStream.close();
+                break;
             }
+        }
         } catch (final Exception ex) {
             JOptionPane.showMessageDialog(MainFrame.this, ex.getMessage(),
-                    "Exception thrown", JOptionPane.ERROR_MESSAGE);
+                "Exception thrown", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_actionButtonActionPerformed
+
+    private void showDetailsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDetailsRadioButtonActionPerformed
+        actionBean.setAction(ActionBean.Action.ShowOptions);
+    }//GEN-LAST:event_showDetailsRadioButtonActionPerformed
+
+    private void decodeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decodeRadioButtonActionPerformed
+        actionBean.setAction(ActionBean.Action.Decode);
+    }//GEN-LAST:event_decodeRadioButtonActionPerformed
+
+    private void encodeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodeRadioButtonActionPerformed
+        actionBean.setAction(ActionBean.Action.Encode);
+    }//GEN-LAST:event_encodeRadioButtonActionPerformed
 
     abstract class CommonWorker extends SwingWorker<Object, Object> {
 
@@ -737,6 +738,14 @@ public class MainFrame extends JFrame {
     private javax.swing.JLabel inputFileLabel;
     private javax.swing.JTextField inputPathTextField;
     private javax.swing.JMenu lafListMenu;
+    private javax.swing.JLabel literalCoderInitLabel;
+    private javax.swing.JSpinner literalCoderInitSpinner;
+    private javax.swing.JLabel literalCoderLimitLabel;
+    private javax.swing.JSpinner literalCoderLimitSpinner;
+    private javax.swing.JLabel literalCoderOrderLabel;
+    private javax.swing.JSpinner literalCoderOrderSpinner;
+    private javax.swing.JLabel literalCoderStepLabel;
+    private javax.swing.JSpinner literalCoderStepSpinner;
     private javax.swing.JLabel lzpHighContextLengthLabel;
     private javax.swing.JSpinner lzpHighContextLengthSpinner;
     private javax.swing.JLabel lzpHighMaskSizeLabel;
@@ -751,14 +760,6 @@ public class MainFrame extends JFrame {
     private javax.swing.JButton outputFileChooseButton;
     private javax.swing.JLabel outputFileLabel;
     private javax.swing.JTextField outputPathTextField;
-    private javax.swing.JLabel ppmInitLabel;
-    private javax.swing.JSpinner ppmInitSpinner;
-    private javax.swing.JLabel ppmLimitLabel;
-    private javax.swing.JSpinner ppmLimitSpinner;
-    private javax.swing.JLabel ppmOrderLabel;
-    private javax.swing.JSpinner ppmOrderSpinner;
-    private javax.swing.JLabel ppmStepLabel;
-    private javax.swing.JSpinner ppmStepSpinner;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JRadioButton showDetailsRadioButton;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;

@@ -47,17 +47,17 @@ class Common(object):
         self.lzpLowMaskSize = options.lzpLowMaskSize
         self.lzpHighContextLength = options.lzpHighContextLength
         self.lzpHighMaskSize = options.lzpHighMaskSize
-        self.ppmOrder = options.ppmOrder
-        self.ppmInit = options.ppmInit
-        self.ppmStep = options.ppmStep
-        self.ppmLimit = options.ppmLimit
-        # LZP init
+        self.literalCoderOrder = options.literalCoderOrder
+        self.literalCoderInit = options.literalCoderInit
+        self.literalCoderStep = options.literalCoderStep
+        self.literalCoderLimit = options.literalCoderLimit
+        # Lempel-Ziv Predictive init
         lzpLowCount = 1 << self.lzpLowMaskSize
         lzpHighCount = 1 << self.lzpHighMaskSize
         self.lzpLowMask = lzpLowCount - 1
         self.lzpHighMask = lzpHighCount - 1
         self.lzpLow = array.array("H", (0xffb5 for _ in xrange(lzpLowCount)))
-        self.onlyLowLzp = \
+        self.onlyLowLzp =\
         (self.lzpLowContextLength == self.lzpHighContextLength)\
         & (self.lzpLowMaskSize == self.lzpHighMaskSize)
         if self.onlyLowLzp:
@@ -65,24 +65,31 @@ class Common(object):
         else:
             self.lzpHigh = array.array("H",
                 (0xffb5 for _ in xrange(lzpHighCount)))
-        # PPM init
-        ppmMaskSize = 8 * self.ppmOrder
+            # Literal coder init
+        literalCoderContextMaskSize = 8 * self.literalCoderOrder
         self.rangesSingle = array.array("H",
-            (self.ppmInit for _ in xrange(1 << (ppmMaskSize + 8))))
+            (self.literalCoderInit for _ in xrange(1
+            << (literalCoderContextMaskSize + 8))))
         self.rangesGrouped = array.array("H",
-            (self.ppmInit * 16 for _ in xrange(1 << (ppmMaskSize + 4))))
+            (self.literalCoderInit * 16 for _ in xrange(1
+            << (literalCoderContextMaskSize + 4))))
         self.rangesTotal = array.array("H",
-            (self.ppmInit * 256 for _ in xrange(1 << ppmMaskSize)))
+            (self.literalCoderInit * 256 for _ in xrange(1
+            << literalCoderContextMaskSize)))
         self.recentCost = 8 << self.CostScale + 14
-        # SEE init
-        self.seeLow = array.array("H", (0x4000 for _ in xrange(16 * 256)))
+        # Adaptive probability map init
+        self.apmLow = array.array("H", (0x4000 for _ in xrange(16 * 256)))
         if self.onlyLowLzp:
-            self.seeHigh = None
+            self.apmHigh = None
         else:
-            self.seeHigh = array.array("H",
+            self.apmHigh = array.array("H",
                 (0x4000 for _ in xrange(16 * 256)))
+        self.historyLow = 0
+        self.historyHigh = 0
+        self.historyLowMask = 15
+        self.historyHighMask = 15
         # Contexts and hashes
-        self.lastPpmContext = 0
+        self.lastLiteralCoderContext = 0
         self.context = array.array("B", (0 for _ in xrange(8)))
         self.contextIndex = 0
         self.hashLow = 0
@@ -90,22 +97,16 @@ class Common(object):
         self.precomputedHashes = array.array("l",
             ((((2166136261 * 16777619) ^ i) * 16777619) & 0x7fffffff
                 for i in xrange(256)))
-        # SEE stuff
-        self.historyLow = 0
-        self.historyHigh = 0
-        self.historyLowMask = 15
-        self.historyHighMask = 15
 
     # Contexts and hashes
-
     def updateContext(self, input):
         self.contextIndex = (self.contextIndex - 1) & 7
         self.context[self.contextIndex] = input
 
-    def computePpmContext(self):
-        self.lastPpmContext = self.context[self.contextIndex]
-        if self.ppmOrder == 2:
-            self.lastPpmContext = (self.lastPpmContext << 8) \
+    def computeLiteralCoderContext(self):
+        self.lastLiteralCoderContext = self.context[self.contextIndex]
+        if self.literalCoderOrder == 2:
+            self.lastLiteralCoderContext = (self.lastLiteralCoderContext << 8)\
             + self.context[(self.contextIndex + 1) & 7]
 
     def computeHashesOnlyLowLzp(self):
@@ -147,6 +148,7 @@ class Common(object):
     def getNextState(self, state, match):
         return Common.StateTable[state * 2 + (1 if match else 0)]
 
+    # Lempel-Ziv Predictive stuff
     def getLzpStateLow(self):
         return (self.lzpLow[self.hashLow] & 0xff00) >> 8
 
@@ -167,60 +169,62 @@ class Common(object):
         self.lzpHigh[self.hashHigh] = (self.getNextState(lzpStateHigh, match)
                                        << 8) + input
 
-    # SEE stuff
-    def getSeeLow(self, state):
-        return self.seeLow[(self.historyLow << 8) + state]
+    # Adaptive probability map stuff
+    def getApmLow(self, state):
+        return self.apmLow[(self.historyLow << 8) + state]
 
-    def getSeeHigh(self, state):
-        return self.seeHigh[(self.historyHigh << 8) + state]
+    def getApmHigh(self, state):
+        return self.apmHigh[(self.historyHigh << 8) + state]
 
-    def updateSeeHistoryLow(self, match):
-        self.historyLow = ((self.historyLow << 1) + (0 if match else 1)) \
+    def updateApmHistoryLow(self, match):
+        self.historyLow = ((self.historyLow << 1) + (0 if match else 1))\
         & self.historyLowMask
 
-    def updateSeeHistoryHigh(self, match):
-        self.historyHigh = ((self.historyHigh << 1) + (0 if match else 1)) \
+    def updateApmHistoryHigh(self, match):
+        self.historyHigh = ((self.historyHigh << 1) + (0 if match else 1))\
         & self.historyHighMask
 
-    def updateSeeLow(self, state, match):
+    def updateApmLow(self, state, match):
         index = (self.historyLow << 8) + state
         if match:
-            self.seeLow[index] += ((1 << 15) - self.seeLow[index]) >> 7
+            self.apmLow[index] += ((1 << 15) - self.apmLow[index]) >> 7
         else:
-            self.seeLow[index] -= self.seeLow[index] >> 7
-        self.updateSeeHistoryLow(match)
+            self.apmLow[index] -= self.apmLow[index] >> 7
+        self.updateApmHistoryLow(match)
 
-    def updateSeeHigh(self, state, match):
+    def updateApmHigh(self, state, match):
         index = (self.historyHigh << 8) + state
         if match:
-            self.seeHigh[index] += ((1 << 15) - self.seeHigh[index]) >> 7
+            self.apmHigh[index] += ((1 << 15) - self.apmHigh[index]) >> 7
         else:
-            self.seeHigh[index] -= self.seeHigh[index] >> 7
-        self.updateSeeHistoryHigh(match)
+            self.apmHigh[index] -= self.apmHigh[index] >> 7
+        self.updateApmHistoryHigh(match)
 
-    # PPM stuff
-    def rescalePpm(self):
-        for indexCurrent in xrange(self.lastPpmContext << 8,
-            (self.lastPpmContext + 1) << 8):
-            self.rangesSingle[indexCurrent] -= \
+    # Literal coder stuff
+    def rescaleLiteralCoder(self):
+        for indexCurrent in xrange(self.lastLiteralCoderContext << 8,
+            (self.lastLiteralCoderContext + 1) << 8):
+            self.rangesSingle[indexCurrent] -=\
             self.rangesSingle[indexCurrent] >> 1
         totalFrequency = 0
-        for groupCurrent in xrange(self.lastPpmContext << 4,
-            (self.lastPpmContext + 1) << 4):
+        for groupCurrent in xrange(self.lastLiteralCoderContext << 4,
+            (self.lastLiteralCoderContext + 1) << 4):
             groupFrequency = 0
             for indexCurrent in xrange(groupCurrent << 4,
                 (groupCurrent + 1) << 4):
                 groupFrequency += self.rangesSingle[indexCurrent]
             self.rangesGrouped[groupCurrent] = groupFrequency
             totalFrequency += groupFrequency
-        self.rangesTotal[self.lastPpmContext] = totalFrequency
+        self.rangesTotal[self.lastLiteralCoderContext] = totalFrequency
 
-    def updatePpm(self, index):
-        self.rangesSingle[index] += self.ppmStep
-        self.rangesGrouped[index >> 4] += self.ppmStep
-        self.rangesTotal[self.lastPpmContext] += self.ppmStep
-        if self.rangesTotal[self.lastPpmContext] > self.ppmLimit:
-            self.rescalePpm()
+    def updateLiteralCoder(self, index):
+        self.rangesSingle[index] += self.literalCoderStep
+        self.rangesGrouped[index >> 4] += self.literalCoderStep
+        self.rangesTotal[self.lastLiteralCoderContext]\
+        += self.literalCoderStep
+        if self.rangesTotal[self.lastLiteralCoderContext]\
+        > self.literalCoderLimit:
+            self.rescaleLiteralCoder()
 
     def useFixedProbabilities(self):
         return self.recentCost > 8 << self.CostScale + 14

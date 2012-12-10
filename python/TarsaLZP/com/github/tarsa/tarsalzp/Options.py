@@ -35,39 +35,40 @@ __author__ = 'Piotr Tarsa'
 
 class Options(object):
     def __init__(self, lzpLowContextLength, lzpLowMaskSize,
-                 lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
-                 ppmStep, ppmLimit):
+                 lzpHighContextLength, lzpHighMaskSize, literalCoderOrder,
+                 literalCoderInit, literalCoderStep, literalCoderLimit):
         self.lzpLowContextLength = lzpLowContextLength
         self.lzpLowMaskSize = lzpLowMaskSize
         self.lzpHighContextLength = lzpHighContextLength
         self.lzpHighMaskSize = lzpHighMaskSize
-        self.ppmOrder = ppmOrder
-        self.ppmInit = ppmInit
-        self.ppmStep = ppmStep
-        self.ppmLimit = ppmLimit
+        self.literalCoderOrder = literalCoderOrder
+        self.literalCoderInit = literalCoderInit
+        self.literalCoderStep = literalCoderStep
+        self.literalCoderLimit = literalCoderLimit
 
     def isValid(self):
-        return (self.lzpLowContextLength > self.ppmOrder)\
-        & (self.lzpLowContextLength <= self.lzpHighContextLength)\
-        & (self.lzpHighContextLength <= 8)\
-        & (self.lzpLowMaskSize >= 15)\
-        & (self.lzpLowMaskSize <= 30)\
-        & (self.lzpHighMaskSize >= 15)\
-        & (self.lzpHighMaskSize <= 30)\
-        & (self.ppmOrder >= 1)\
-        & (self.ppmOrder <= 2)\
-        & (self.ppmInit >= 1)\
-        & (self.ppmInit <= 127)\
-        & (self.ppmStep >= 1)\
-        & (self.ppmStep <= 127)\
-        & (self.ppmLimit >= self.ppmInit * 256)\
-        & (self.ppmLimit <= 32767 - self.ppmStep)
+        return (self.lzpLowContextLength > self.literalCoderOrder)\
+               & (self.lzpLowContextLength <= self.lzpHighContextLength)\
+               & (self.lzpHighContextLength <= 8)\
+               & (self.lzpLowMaskSize >= 15)\
+               & (self.lzpLowMaskSize <= 30)\
+               & (self.lzpHighMaskSize >= 15)\
+               & (self.lzpHighMaskSize <= 30)\
+               & (self.literalCoderOrder >= 1)\
+               & (self.literalCoderOrder <= 2)\
+               & (self.literalCoderInit >= 1)\
+               & (self.literalCoderInit <= 127)\
+               & (self.literalCoderStep >= 1)\
+               & (self.literalCoderStep <= 127)\
+               & (self.literalCoderLimit >= self.literalCoderInit * 256)\
+        & (self.literalCoderLimit <= 32767 - self.literalCoderStep)
 
     def toPacked(self):
         a = (self.lzpLowContextLength << 8) + self.lzpLowMaskSize
         b = (self.lzpHighContextLength << 8) + self.lzpHighMaskSize
-        c = ((self.ppmOrder - 1) << 15) + (self.ppmInit << 8) + self.ppmStep
-        d = self.ppmLimit
+        c = ((self.literalCoderOrder - 1) << 15) + (self.literalCoderInit << 8)\
+        + self.literalCoderStep
+        d = self.literalCoderLimit
         return Long(a, b, c, d)
 
     @staticmethod
@@ -86,10 +87,10 @@ class Options(object):
         lzpLowMaskSize = 24
         lzpHighContextLength = 8
         lzpHighMaskSize = 27
-        ppmOrder = 2
-        ppmInit = 1
-        ppmStep = 60
-        ppmLimit = 30000
+        literalCoderOrder = 2
+        literalCoderInit = 1
+        literalCoderStep = 60
+        literalCoderLimit = 30000
         return Options(lzpLowContextLength, lzpLowMaskSize,
-            lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit, ppmStep,
-            ppmLimit)
+            lzpHighContextLength, lzpHighMaskSize, literalCoderOrder,
+            literalCoderInit, literalCoderStep, literalCoderLimit)

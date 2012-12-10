@@ -115,10 +115,10 @@ public final class Encoder extends Common {
         computeHashesOnlyLowLzp();
         final int lzpStateLow = getLzpStateLow();
         final int predictedSymbolLow = getLzpPredictedSymbolLow();
-        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int modelLowFrequency = getApmLow(lzpStateLow);
         final boolean matchLow = nextSymbol == predictedSymbolLow;
         encodeFlag(modelLowFrequency, matchLow);
-        updateSeeLow(lzpStateLow, matchLow);
+        updateApmLow(lzpStateLow, matchLow);
         updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         if (!matchLow) {
             encodeSymbol(nextSymbol, predictedSymbolLow);
@@ -130,28 +130,28 @@ public final class Encoder extends Common {
         computeHashes();
         final int lzpStateLow = getLzpStateLow();
         final int predictedSymbolLow = getLzpPredictedSymbolLow();
-        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int modelLowFrequency = getApmLow(lzpStateLow);
         final int lzpStateHigh = getLzpStateHigh();
         final int predictedSymbolHigh = getLzpPredictedSymbolHigh();
-        final int modelHighFrequency = getSeeHigh(lzpStateHigh);
+        final int modelHighFrequency = getApmHigh(lzpStateHigh);
         if (modelLowFrequency >= modelHighFrequency) {
             final boolean matchHigh = nextSymbol == predictedSymbolHigh;
-            updateSeeHistoryHigh(matchHigh);
+            updateApmHistoryHigh(matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             final boolean matchLow = nextSymbol == predictedSymbolLow;
             encodeFlag(modelLowFrequency, matchLow);
-            updateSeeLow(lzpStateLow, matchLow);
+            updateApmLow(lzpStateLow, matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             if (!matchLow) {
                 encodeSymbol(nextSymbol, predictedSymbolLow);
             }
         } else {
             final boolean matchLow = nextSymbol == predictedSymbolLow;
-            updateSeeHistoryLow(matchLow);
+            updateApmHistoryLow(matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             final boolean matchHigh = nextSymbol == predictedSymbolHigh;
             encodeFlag(modelHighFrequency, matchHigh);
-            updateSeeHigh(lzpStateHigh, matchHigh);
+            updateApmHigh(lzpStateHigh, matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             if (!matchHigh) {
                 encodeSymbol(nextSymbol, predictedSymbolHigh);
@@ -163,12 +163,12 @@ public final class Encoder extends Common {
     private void encodeSymbol(final int nextSymbol,
             final int mispredictedSymbol) throws IOException {
         normalize();
-        computePpmContext();
-        final int index = (getLastPpmContext() << 8) + nextSymbol;
+        computeLiteralCoderContext();
+        final int index = (getLastLiteralCoderContext() << 8) + nextSymbol;
         if (!useFixedProbabilities()) {
             short cumulativeExclusiveFrequency = 0;
             final int symbolGroup = index >> 4;
-            for (int indexPartial = getLastPpmContext() << 4;
+            for (int indexPartial = getLastLiteralCoderContext() << 4;
                     indexPartial < symbolGroup; indexPartial++) {
                 cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
             }
@@ -177,21 +177,23 @@ public final class Encoder extends Common {
                 cumulativeExclusiveFrequency += rangesSingle[indexPartial];
             }
             final short mispredictedSymbolFrequency = rangesSingle[
-                    (getLastPpmContext() << 8) + mispredictedSymbol];
+                    (getLastLiteralCoderContext() << 8) + mispredictedSymbol];
             if (nextSymbol > mispredictedSymbol) {
                 cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
             }
-            final int rcHelper = rcRange / (rangesTotal[getLastPpmContext()]
+            final int rcHelper = rcRange / (rangesTotal[
+                    getLastLiteralCoderContext()]
                     - mispredictedSymbolFrequency);
             addWithCarry(rcHelper * cumulativeExclusiveFrequency);
             rcRange = rcHelper * rangesSingle[index];
         } else {
             rcRange /= 255;
-            addWithCarry(rcRange *
-                    (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
+            addWithCarry(rcRange
+                    * (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
-        updateRecentCost(rangesSingle[index], rangesTotal[getLastPpmContext()]);
-        updatePpm(index);
+        updateRecentCost(rangesSingle[index],
+                rangesTotal[getLastLiteralCoderContext()]);
+        updateLiteralCoder(index);
     }
 
     void flush() throws IOException {

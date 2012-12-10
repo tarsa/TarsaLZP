@@ -29,32 +29,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 function newOptions(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength,
-                    lzpHighMaskSize, ppmOrder, ppmInit, ppmStep, ppmLimit) {
+                    lzpHighMaskSize, literalCoderOrder, literalCoderInit,
+                    literalCoderStep, literalCoderLimit) {
     var self = {};
 
     self.isValid = function() {
-        return lzpLowContextLength > ppmOrder
+        return lzpLowContextLength > literalCoderOrder
             && lzpLowContextLength <= lzpHighContextLength
             && lzpHighContextLength <= 8
             && lzpLowMaskSize >= 15
             && lzpLowMaskSize <= 30
             && lzpHighMaskSize >= 15
             && lzpHighMaskSize <= 30
-            && ppmOrder >= 1
-            && ppmOrder <= 2
-            && ppmInit >= 1
-            && ppmInit <= 127
-            && ppmStep >= 1
-            && ppmStep <= 127
-            && ppmLimit >= ppmInit * 256
-            && ppmLimit <= 32767 - ppmStep;
+            && literalCoderOrder >= 1
+            && literalCoderOrder <= 2
+            && literalCoderInit >= 1
+            && literalCoderInit <= 127
+            && literalCoderStep >= 1
+            && literalCoderStep <= 127
+            && literalCoderLimit >= literalCoderInit * 256
+            && literalCoderLimit <= 32767 - literalCoderStep;
     };
 
     self.toPacked = function() {
         var a = (lzpLowContextLength << 8) + (lzpLowMaskSize);
         var b = (lzpHighContextLength << 8) + (lzpHighMaskSize);
-        var c = ((ppmOrder - 1) << 15) + (ppmInit << 8) + (ppmStep);
-        var d = (ppmLimit);
+        var c = ((literalCoderOrder - 1) << 15) + (literalCoderInit << 8)
+            + (literalCoderStep);
+        var d = (literalCoderLimit);
         return new Long(a, b, c, d);
     };
 
@@ -74,20 +76,20 @@ function newOptions(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength,
         return lzpHighMaskSize;
     };
 
-    self.getPpmOrder = function() {
-        return ppmOrder;
+    self.getLiteralCoderOrder = function() {
+        return literalCoderOrder;
     };
 
-    self.getPpmInit = function() {
-        return ppmInit;
+    self.getLiteralCoderInit = function() {
+        return literalCoderInit;
     };
 
-    self.getPpmStep = function() {
-        return ppmStep;
+    self.getLiteralCoderStep = function() {
+        return literalCoderStep;
     };
 
-    self.getPpmLimit = function() {
-        return ppmLimit;
+    self.getLiteralCoderLimit = function() {
+        return literalCoderLimit;
     };
 
     if (self.isValid()) {

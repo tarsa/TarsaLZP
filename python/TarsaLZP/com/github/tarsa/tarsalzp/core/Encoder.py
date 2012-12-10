@@ -90,10 +90,10 @@ class Encoder(Common):
         self.computeHashesOnlyLowLzp()
         lzpStateLow = self.getLzpStateLow()
         predictedSymbolLow = self.getLzpPredictedSymbolLow()
-        modelLowFrequency = self.getSeeLow(lzpStateLow)
+        modelLowFrequency = self.getApmLow(lzpStateLow)
         matchLow = nextSymbol == predictedSymbolLow
         self.encodeFlag(modelLowFrequency, matchLow)
-        self.updateSeeLow(lzpStateLow, matchLow)
+        self.updateApmLow(lzpStateLow, matchLow)
         self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
         if not matchLow:
             self.encodeSymbol(nextSymbol, predictedSymbolLow)
@@ -103,27 +103,27 @@ class Encoder(Common):
         self.computeHashes()
         lzpStateLow = self.getLzpStateLow()
         predictedSymbolLow = self.getLzpPredictedSymbolLow()
-        modelLowFrequency = self.getSeeLow(lzpStateLow)
+        modelLowFrequency = self.getApmLow(lzpStateLow)
         lzpStateHigh = self.getLzpStateHigh()
         predictedSymbolHigh = self.getLzpPredictedSymbolHigh()
-        modelHighFrequency = self.getSeeHigh(lzpStateHigh)
+        modelHighFrequency = self.getApmHigh(lzpStateHigh)
         if modelLowFrequency >= modelHighFrequency:
             matchHigh = nextSymbol == predictedSymbolHigh
-            self.updateSeeHistoryHigh(matchHigh)
+            self.updateApmHistoryHigh(matchHigh)
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh)
             matchLow = nextSymbol == predictedSymbolLow
             self.encodeFlag(modelLowFrequency, matchLow)
-            self.updateSeeLow(lzpStateLow, matchLow)
+            self.updateApmLow(lzpStateLow, matchLow)
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
             if not matchLow:
                 self.encodeSymbol(nextSymbol, predictedSymbolLow)
         else:
             matchLow = nextSymbol == predictedSymbolLow
-            self.updateSeeHistoryLow(matchLow)
+            self.updateApmHistoryLow(matchLow)
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
             matchHigh = nextSymbol == predictedSymbolHigh
             self.encodeFlag(modelHighFrequency, matchHigh)
-            self.updateSeeHigh(lzpStateHigh, matchHigh)
+            self.updateApmHigh(lzpStateHigh, matchHigh)
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh)
             if not matchHigh:
                 self.encodeSymbol(nextSymbol, predictedSymbolHigh)
@@ -131,21 +131,23 @@ class Encoder(Common):
 
     def encodeSymbol(self, nextSymbol, mispredictedSymbol):
         self.normalize()
-        self.computePpmContext()
-        index = (self.lastPpmContext << 8) + nextSymbol
+        self.computeLiteralCoderContext()
+        index = (self.lastLiteralCoderContext << 8) + nextSymbol
         if not self.useFixedProbabilities():
             cumulativeExclusiveFrequency = 0
             symbolGroup = index >> 4
-            for indexPartial in xrange(self.lastPpmContext << 4, symbolGroup):
+            for indexPartial in xrange(self.lastLiteralCoderContext << 4,
+                symbolGroup):
                 cumulativeExclusiveFrequency += self.rangesGrouped[indexPartial]
             for indexPartial in xrange(symbolGroup << 4, index):
                 cumulativeExclusiveFrequency += self.rangesSingle[indexPartial]
             mispredictedSymbolFrequency = \
-            self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
+            self.rangesSingle[(self.lastLiteralCoderContext << 8)
+            + mispredictedSymbol]
             if nextSymbol > mispredictedSymbol:
                 cumulativeExclusiveFrequency -= mispredictedSymbolFrequency
-            rcHelper = self.rcRange / (self.rangesTotal[self.lastPpmContext]
-                                       - mispredictedSymbolFrequency)
+            rcHelper = self.rcRange / (self.rangesTotal[
+                self.lastLiteralCoderContext] - mispredictedSymbolFrequency)
             self.addWithCarry(rcHelper * cumulativeExclusiveFrequency)
             self.rcRange = rcHelper * self.rangesSingle[index]
         else:
@@ -153,8 +155,8 @@ class Encoder(Common):
             self.addWithCarry(self.rcRange * (nextSymbol
                 - (1 if nextSymbol > mispredictedSymbol else 0)))
         self.updateRecentCost(self.rangesSingle[index],
-            self.rangesTotal[self.lastPpmContext])
-        self.updatePpm(index)
+            self.rangesTotal[self.lastLiteralCoderContext])
+        self.updateLiteralCoder(index)
 
     def flush(self):
         self.encodeSkewed(False)

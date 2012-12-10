@@ -139,8 +139,8 @@ extern "C" {
     void encodeSymbol(int32_t const nextSymbol,
             int32_t const mispredictedSymbol) {
         encoderNormalize();
-        computePpmContext();
-        int32_t const index = (lastPpmContext << 8) + nextSymbol;
+        computeLiteralCoderContext();
+        int32_t const index = (lastLiteralCoderContext << 8) + nextSymbol;
         if (!useFixedProbabilities()) {
             int16_t cumulativeExclusiveFrequency = 0;
             int32_t const symbolGroup = index >> 4;
@@ -154,11 +154,12 @@ extern "C" {
             } a, b, c;
             a.m = __builtin_ia32_pxor128(a.m, a.m);
             b.m = masksA[symbolGroup & 15].v8;
-            c.v8 = *(__v8hi*) (rangesGrouped + (lastPpmContext << 4));
+            c.v8 = *(__v8hi*) (rangesGrouped + (lastLiteralCoderContext << 4));
             b.m = __builtin_ia32_pand128(b.m, c.m);
             a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
             b.m = masksB[symbolGroup & 15].v8;
-            c.v8 = *(__v8hi*) (rangesGrouped + (lastPpmContext << 4) + 8);
+            c.v8 = *(__v8hi*) (rangesGrouped + (lastLiteralCoderContext << 4)
+                    + 8);
             b.m = __builtin_ia32_pand128(b.m, c.m);
             a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
             b.m = masksA[nextSymbol & 15].v8;
@@ -173,7 +174,7 @@ extern "C" {
             cumulativeExclusiveFrequency += (packedSum & 0xffff)
                     + (packedSum >> 16);
 #else
-            for (int32_t indexPartial = lastPpmContext << 4;
+            for (int32_t indexPartial = lastLiteralCoderContext << 4;
                     indexPartial < symbolGroup; indexPartial++) {
                 cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
             }
@@ -182,13 +183,13 @@ extern "C" {
                 cumulativeExclusiveFrequency += rangesSingle[indexPartial];
             }
 #endif
-            int16_t const mispredictedSymbolFrequency =
-                    rangesSingle[(lastPpmContext << 8) + mispredictedSymbol];
+            int16_t const mispredictedSymbolFrequency = rangesSingle[
+                    (lastLiteralCoderContext << 8) + mispredictedSymbol];
             if (nextSymbol > mispredictedSymbol) {
                 cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
             }
-            int32_t const rcHelper = rcRange / (rangesTotal[lastPpmContext]
-                    - mispredictedSymbolFrequency);
+            int32_t const rcHelper = rcRange / (rangesTotal[
+                    lastLiteralCoderContext] - mispredictedSymbolFrequency);
             encoderAddWithCarry(rcHelper * cumulativeExclusiveFrequency);
             rcRange = rcHelper * rangesSingle[index];
         } else {
@@ -196,8 +197,9 @@ extern "C" {
             encoderAddWithCarry(rcRange *
                     (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
-        updateRecentCost(rangesSingle[index], rangesTotal[lastPpmContext]);
-        updatePpm(index);
+        updateRecentCost(rangesSingle[index],
+                rangesTotal[lastLiteralCoderContext]);
+        updateLiteralCoder(index);
     }
 
     void encodeSingleOnlyLowLzp(int32_t const nextSymbol) {
@@ -209,10 +211,10 @@ extern "C" {
 #endif
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
-        int32_t const modelLowFrequency = getSeeLow(lzpStateLow);
+        int32_t const modelLowFrequency = getApmLow(lzpStateLow);
         bool const matchLow = nextSymbol == predictedSymbolLow;
         encodeFlag(modelLowFrequency, matchLow);
-        updateSeeLow(lzpStateLow, matchLow);
+        updateApmLow(lzpStateLow, matchLow);
         updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         if (!matchLow) {
             encodeSymbol(nextSymbol, predictedSymbolLow);
@@ -229,28 +231,28 @@ extern "C" {
 #endif
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
-        int32_t const modelLowFrequency = getSeeLow(lzpStateLow);
+        int32_t const modelLowFrequency = getApmLow(lzpStateLow);
         int32_t const lzpStateHigh = getLzpStateHigh();
         int32_t const predictedSymbolHigh = getLzpPredictedSymbolHigh();
-        int32_t const modelHighFrequency = getSeeHigh(lzpStateHigh);
+        int32_t const modelHighFrequency = getApmHigh(lzpStateHigh);
         if (modelLowFrequency >= modelHighFrequency) {
             bool const matchHigh = nextSymbol == predictedSymbolHigh;
-            updateSeeHistoryHigh(matchHigh);
+            updateApmHistoryHigh(matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             bool const matchLow = nextSymbol == predictedSymbolLow;
             encodeFlag(modelLowFrequency, matchLow);
-            updateSeeLow(lzpStateLow, matchLow);
+            updateApmLow(lzpStateLow, matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             if (!matchLow) {
                 encodeSymbol(nextSymbol, predictedSymbolLow);
             }
         } else {
             bool const matchLow = nextSymbol == predictedSymbolLow;
-            updateSeeHistoryLow(matchLow);
+            updateApmHistoryLow(matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             bool const matchHigh = nextSymbol == predictedSymbolHigh;
             encodeFlag(modelHighFrequency, matchHigh);
-            updateSeeHigh(lzpStateHigh, matchHigh);
+            updateApmHigh(lzpStateHigh, matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             if (!matchHigh) {
                 encodeSymbol(nextSymbol, predictedSymbolHigh);

@@ -34,10 +34,10 @@ function newOptionsBean() {
     var lzpLowMaskSize = 24;
     var lzpHighContextLength = 8;
     var lzpHighMaskSize = 27;
-    var ppmOrder = 2;
-    var ppmInit = 1;
-    var ppmStep = 60;
-    var ppmLimit = 30000;
+    var literalCoderOrder = 2;
+    var literalCoderInit = 1;
+    var literalCoderStep = 60;
+    var literalCoderLimit = 30000;
     var listeners = [];
 
     var self = {};
@@ -79,20 +79,20 @@ function newOptionsBean() {
         return lzpHighMaskSize;
     };
 
-    self.getPpmOrder = function () {
-        return ppmOrder;
+    self.getLiteralCoderOrder = function () {
+        return literalCoderOrder;
     };
 
-    self.getPpmInit = function () {
-        return ppmInit;
+    self.getLiteralCoderInit = function () {
+        return literalCoderInit;
     };
 
-    self.getPpmStep = function () {
-        return ppmStep;
+    self.getLiteralCoderStep = function () {
+        return literalCoderStep;
     };
 
-    self.getPpmLimit = function () {
-        return ppmLimit;
+    self.getLiteralCoderLimit = function () {
+        return literalCoderLimit;
     };
 
     self.setLzpLowContextLength = function (_lzpLowContextLength) {
@@ -123,31 +123,31 @@ function newOptionsBean() {
         }
     };
 
-    self.setPpmOrder = function (_ppmOrder) {
-        if (ppmOrder != _ppmOrder) {
-            ppmOrder = _ppmOrder;
-            firePropertyChange("ppmOrder");
+    self.setLiteralCoderOrder = function (_literalCoderOrder) {
+        if (literalCoderOrder != _literalCoderOrder) {
+            literalCoderOrder = _literalCoderOrder;
+            firePropertyChange("literalCoderOrder");
         }
     };
 
-    self.setPpmInit = function (_ppmInit) {
-        if (ppmInit != _ppmInit) {
-            ppmInit = _ppmInit;
-            firePropertyChange("ppmInit");
+    self.setLiteralCoderInit = function (_literalCoderInit) {
+        if (literalCoderInit != _literalCoderInit) {
+            literalCoderInit = _literalCoderInit;
+            firePropertyChange("literalCoderInit");
         }
     };
 
-    self.setPpmStep = function (_ppmStep) {
-        if (ppmStep != _ppmStep) {
-            ppmStep = _ppmStep;
-            firePropertyChange("ppmStep");
+    self.setLiteralCoderStep = function (_literalCoderStep) {
+        if (literalCoderStep != _literalCoderStep) {
+            literalCoderStep = _literalCoderStep;
+            firePropertyChange("literalCoderStep");
         }
     };
 
-    self.setPpmLimit = function (_ppmLimit) {
-        if (ppmLimit != _ppmLimit) {
-            ppmLimit = _ppmLimit;
-            firePropertyChange("ppmLimit");
+    self.setLiteralCoderLimit = function (_literalCoderLimit) {
+        if (literalCoderLimit != _literalCoderLimit) {
+            literalCoderLimit = _literalCoderLimit;
+            firePropertyChange("literalCoderLimit");
         }
     };
 
@@ -160,8 +160,8 @@ function newOptionsBean() {
 
     self.toOptions = function() {
         return newOptions(lzpLowContextLength, lzpLowMaskSize,
-            lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
-            ppmStep, ppmLimit);
+            lzpHighContextLength, lzpHighMaskSize, literalCoderOrder,
+            literalCoderInit, literalCoderStep, literalCoderLimit);
     };
 
     return self;

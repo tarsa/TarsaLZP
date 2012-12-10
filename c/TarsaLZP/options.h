@@ -43,38 +43,38 @@ extern "C" {
     int32_t lzpLowMaskSize;
     int32_t lzpHighContextLength;
     int32_t lzpHighMaskSize;
-    int32_t ppmOrder;
-    int32_t ppmInit;
-    int32_t ppmStep;
-    int32_t ppmLimit;
+    int32_t literalCoderOrder;
+    int32_t literalCoderInit;
+    int32_t literalCoderStep;
+    int32_t literalCoderLimit;
 
     void __options__() {
         lzpLowContextLength = 4;
         lzpLowMaskSize = 24;
         lzpHighContextLength = 8;
         lzpHighMaskSize = 27;
-        ppmOrder = 2;
-        ppmInit = 1;
-        ppmStep = 60;
-        ppmLimit = 30000;
+        literalCoderOrder = 2;
+        literalCoderInit = 1;
+        literalCoderStep = 60;
+        literalCoderLimit = 30000;
     }
 
     bool optionsValid() {
-        return lzpLowContextLength > ppmOrder
+        return lzpLowContextLength > literalCoderOrder
                 && lzpLowContextLength <= lzpHighContextLength
                 && lzpHighContextLength <= 8
                 && lzpLowMaskSize >= 15
                 && lzpLowMaskSize <= 30
                 && lzpHighMaskSize >= 15
                 && lzpHighMaskSize <= 30
-                && ppmOrder >= 1
-                && ppmOrder <= 2
-                && ppmInit >= 1
-                && ppmInit <= 127
-                && ppmStep >= 1
-                && ppmStep <= 127
-                && ppmLimit >= ppmInit * 256
-                && ppmLimit <= 32767 - ppmStep;
+                && literalCoderOrder >= 1
+                && literalCoderOrder <= 2
+                && literalCoderInit >= 1
+                && literalCoderInit <= 127
+                && literalCoderStep >= 1
+                && literalCoderStep <= 127
+                && literalCoderLimit >= literalCoderInit * 256
+                && literalCoderLimit <= 32767 - literalCoderStep;
     }
 
     void optionsLoad(uint64_t const packed) {
@@ -82,10 +82,10 @@ extern "C" {
         lzpLowMaskSize = packed >> 48 & 0xff;
         lzpHighContextLength = packed >> 40 & 0xff;
         lzpHighMaskSize = packed >> 32 & 0xff;
-        ppmOrder = (packed >> 31 & 0x01) + 1;
-        ppmInit = packed >> 24 & 0x7f;
-        ppmStep = packed >> 16 & 0xff;
-        ppmLimit = packed & 0xffff;
+        literalCoderOrder = (packed >> 31 & 0x01) + 1;
+        literalCoderInit = packed >> 24 & 0x7f;
+        literalCoderStep = packed >> 16 & 0xff;
+        literalCoderLimit = packed & 0xffff;
     }
 
     uint64_t optionsSave() {
@@ -93,10 +93,10 @@ extern "C" {
                 + ((uint64_t) (lzpLowMaskSize & 0xff) << 48)
                 + ((uint64_t) (lzpHighContextLength & 0xff) << 40)
                 + ((uint64_t) (lzpHighMaskSize & 0xff) << 32)
-                + ((uint64_t) ((ppmOrder - 1) & 0x01) << 31)
-                + ((uint64_t) (ppmInit & 0x7f) << 24)
-                + ((uint64_t) (ppmStep & 0xff) << 16)
-                + ((uint64_t) ppmLimit & 0xffff);
+                + ((uint64_t) ((literalCoderOrder - 1) & 0x01) << 31)
+                + ((uint64_t) (literalCoderInit & 0x7f) << 24)
+                + ((uint64_t) (literalCoderStep & 0xff) << 16)
+                + ((uint64_t) literalCoderLimit & 0xffff);
     }
 
 

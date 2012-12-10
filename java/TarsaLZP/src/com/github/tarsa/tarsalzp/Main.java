@@ -72,10 +72,10 @@ public class Main {
         err("\tlzpLowMaskSize=" + options.getLzpLowMaskSize());
         err("\tlzpHighContextLength=" + options.getLzpHighContextLength());
         err("\tlzpHighMaskSize=" + options.getLzpHighMaskSize());
-        err("\tppmOrder=" + options.getPpmOrder());
-        err("\tppmInit=" + options.getPpmInit());
-        err("\tppmStep=" + options.getPpmStep());
-        err("\tppmLimit=" + options.getPpmLimit());
+        err("\tliteralCoderOrder=" + options.getLiteralCoderOrder());
+        err("\tliteralCoderInit=" + options.getLiteralCoderInit());
+        err("\tliteralCoderStep=" + options.getLiteralCoderStep());
+        err("\tliteralCoderLimit=" + options.getLiteralCoderLimit());
         err("Example program invocation (with increased heap size): ");
         err("\tjava -Xmx3500m -jar TarsaLZP.jar encode lzpHighMaskSize=30 "
                 + "< input > output");
@@ -174,17 +174,17 @@ public class Main {
             } else if ("lzpHighMaskSize".equalsIgnoreCase(option)) {
                 optionsBean.setLzpHighMaskSize(
                         Integer.parseInt(optionsMap.get(option)));
-            } else if ("ppmOrder".equalsIgnoreCase(option)) {
-                optionsBean.setPpmOrder(
+            } else if ("literalCoderOrder".equalsIgnoreCase(option)) {
+                optionsBean.setLiteralCoderOrder(
                         Integer.parseInt(optionsMap.get(option)));
-            } else if ("ppmInit".equalsIgnoreCase(option)) {
-                optionsBean.setPpmInit(
+            } else if ("literalCoderInit".equalsIgnoreCase(option)) {
+                optionsBean.setLiteralCoderInit(
                         Integer.parseInt(optionsMap.get(option)));
-            } else if ("ppmStep".equalsIgnoreCase(option)) {
-                optionsBean.setPpmStep(
+            } else if ("literalCoderStep".equalsIgnoreCase(option)) {
+                optionsBean.setLiteralCoderStep(
                         Integer.parseInt(optionsMap.get(option)));
-            } else if ("ppmLimit".equalsIgnoreCase(option)) {
-                optionsBean.setPpmLimit(
+            } else if ("literalCoderLimit".equalsIgnoreCase(option)) {
+                optionsBean.setLiteralCoderLimit(
                         Integer.parseInt(optionsMap.get(option)));
             } else {
                 printError("Not suitable or unknown option: " + option);

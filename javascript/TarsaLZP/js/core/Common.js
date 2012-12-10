@@ -33,12 +33,12 @@ function newCommon(options) {
     var lzpLowMaskSize = options.getLzpLowMaskSize();
     var lzpHighContextLength = options.getLzpHighContextLength();
     var lzpHighMaskSize = options.getLzpHighMaskSize();
-    var ppmOrder = options.getPpmOrder();
-    var ppmInit = options.getPpmInit();
-    var ppmStep = options.getPpmStep();
-    var ppmLimit = options.getPpmLimit();
+    var literalCoderOrder = options.getLiteralCoderOrder();
+    var literalCoderInit = options.getLiteralCoderInit();
+    var literalCoderStep = options.getLiteralCoderStep();
+    var literalCoderLimit = options.getLiteralCoderLimit();
 
-    /// LZP section
+    // Lempel-Ziv Predictive section
     var lzpLowCount = 1 << lzpLowMaskSize;
     var lzpHighCount = 1 << lzpHighMaskSize;
     var lzpLowMask = lzpLowCount - 1;
@@ -54,27 +54,27 @@ function newCommon(options) {
         lzpHigh = new Uint16Array(lzpHighCount);
         fillArray(lzpHigh, 0xffb5);
     }
-    // PPM section
+    // Literal coder section
     var CostScale = 7;
-    var ppmMaskSize = ppmOrder * 8;
-    var rangesSingle = new Int16Array(1 << ppmMaskSize + 8);
-    fillArray(rangesSingle, ppmInit);
-    var rangesGrouped = new Int16Array(1 << ppmMaskSize + 4);
-    fillArray(rangesGrouped, ppmInit * 16);
-    var rangesTotal = new Int16Array(1 << ppmMaskSize);
-    fillArray(rangesTotal, ppmInit * 256);
+    var literalCoderContextMaskSize = literalCoderOrder * 8;
+    var rangesSingle = new Int16Array(1 << literalCoderContextMaskSize + 8);
+    fillArray(rangesSingle, literalCoderInit);
+    var rangesGrouped = new Int16Array(1 << literalCoderContextMaskSize + 4);
+    fillArray(rangesGrouped, literalCoderInit * 16);
+    var rangesTotal = new Int16Array(1 << literalCoderContextMaskSize);
+    fillArray(rangesTotal, literalCoderInit * 256);
     var recentCost = 8 << CostScale + 14;
-    // SEE section
-    var seeLow = new Int16Array(16 * 256);
-    fillArray(seeLow, 0x4000);
-    var seeHigh = new Int16Array(16 * 256);
-    fillArray(seeHigh, 0x4000);
+    // Adaptive probability map section
+    var apmLow = new Int16Array(16 * 256);
+    fillArray(apmLow, 0x4000);
+    var apmHigh = new Int16Array(16 * 256);
+    fillArray(apmHigh, 0x4000);
     var historyLow = 0;
     var historyLowMask = 15;
     var historyHigh = 0;
     var historyHighMask = 15;
     // Contexts and hashes
-    var lastPpmContext = 0;
+    var lastLiteralCoderContext = 0;
     var context = new Uint8Array(8);
     fillArray(context, 0);
     var contextIndex = 0;
@@ -106,10 +106,10 @@ function newCommon(options) {
         context[contextIndex] = input;
     };
 
-    self.computePpmContext = function () {
-        lastPpmContext = context[contextIndex];
-        if (ppmOrder == 2) {
-            lastPpmContext = (lastPpmContext << 8)
+    self.computeLiteralCoderContext = function () {
+        lastLiteralCoderContext = context[contextIndex];
+        if (literalCoderOrder == 2) {
+            lastLiteralCoderContext = (lastLiteralCoderContext << 8)
                 + (context[(contextIndex + 1) & 7]);
         }
     };
@@ -153,8 +153,8 @@ function newCommon(options) {
         hashHigh = hash & lzpHighMask;
     };
 
-    self.getLastPpmContext = function () {
-        return lastPpmContext;
+    self.getLastLiteralCoderContext = function () {
+        return lastLiteralCoderContext;
     };
 
 // Calculating states
@@ -163,7 +163,7 @@ function newCommon(options) {
         return stateTable[state * 2 + (match ? 1 : 0)];
     };
 
-// LZP section
+// Lempel-Ziv Predictive section
 
     self.isOnlyLowLzp = function() {
         return onlyLowLzp;
@@ -194,45 +194,45 @@ function newCommon(options) {
             + input;
     };
 
-// SEE section
+// Adaptive probability map section
 
-    self.getSeeLow = function (state) {
-        return seeLow[(historyLow << 8) + state];
+    self.getApmLow = function (state) {
+        return apmLow[(historyLow << 8) + state];
     };
 
-    self.getSeeHigh = function (state) {
-        return seeHigh[(historyHigh << 8) + state];
+    self.getApmHigh = function (state) {
+        return apmHigh[(historyHigh << 8) + state];
     };
 
-    self.updateSeeHistoryLow = function (match) {
+    self.updateApmHistoryLow = function (match) {
         historyLow = ((historyLow << 1) + (match ? 0 : 1)) & historyLowMask;
     };
 
-    self.updateSeeHistoryHigh = function (match) {
+    self.updateApmHistoryHigh = function (match) {
         historyHigh = ((historyHigh << 1) + (match ? 0 : 1)) & historyHighMask;
     };
 
-    self.updateSeeLow = function (state, match) {
+    self.updateApmLow = function (state, match) {
         var index = (historyLow << 8) + state;
         if (match) {
-            seeLow[index] += (((1 << 15) - seeLow[index]) & 0xff80) >> 7;
+            apmLow[index] += (((1 << 15) - apmLow[index]) & 0xff80) >> 7;
         } else {
-            seeLow[index] -= (seeLow[index] & 0xff80) >> 7;
+            apmLow[index] -= (apmLow[index] & 0xff80) >> 7;
         }
-        self.updateSeeHistoryLow(match);
+        self.updateApmHistoryLow(match);
     };
 
-    self.updateSeeHigh = function (state, match) {
+    self.updateApmHigh = function (state, match) {
         var index = (historyHigh << 8) + state;
         if (match) {
-            seeHigh[index] += (((1 << 15) - seeHigh[index]) & 0xff80) >> 7;
+            apmHigh[index] += (((1 << 15) - apmHigh[index]) & 0xff80) >> 7;
         } else {
-            seeHigh[index] -= (seeHigh[index] & 0xff80) >> 7;
+            apmHigh[index] -= (apmHigh[index] & 0xff80) >> 7;
         }
-        self.updateSeeHistoryHigh(match);
+        self.updateApmHistoryHigh(match);
     };
 
-// PPM section
+// Literal coder section
 
     self.getRangesSingle = function() {
         return rangesSingle;
@@ -246,17 +246,17 @@ function newCommon(options) {
         return rangesTotal;
     };
 
-    self.rescalePpm = function () {
+    self.rescaleLiteralCoder = function () {
         var indexCurrent, groupCurrent;
-        for (indexCurrent = self.getLastPpmContext() << 8;
-             indexCurrent < (self.getLastPpmContext() + 1) << 8;
+        for (indexCurrent = self.getLastLiteralCoderContext() << 8;
+             indexCurrent < (self.getLastLiteralCoderContext() + 1) << 8;
              indexCurrent++) {
             rangesSingle[indexCurrent] -=
                 (rangesSingle[indexCurrent] & 0xfffe) >> 1;
         }
         var totalFrequency = 0;
-        for (groupCurrent = self.getLastPpmContext() << 4; groupCurrent
-            < (self.getLastPpmContext() + 1) << 4; groupCurrent++) {
+        for (groupCurrent = self.getLastLiteralCoderContext() << 4; groupCurrent
+            < (self.getLastLiteralCoderContext() + 1) << 4; groupCurrent++) {
             var groupFrequency = 0;
             for (indexCurrent = groupCurrent << 4; indexCurrent
                 < (groupCurrent + 1) << 4; indexCurrent++) {
@@ -265,15 +265,16 @@ function newCommon(options) {
             rangesGrouped[groupCurrent] = groupFrequency;
             totalFrequency += groupFrequency;
         }
-        rangesTotal[self.getLastPpmContext()] = totalFrequency;
+        rangesTotal[self.getLastLiteralCoderContext()] = totalFrequency;
     };
 
-    self.updatePpm = function (index) {
-        rangesSingle[index] += ppmStep;
-        rangesGrouped[index >> 4] += ppmStep;
-        rangesTotal[self.getLastPpmContext()] += ppmStep;
-        if (rangesTotal[self.getLastPpmContext()] > ppmLimit) {
-            self.rescalePpm();
+    self.updateLiteralCoder = function (index) {
+        rangesSingle[index] += literalCoderStep;
+        rangesGrouped[index >> 4] += literalCoderStep;
+        rangesTotal[self.getLastLiteralCoderContext()] += literalCoderStep;
+        if (rangesTotal[self.getLastLiteralCoderContext()]
+            > literalCoderLimit) {
+            self.rescaleLiteralCoder();
         }
     };
 

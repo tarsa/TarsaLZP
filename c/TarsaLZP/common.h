@@ -48,28 +48,28 @@ extern "C" {
 
 #define CostScale 7
 
-    // LZP section
+    // Lempel-Ziv Predictive section
     bool onlyLowLzp;
     int32_t lzpLowMask;
     int32_t lzpHighMask;
     uint16_t * lzpLow;
     uint16_t * lzpHigh;
-    // PPM section
-    int32_t ppmMaskSize;
-    int32_t ppmMask;
+    // Literal coder section
+    int32_t literalCoderContextMaskSize;
+    int32_t literalCoderContextMask;
     int16_t * rangesSingle;
     int16_t * rangesGrouped;
     int16_t * rangesTotal;
     int32_t recentCost;
-    // SEE section
+    // Adaptive probability map section
     int32_t historyLow;
     int32_t historyHigh;
     int32_t const historyLowMask = 15;
     int32_t const historyHighMask = 15;
-    int16_t seeLow[16 * 256];
-    int16_t seeHigh[16 * 256];
+    int16_t apmLow[16 * 256];
+    int16_t apmHigh[16 * 256];
     // Contexts and hashes
-    int32_t lastPpmContext;
+    int32_t lastLiteralCoderContext;
     uint64_t context;
     int32_t hashLow;
     int32_t hashHigh;
@@ -84,7 +84,7 @@ extern "C" {
     void __common__() {
         // State tables init
         __fsm__();
-        // LZP init
+        // Lempel-Ziv Predictive init
         int32_t const lzpLowCount = 1 << lzpLowMaskSize;
         int32_t const lzpHighCount = 1 << lzpHighMaskSize;
         lzpLowMask = lzpLowCount - 1;
@@ -111,50 +111,50 @@ extern "C" {
                 lzpHigh[i] = 0xffb5;
             }
         }
-        // PPM init
-        ppmMaskSize = 8 * ppmOrder;
-        ppmMask = (1 << ppmMaskSize) - 1;
-        int32_t const rangesSingleCount = 1 << ppmMaskSize + 8;
+        // Literal coder init
+        literalCoderContextMaskSize = 8 * literalCoderOrder;
+        literalCoderContextMask = (1 << literalCoderContextMaskSize) - 1;
+        int32_t const rangesSingleCount = 1 << literalCoderContextMaskSize + 8;
         rangesSingle = malloc(sizeof (int16_t) * rangesSingleCount);
         if (rangesSingle == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
         }
         for (int32_t i = 0; i < rangesSingleCount; i++) {
-            rangesSingle[i] = ppmInit;
+            rangesSingle[i] = literalCoderInit;
         }
-        int32_t const rangesGroupedCount = 1 << ppmMaskSize + 4;
+        int32_t const rangesGroupedCount = 1 << literalCoderContextMaskSize + 4;
         rangesGrouped = malloc(sizeof (int16_t) * rangesGroupedCount);
         if (rangesGrouped == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
         }
         for (int32_t i = 0; i < rangesGroupedCount; i++) {
-            rangesGrouped[i] = ppmInit * 16;
+            rangesGrouped[i] = literalCoderInit * 16;
         }
-        int32_t const rangesTotalCount = 1 << ppmMaskSize;
+        int32_t const rangesTotalCount = 1 << literalCoderContextMaskSize;
         rangesTotal = malloc(sizeof (int16_t) * rangesTotalCount);
         if (rangesTotal == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
         }
         for (int32_t i = 0; i < rangesTotalCount; i++) {
-            rangesTotal[i] = ppmInit * 256;
+            rangesTotal[i] = literalCoderInit * 256;
         }
         recentCost = 8 << CostScale + 14;
-        // SEE init
+        // Adaptive probability map init
         historyLow = 0;
         historyHigh = 0;
         for (int32_t i = 0; i < 16 * 256; i++) {
-            seeLow[i] = 0x4000;
+            apmLow[i] = 0x4000;
         }
         if (!onlyLowLzp) {
             for (int32_t i = 0; i < 16 * 256; i++) {
-                seeHigh[i] = 0x4000;
+                apmHigh[i] = 0x4000;
             }
         }
         // Contexts and hashes init
-        lastPpmContext = 0;
+        lastLiteralCoderContext = 0;
         context = 0;
         hashLow = 0;
         hashHigh = 0;
@@ -174,8 +174,8 @@ extern "C" {
         context |= input;
     }
 
-    void computePpmContext() {
-        lastPpmContext = (int32_t) (context & ppmMask);
+    void computeLiteralCoderContext() {
+        lastLiteralCoderContext = (int32_t) (context & literalCoderContextMask);
     }
 
     void computeHashesOnlyLowLzp() {
@@ -274,7 +274,7 @@ extern "C" {
         return stateTable[state][match ? 0 : 1];
     }
 
-    // LZP stuff
+    // Lempel-Ziv Predictive stuff
 
     int32_t getLzpStateLow() {
         return (lzpLow[hashLow] >> 8) & 0xff;
@@ -304,54 +304,54 @@ extern "C" {
                 + input);
     }
 
-    // SEE stuff
+    // Adaptive probability map stuff
 
-    int32_t getSeeLow(int32_t const state) {
-        return seeLow[(historyLow << 8) + state];
+    int32_t getApmLow(int32_t const state) {
+        return apmLow[(historyLow << 8) + state];
     }
 
-    int32_t getSeeHigh(int32_t const state) {
-        return seeHigh[(historyHigh << 8) + state];
+    int32_t getApmHigh(int32_t const state) {
+        return apmHigh[(historyHigh << 8) + state];
     }
 
-    void updateSeeHistoryLow(bool const match) {
+    void updateApmHistoryLow(bool const match) {
         historyLow = ((historyLow << 1) + (match ? 0 : 1)) & historyLowMask;
     }
 
-    void updateSeeHistoryHigh(bool const match) {
+    void updateApmHistoryHigh(bool const match) {
         historyHigh = ((historyHigh << 1) + (match ? 0 : 1)) & historyHighMask;
     }
 
-    void updateSeeLow(int32_t const state, bool const match) {
+    void updateApmLow(int32_t const state, bool const match) {
         int32_t const index = (historyLow << 8) + state;
         if (match) {
-            seeLow[index] += ((1 << 15) - seeLow[index]) >> 7;
+            apmLow[index] += ((1 << 15) - apmLow[index]) >> 7;
         } else {
-            seeLow[index] -= seeLow[index] >> 7;
+            apmLow[index] -= apmLow[index] >> 7;
         }
-        updateSeeHistoryLow(match);
+        updateApmHistoryLow(match);
     }
 
-    void updateSeeHigh(int32_t const state, bool const match) {
+    void updateApmHigh(int32_t const state, bool const match) {
         int32_t const index = (historyHigh << 8) + state;
         if (match) {
-            seeHigh[index] += ((1 << 15) - seeHigh[index]) >> 7;
+            apmHigh[index] += ((1 << 15) - apmHigh[index]) >> 7;
         } else {
-            seeHigh[index] -= seeHigh[index] >> 7;
+            apmHigh[index] -= apmHigh[index] >> 7;
         }
-        updateSeeHistoryHigh(match);
+        updateApmHistoryHigh(match);
     }
 
-    //PPM stuff
+    // Literal coder stuff
 
-    void rescalePpm() {
-        for (int32_t indexCurrent = lastPpmContext << 8; indexCurrent
-                < (lastPpmContext + 1) << 8; indexCurrent++) {
+    void rescaleLiteralCoder() {
+        for (int32_t indexCurrent = lastLiteralCoderContext << 8; indexCurrent
+                < (lastLiteralCoderContext + 1) << 8; indexCurrent++) {
             rangesSingle[indexCurrent] -= rangesSingle[indexCurrent] >> 1;
         }
         int16_t totalFrequency = 0;
-        for (int32_t groupCurrent = lastPpmContext << 4; groupCurrent
-                < (lastPpmContext + 1) << 4; groupCurrent++) {
+        for (int32_t groupCurrent = lastLiteralCoderContext << 4; groupCurrent
+                < (lastLiteralCoderContext + 1) << 4; groupCurrent++) {
             int16_t groupFrequency = 0;
             for (int32_t indexCurrent = groupCurrent << 4; indexCurrent
                     < (groupCurrent + 1) << 4; indexCurrent++) {
@@ -360,15 +360,15 @@ extern "C" {
             rangesGrouped[groupCurrent] = groupFrequency;
             totalFrequency += groupFrequency;
         }
-        rangesTotal[lastPpmContext] = totalFrequency;
+        rangesTotal[lastLiteralCoderContext] = totalFrequency;
     }
 
-    void updatePpm(int32_t const index) {
-        rangesSingle[index] += ppmStep;
-        rangesGrouped[index >> 4] += ppmStep;
-        rangesTotal[lastPpmContext] += ppmStep;
-        if (rangesTotal[lastPpmContext] > ppmLimit) {
-            rescalePpm();
+    void updateLiteralCoder(int32_t const index) {
+        rangesSingle[index] += literalCoderStep;
+        rangesGrouped[index >> 4] += literalCoderStep;
+        rangesTotal[lastLiteralCoderContext] += literalCoderStep;
+        if (rangesTotal[lastLiteralCoderContext] > literalCoderLimit) {
+            rescaleLiteralCoder();
         }
     }
 

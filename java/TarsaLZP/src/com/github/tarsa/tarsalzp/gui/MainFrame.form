@@ -216,17 +216,17 @@
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="ppmInitLabel" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmOrderLabel" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmStepLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmLimitLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderInitLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderOrderLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderStepLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderLimitLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="ppmLimitSpinner" max="32767" attributes="0"/>
-                      <Component id="ppmStepSpinner" max="32767" attributes="0"/>
-                      <Component id="ppmInitSpinner" max="32767" attributes="0"/>
-                      <Component id="ppmOrderSpinner" max="32767" attributes="0"/>
+                      <Component id="literalCoderLimitSpinner" max="32767" attributes="0"/>
+                      <Component id="literalCoderStepSpinner" max="32767" attributes="0"/>
+                      <Component id="literalCoderInitSpinner" max="32767" attributes="0"/>
+                      <Component id="literalCoderOrderSpinner" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -237,30 +237,30 @@
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lzpLowContextLengthSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmOrderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmOrderSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderOrderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderOrderSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lzpLowContextLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lzpLowMaskSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lzpLowMaskSizeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmInitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmInitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderInitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderInitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lzpHighContextLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lzpHighContextLengthSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmStepLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmStepSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderStepLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderStepSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lzpHighMaskSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lzpHighMaskSizeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="ppmLimitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="literalCoderLimitSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -291,7 +291,7 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpLowContextLengthSpinner">
           <Properties>
-            <Property name="toolTipText" type="java.lang.String" value="Value must be higher than PPM Order and not higher than LZP High Context Length"/>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be higher than Literal Coder Order and not higher than LZP High Context Length"/>
           </Properties>
           <BindingProperties>
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false">
@@ -323,56 +323,58 @@
             <BindingProperty name="value" source="optionsBean" sourcePath="${lzpHighMaskSize}" target="lzpHighMaskSizeSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
-        <Component class="javax.swing.JLabel" name="ppmOrderLabel">
+        <Component class="javax.swing.JLabel" name="literalCoderOrderLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="PPM Order"/>
+            <Property name="text" type="java.lang.String" value="Literal Coder Order"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="ppmInitLabel">
+        <Component class="javax.swing.JLabel" name="literalCoderInitLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="PPM Init"/>
+            <Property name="text" type="java.lang.String" value="Literal Coder Init"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="ppmStepLabel">
+        <Component class="javax.swing.JLabel" name="literalCoderStepLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="PPM Step"/>
+            <Property name="text" type="java.lang.String" value="Literal Coder Step"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="ppmLimitLabel">
+        <Component class="javax.swing.JLabel" name="literalCoderLimitLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="PPM Limit"/>
+            <Property name="text" type="java.lang.String" value="Literal Coder Limit"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="ppmOrderSpinner">
+        <Component class="javax.swing.JSpinner" name="literalCoderOrderSpinner">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" value="Value must be not lower than 1 and not higher than 2 or LZP Low Context Length"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmOrder}" target="ppmOrderSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderOrder}" target="literalCoderOrderSpinner" targetPath="value" updateStrategy="0" immediately="false">
+              <Property name="name" type="java.lang.String" value=""/>
+            </BindingProperty>
           </BindingProperties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="ppmInitSpinner">
+        <Component class="javax.swing.JSpinner" name="literalCoderInitSpinner">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" value="Value must be between 1 and 127 (inclusive)"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmInit}" target="ppmInitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderInit}" target="literalCoderInitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="ppmStepSpinner">
+        <Component class="javax.swing.JSpinner" name="literalCoderStepSpinner">
           <Properties>
             <Property name="toolTipText" type="java.lang.String" value="Value must be between 1 and 127 (inclusive)"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmStep}" target="ppmStepSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderStep}" target="literalCoderStepSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="ppmLimitSpinner">
+        <Component class="javax.swing.JSpinner" name="literalCoderLimitSpinner">
           <Properties>
-            <Property name="toolTipText" type="java.lang.String" value="Value must be between PPM Init * 256 and 32767 - PPM Step (inclusive)"/>
+            <Property name="toolTipText" type="java.lang.String" value="Value must be between Literal Coder Init * 256 and 32767 - Literal Coder Step (inclusive)"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${ppmLimit}" target="ppmLimitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderLimit}" target="literalCoderLimitSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
       </SubComponents>
@@ -382,10 +384,11 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <Component id="actionSelectionPanel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="actionButton" min="-2" pref="165" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -416,7 +419,7 @@
                           <Component id="decodeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="showDetailsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="24" max="32767" attributes="0"/>
+                      <EmptySpace pref="42" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

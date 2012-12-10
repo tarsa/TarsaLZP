@@ -42,27 +42,28 @@ public final class Options implements Serializable {
 
     public static Options create(final long lzpLowContextLength,
             final long lzpLowMaskSize, final long lzpHighContextLength,
-            final long lzpHighMaskSize, final long ppmOrder, final long ppmInit,
-            final long ppmStep, final long ppmLimit) {
-        final boolean valid = lzpLowContextLength > ppmOrder
+            final long lzpHighMaskSize, final long literalCoderOrder, 
+            final long literalCoderInit, final long literalCoderStep,
+            final long literalCoderLimit) {
+        final boolean valid = lzpLowContextLength > literalCoderOrder
                 && lzpLowContextLength <= lzpHighContextLength
                 && lzpHighContextLength <= 8
                 && lzpLowMaskSize >= 15
                 && lzpLowMaskSize <= 30
                 && lzpHighMaskSize >= 15
                 && lzpHighMaskSize <= 30
-                && ppmOrder >= 1
-                && ppmOrder <= 2
-                && ppmInit >= 1
-                && ppmInit <= 127
-                && ppmStep >= 1
-                && ppmStep <= 127
-                && ppmLimit >= ppmInit * 256
-                && ppmLimit <= 32767 - ppmStep;
+                && literalCoderOrder >= 1
+                && literalCoderOrder <= 2
+                && literalCoderInit >= 1
+                && literalCoderInit <= 127
+                && literalCoderStep >= 1
+                && literalCoderStep <= 127
+                && literalCoderLimit >= literalCoderInit * 256
+                && literalCoderLimit <= 32767 - literalCoderStep;
         if (valid) {
             return new Options(lzpLowContextLength, lzpLowMaskSize,
-                    lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
-                    ppmStep, ppmLimit);
+                    lzpHighContextLength, lzpHighMaskSize, literalCoderOrder, 
+                    literalCoderInit, literalCoderStep, literalCoderLimit);
         } else {
             return null;
         }
@@ -71,23 +72,23 @@ public final class Options implements Serializable {
     private final long lzpLowMaskSize;
     private final long lzpHighContextLength;
     private final long lzpHighMaskSize;
-    private final long ppmOrder;
-    private final long ppmInit;
-    private final long ppmStep;
-    private final long ppmLimit;
+    private final long literalCoderOrder;
+    private final long literalCoderInit;
+    private final long literalCoderStep;
+    private final long literalCoderLimit;
 
     private Options(final long lzpLowContextLength, final long lzpLowMaskSize,
             final long lzpHighContextLength, final long lzpHighMaskSize,
-            final long ppmOrder, final long ppmInit, final long ppmStep,
-            final long ppmLimit) {
+            final long literalCoderOrder, final long literalCoderInit, 
+            final long literalCoderStep, final long literalCoderLimit) {
         this.lzpLowContextLength = lzpLowContextLength;
         this.lzpLowMaskSize = lzpLowMaskSize;
         this.lzpHighContextLength = lzpHighContextLength;
         this.lzpHighMaskSize = lzpHighMaskSize;
-        this.ppmOrder = ppmOrder;
-        this.ppmInit = ppmInit;
-        this.ppmStep = ppmStep;
-        this.ppmLimit = ppmLimit;
+        this.literalCoderOrder = literalCoderOrder;
+        this.literalCoderInit = literalCoderInit;
+        this.literalCoderStep = literalCoderStep;
+        this.literalCoderLimit = literalCoderLimit;
     }
 
     public static Options fromPacked(final long packed) {
@@ -107,10 +108,10 @@ public final class Options implements Serializable {
                 + ((lzpLowMaskSize & 0xff) << 48)
                 + ((lzpHighContextLength & 0xff) << 40)
                 + ((lzpHighMaskSize & 0xff) << 32)
-                + (((ppmOrder - 1) & 0x01) << 31)
-                + ((ppmInit & 0x7f) << 24)
-                + ((ppmStep & 0xff) << 16)
-                + (ppmLimit & 0xffff);
+                + (((literalCoderOrder - 1) & 0x01) << 31)
+                + ((literalCoderInit & 0x7f) << 24)
+                + ((literalCoderStep & 0xff) << 16)
+                + (literalCoderLimit & 0xffff);
     }
 
     public long getLzpLowContextLength() {
@@ -129,20 +130,20 @@ public final class Options implements Serializable {
         return lzpHighMaskSize;
     }
 
-    public long getPpmOrder() {
-        return ppmOrder;
+    public long getLiteralCoderOrder() {
+        return literalCoderOrder;
     }
 
-    public long getPpmInit() {
-        return ppmInit;
+    public long getLiteralCoderInit() {
+        return literalCoderInit;
     }
 
-    public long getPpmStep() {
-        return ppmStep;
+    public long getLiteralCoderStep() {
+        return literalCoderStep;
     }
 
-    public long getPpmLimit() {
-        return ppmLimit;
+    public long getLiteralCoderLimit() {
+        return literalCoderLimit;
     }
 
     @Override
@@ -156,10 +157,14 @@ public final class Options implements Serializable {
                 ^ (this.lzpHighContextLength >>> 32));
         hash = 31 * hash + (int) (this.lzpHighMaskSize
                 ^ (this.lzpHighMaskSize >>> 32));
-        hash = 31 * hash + (int) (this.ppmOrder ^ (this.ppmOrder >>> 32));
-        hash = 31 * hash + (int) (this.ppmInit ^ (this.ppmInit >>> 32));
-        hash = 31 * hash + (int) (this.ppmStep ^ (this.ppmStep >>> 32));
-        hash = 31 * hash + (int) (this.ppmLimit ^ (this.ppmLimit >>> 32));
+        hash = 31 * hash + (int) (this.literalCoderOrder 
+                ^ (this.literalCoderOrder >>> 32));
+        hash = 31 * hash + (int) (this.literalCoderInit 
+                ^ (this.literalCoderInit >>> 32));
+        hash = 31 * hash + (int) (this.literalCoderStep 
+                ^ (this.literalCoderStep >>> 32));
+        hash = 31 * hash + (int) (this.literalCoderLimit 
+                ^ (this.literalCoderLimit >>> 32));
         return hash;
     }
 
@@ -184,16 +189,16 @@ public final class Options implements Serializable {
         if (this.lzpHighMaskSize != other.lzpHighMaskSize) {
             return false;
         }
-        if (this.ppmOrder != other.ppmOrder) {
+        if (this.literalCoderOrder != other.literalCoderOrder) {
             return false;
         }
-        if (this.ppmInit != other.ppmInit) {
+        if (this.literalCoderInit != other.literalCoderInit) {
             return false;
         }
-        if (this.ppmStep != other.ppmStep) {
+        if (this.literalCoderStep != other.literalCoderStep) {
             return false;
         }
-        if (this.ppmLimit != other.ppmLimit) {
+        if (this.literalCoderLimit != other.literalCoderLimit) {
             return false;
         }
         return true;
@@ -204,8 +209,10 @@ public final class Options implements Serializable {
         return "Options[" + "lzpLowContextLength=" + lzpLowContextLength
                 + ", lzpLowMaskSize=" + lzpLowMaskSize
                 + ", lzpHighContextLength=" + lzpHighContextLength
-                + ", lzpHighMaskSize=" + lzpHighMaskSize + ", ppmOrder="
-                + ppmOrder + ", ppmInit=" + ppmInit + ", ppmStep=" + ppmStep
-                + ", ppmLimit=" + ppmLimit + ']';
+                + ", lzpHighMaskSize=" + lzpHighMaskSize 
+                + ", literalCoderOrder=" + literalCoderOrder 
+                + ", literalCoderInit=" + literalCoderInit 
+                + ", literalCoderStep=" + literalCoderStep
+                + ", literalCoderLimit=" + literalCoderLimit + ']';
     }
 }

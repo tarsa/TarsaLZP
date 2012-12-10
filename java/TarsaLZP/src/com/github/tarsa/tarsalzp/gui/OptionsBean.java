@@ -50,10 +50,10 @@ public final class OptionsBean implements Serializable {
     private int lzpLowMaskSize = 24;
     private int lzpHighContextLength = 8;
     private int lzpHighMaskSize = 27;
-    private int ppmOrder = 2;
-    private int ppmInit = 1;
-    private int ppmStep = 60;
-    private int ppmLimit = 30000;
+    private int literalCoderOrder = 2;
+    private int literalCoderInit = 1;
+    private int literalCoderStep = 60;
+    private int literalCoderLimit = 30000;
     public static final String PropValid = "valid";
     public static final String PropLzpLowContextLength =
             "lzpLowContextLength";
@@ -63,10 +63,10 @@ public final class OptionsBean implements Serializable {
             "lzpHighContextLength";
     public static final String PropLzpHighMaskSize =
             "lzpHighMaskSize";
-    public static final String PropPpmOrder = "ppmOrder";
-    public static final String PropPpmInit = "ppmInit";
-    public static final String PropPpmStep = "ppmStep";
-    public static final String PropPpmLimit = "ppmLimit";
+    public static final String PropLiteralCoderOrder = "literalCoderOrder";
+    public static final String PropLiteralCoderInit = "literalCoderInit";
+    public static final String PropLiteralCoderStep = "literalCoderStep";
+    public static final String PropLiteralCoderLimit = "literalCoderLimit";
 
     private class ValidatingListener implements PropertyChangeListener {
 
@@ -129,39 +129,39 @@ public final class OptionsBean implements Serializable {
     }
 
     /**
-     * Get the value of ppmOrder
+     * Get the value of literalCoderOrder
      *
-     * @return the value of ppmOrder
+     * @return the value of literalCoderOrder
      */
-    public int getPpmOrder() {
-        return ppmOrder;
+    public int getLiteralCoderOrder() {
+        return literalCoderOrder;
     }
 
     /**
-     * Get the value of ppmInit
+     * Get the value of literalCoderInit
      *
-     * @return the value of ppmInit
+     * @return the value of literalCoderInit
      */
-    public int getPpmInit() {
-        return ppmInit;
+    public int getLiteralCoderInit() {
+        return literalCoderInit;
     }
 
     /**
-     * Get the value of ppmStep
+     * Get the value of literalCoderStep
      *
-     * @return the value of ppmStep
+     * @return the value of literalCoderStep
      */
-    public int getPpmStep() {
-        return ppmStep;
+    public int getLiteralCoderStep() {
+        return literalCoderStep;
     }
 
     /**
-     * Get the value of ppmLimit
+     * Get the value of literalCoderLimit
      *
-     * @return the value of ppmLimit
+     * @return the value of literalCoderLimit
      */
-    public int getPpmLimit() {
-        return ppmLimit;
+    public int getLiteralCoderLimit() {
+        return literalCoderLimit;
     }
 
     /**
@@ -224,51 +224,51 @@ public final class OptionsBean implements Serializable {
     }
 
     /**
-     * Set the value of ppmOrder
+     * Set the value of literalCoderOrder
      *
-     * @param ppmOrder new value of ppmOrder
+     * @param literalCoderOrder new value of literalCoderOrder
      */
-    public void setPpmOrder(final int ppmOrder) {
-        final int oldPpmOrder = this.ppmOrder;
-        this.ppmOrder = ppmOrder;
-        propertyChangeSupport.firePropertyChange(PropPpmOrder,
-                oldPpmOrder, ppmOrder);
+    public void setLiteralCoderOrder(final int literalCoderOrder) {
+        final int oldLiteralCoderOrder = this.literalCoderOrder;
+        this.literalCoderOrder = literalCoderOrder;
+        propertyChangeSupport.firePropertyChange(PropLiteralCoderOrder,
+                oldLiteralCoderOrder, literalCoderOrder);
     }
 
     /**
-     * Set the value of ppmInit
+     * Set the value of literalCoderInit
      *
-     * @param ppmInit new value of ppmInit
+     * @param literalCoderInit new value of literalCoderInit
      */
-    public void setPpmInit(final int ppmInit) {
-        final int oldPpmInit = this.ppmInit;
-        this.ppmInit = ppmInit;
-        propertyChangeSupport.firePropertyChange(PropPpmInit,
-                oldPpmInit, ppmInit);
+    public void setLiteralCoderInit(final int literalCoderInit) {
+        final int oldLiteralCoderInit = this.literalCoderInit;
+        this.literalCoderInit = literalCoderInit;
+        propertyChangeSupport.firePropertyChange(PropLiteralCoderInit,
+                oldLiteralCoderInit, literalCoderInit);
     }
 
     /**
-     * Set the value of ppmStep
+     * Set the value of literalCoderStep
      *
-     * @param ppmStep new value of ppmStep
+     * @param literalCoderStep new value of literalCoderStep
      */
-    public void setPpmStep(final int ppmStep) {
-        final int oldPpmStep = this.ppmStep;
-        this.ppmStep = ppmStep;
-        propertyChangeSupport.firePropertyChange(PropPpmStep,
-                oldPpmStep, ppmStep);
+    public void setLiteralCoderStep(final int literalCoderStep) {
+        final int oldLiteralCoderStep = this.literalCoderStep;
+        this.literalCoderStep = literalCoderStep;
+        propertyChangeSupport.firePropertyChange(PropLiteralCoderStep,
+                oldLiteralCoderStep, literalCoderStep);
     }
 
     /**
-     * Set the value of ppmLimit
+     * Set the value of literalCoderLimit
      *
-     * @param ppmLimit new value of ppmLimit
+     * @param literalCoderLimit new value of literalCoderLimit
      */
-    public void setPpmLimit(final int ppmLimit) {
-        final int oldPpmLimit = this.ppmLimit;
-        this.ppmLimit = ppmLimit;
-        propertyChangeSupport.firePropertyChange(PropPpmLimit,
-                oldPpmLimit, ppmLimit);
+    public void setLiteralCoderLimit(final int literalCoderLimit) {
+        final int oldLiteralCoderLimit = this.literalCoderLimit;
+        this.literalCoderLimit = literalCoderLimit;
+        propertyChangeSupport.firePropertyChange(PropLiteralCoderLimit,
+                oldLiteralCoderLimit, literalCoderLimit);
     }
 
     /**
@@ -298,7 +298,7 @@ public final class OptionsBean implements Serializable {
      */
     public Options toOptions() {
         return Options.create(lzpLowContextLength, lzpLowMaskSize,
-                lzpHighContextLength, lzpHighMaskSize, ppmOrder, ppmInit,
-                ppmStep, ppmLimit);
+                lzpHighContextLength, lzpHighMaskSize, literalCoderOrder, 
+                literalCoderInit, literalCoderStep, literalCoderLimit);
     }
 }

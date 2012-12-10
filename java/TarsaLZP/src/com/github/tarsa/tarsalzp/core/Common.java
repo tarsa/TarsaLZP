@@ -41,7 +41,7 @@ import java.util.Arrays;
  */
 abstract class Common {
 
-    // stream section
+    // streams section
     final InputStream inputStream;
     final OutputStream outputStream;
     // options section
@@ -49,33 +49,33 @@ abstract class Common {
     private final int lzpLowMaskSize;
     private final int lzpHighContextLength;
     private final int lzpHighMaskSize;
-    private final short ppmOrder;
-    private final short ppmInit;
-    private final short ppmStep;
-    private final short ppmLimit;
-    // LZP section
+    private final short literalCoderOrder;
+    private final short literalCoderInit;
+    private final short literalCoderStep;
+    private final short literalCoderLimit;
+    // Lempel-Ziv Predictive section
     final boolean onlyLowLzp;
     private final int lzpLowMask;
     private final int lzpHighMask;
     private final short[] lzpLow;
     private final short[] lzpHigh;
-    // PPM section
+    // Literal coder section
     private final int CostScale = 7;
-    private final int ppmMaskSize;
-    private final int ppmMask;
+    private final int literalCoderContextMaskSize;
+    private final int literalCoderContextMask;
     final short[] rangesSingle;
     final short[] rangesGrouped;
     final short[] rangesTotal;
     private int recentCost;
     // Contexts and hashes section
-    private int lastPpmContext;
+    private int lastLiteralCoderContext;
     private long context;
     private int hashLow;
     private int hashHigh;
     private final int[] precomputedHashes = new int[256];
-    // SEE section
-    private final short[] seeLow;
-    private final short[] seeHigh;
+    // Adaptive probability map section
+    private final short[] apmLow;
+    private final short[] apmHigh;
 
     public Common(final InputStream inputStream,
             final OutputStream outputStream, final Options options) {
@@ -85,11 +85,11 @@ abstract class Common {
         lzpLowMaskSize = (int) options.getLzpLowMaskSize();
         lzpHighContextLength = (int) options.getLzpHighContextLength();
         lzpHighMaskSize = (int) options.getLzpHighMaskSize();
-        ppmOrder = (short) options.getPpmOrder();
-        ppmInit = (short) options.getPpmInit();
-        ppmStep = (short) options.getPpmStep();
-        ppmLimit = (short) options.getPpmLimit();
-        // LZP init
+        literalCoderOrder = (short) options.getLiteralCoderOrder();
+        literalCoderInit = (short) options.getLiteralCoderInit();
+        literalCoderStep = (short) options.getLiteralCoderStep();
+        literalCoderLimit = (short) options.getLiteralCoderLimit();
+        // Lempel-Ziv Predictive init
         final int lzpLowCount = 1 << lzpLowMaskSize;
         final int lzpHighCount = 1 << lzpHighMaskSize;
         lzpLowMask = lzpLowCount - 1;
@@ -104,27 +104,27 @@ abstract class Common {
             lzpHigh = new short[lzpHighCount];
             Arrays.fill(lzpHigh, (short) 0xffb5);
         }
-        // PPM init
-        ppmMaskSize = 8 * ppmOrder;
-        ppmMask = (1 << ppmMaskSize) - 1;
-        rangesSingle = new short[1 << ppmMaskSize + 8];
-        rangesGrouped = new short[1 << ppmMaskSize + 4];
-        rangesTotal = new short[1 << ppmMaskSize];
-        Arrays.fill(rangesSingle, (short) (ppmInit));
-        Arrays.fill(rangesGrouped, (short) (ppmInit * 16));
-        Arrays.fill(rangesTotal, (short) (ppmInit * 256));
+        // Literal coder init
+        literalCoderContextMaskSize = 8 * literalCoderOrder;
+        literalCoderContextMask = (1 << literalCoderContextMaskSize) - 1;
+        rangesSingle = new short[1 << literalCoderContextMaskSize + 8];
+        rangesGrouped = new short[1 << literalCoderContextMaskSize + 4];
+        rangesTotal = new short[1 << literalCoderContextMaskSize];
+        Arrays.fill(rangesSingle, (short) (literalCoderInit));
+        Arrays.fill(rangesGrouped, (short) (literalCoderInit * 16));
+        Arrays.fill(rangesTotal, (short) (literalCoderInit * 256));
         recentCost = 8 << CostScale + 14;
-        // SEE init
-        seeLow = new short[16 * 256];
-        Arrays.fill(seeLow, (short) 0x4000);
+        // Adaptive probability map init
+        apmLow = new short[16 * 256];
+        Arrays.fill(apmLow, (short) 0x4000);
         if (onlyLowLzp) {
-            seeHigh = null;
+            apmHigh = null;
         } else {
-            seeHigh = new short[16 * 256];
-            Arrays.fill(seeHigh, (short) 0x4000);
+            apmHigh = new short[16 * 256];
+            Arrays.fill(apmHigh, (short) 0x4000);
         }
         // Contexts and hashes init
-        lastPpmContext = 0;
+        lastLiteralCoderContext = 0;
         context = 0;
         hashLow = 0;
         hashHigh = 0;
@@ -142,8 +142,8 @@ abstract class Common {
         context |= input;
     }
 
-    void computePpmContext() {
-        lastPpmContext = (int) (context & ppmMask);
+    void computeLiteralCoderContext() {
+        lastLiteralCoderContext = (int) (context & literalCoderContextMask);
     }
 
     void computeHashesOnlyLowLzp() {        
@@ -182,8 +182,8 @@ abstract class Common {
         hashHigh = hash & lzpHighMask;
     }
 
-    int getLastPpmContext() {
-        return lastPpmContext;
+    int getLastLiteralCoderContext() {
+        return lastLiteralCoderContext;
     }// </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Calculating states">
     private static final byte[] stateTable = new FsmGenerator().getStateTable();
@@ -191,7 +191,7 @@ abstract class Common {
     int getNextState(final int state, final boolean match) {
         return stateTable[state * 2 +(match ? 1 : 0)] & 0xFF;
     }// </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="LZP stuff">
+    // <editor-fold defaultstate="collapsed" desc="Lempel-Ziv Predictive stuff">
 
     int getLzpStateLow() {
         return (lzpLow[hashLow] >> 8) & 0xff;
@@ -220,57 +220,57 @@ abstract class Common {
         lzpHigh[hashHigh] = (short) ((getNextState(lzpStateHigh, match) << 8)
                 + input);
     }// </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="SEE stuff">
+    // <editor-fold defaultstate="collapsed" desc="Adaptive prob. map stuff">
     private int historyLow = 0;
     private int historyHigh = 0;
     private final int historyLowMask = 15;
     private final int historyHighMask = 15;
 
-    int getSeeLow(final int state) {
-        return seeLow[(historyLow << 8) + state];
+    int getApmLow(final int state) {
+        return apmLow[(historyLow << 8) + state];
     }
 
-    int getSeeHigh(final int state) {
-        return seeHigh[(historyHigh << 8) + state];
+    int getApmHigh(final int state) {
+        return apmHigh[(historyHigh << 8) + state];
     }
 
-    void updateSeeHistoryLow(final boolean match) {
+    void updateApmHistoryLow(final boolean match) {
         historyLow = ((historyLow << 1) + (match ? 0 : 1)) & historyLowMask;
     }
 
-    void updateSeeHistoryHigh(final boolean match) {
+    void updateApmHistoryHigh(final boolean match) {
         historyHigh = ((historyHigh << 1) + (match ? 0 : 1)) & historyHighMask;
     }
 
-    void updateSeeLow(final int state, final boolean match) {
+    void updateApmLow(final int state, final boolean match) {
         final int index = (historyLow << 8) + state;
         if (match) {
-            seeLow[index] += ((1 << 15) - seeLow[index]) >> 7;
+            apmLow[index] += ((1 << 15) - apmLow[index]) >> 7;
         } else {
-            seeLow[index] -= seeLow[index] >> 7;
+            apmLow[index] -= apmLow[index] >> 7;
         }
-        updateSeeHistoryLow(match);
+        updateApmHistoryLow(match);
     }
 
-    void updateSeeHigh(final int state, final boolean match) {
+    void updateApmHigh(final int state, final boolean match) {
         final int index = (historyHigh << 8) + state;
         if (match) {
-            seeHigh[index] += ((1 << 15) - seeHigh[index]) >> 7;
+            apmHigh[index] += ((1 << 15) - apmHigh[index]) >> 7;
         } else {
-            seeHigh[index] -= seeHigh[index] >> 7;
+            apmHigh[index] -= apmHigh[index] >> 7;
         }
-        updateSeeHistoryHigh(match);
+        updateApmHistoryHigh(match);
     }// </editor-fold>  
-    // <editor-fold defaultstate="collapsed" desc="PPM stuff">
+    // <editor-fold defaultstate="collapsed" desc="Literal coder stuff">
 
-    private void rescalePpm() {
-        for (int indexCurrent = getLastPpmContext() << 8; indexCurrent
-                < (getLastPpmContext() + 1) << 8; indexCurrent++) {
+    private void rescaleLiteralCoder() {
+        for (int indexCurrent = getLastLiteralCoderContext() << 8; indexCurrent
+                < (getLastLiteralCoderContext() + 1) << 8; indexCurrent++) {
             rangesSingle[indexCurrent] -= rangesSingle[indexCurrent] >> 1;
         }
         short totalFrequency = 0;
-        for (int groupCurrent = getLastPpmContext() << 4; groupCurrent
-                < (getLastPpmContext() + 1) << 4; groupCurrent++) {
+        for (int groupCurrent = getLastLiteralCoderContext() << 4; groupCurrent
+                < (getLastLiteralCoderContext() + 1) << 4; groupCurrent++) {
             short groupFrequency = 0;
             for (int indexCurrent = groupCurrent << 4; indexCurrent
                     < (groupCurrent + 1) << 4; indexCurrent++) {
@@ -279,15 +279,15 @@ abstract class Common {
             rangesGrouped[groupCurrent] = groupFrequency;
             totalFrequency += groupFrequency;
         }
-        rangesTotal[getLastPpmContext()] = totalFrequency;
+        rangesTotal[getLastLiteralCoderContext()] = totalFrequency;
     }
 
-    void updatePpm(final int index) {
-        rangesSingle[index] += ppmStep;
-        rangesGrouped[index >> 4] += ppmStep;
-        rangesTotal[getLastPpmContext()] += ppmStep;
-        if (rangesTotal[getLastPpmContext()] > ppmLimit) {
-            rescalePpm();
+    void updateLiteralCoder(final int index) {
+        rangesSingle[index] += literalCoderStep;
+        rangesGrouped[index >> 4] += literalCoderStep;
+        rangesTotal[getLastLiteralCoderContext()] += literalCoderStep;
+        if (rangesTotal[getLastLiteralCoderContext()] > literalCoderLimit) {
+            rescaleLiteralCoder();
         }
     }
 

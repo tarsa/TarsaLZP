@@ -97,10 +97,10 @@ function newEncoder(inputStream, outputStream, options) {
         self.computeHashesOnlyLowLzp();
         var lzpStateLow = self.getLzpStateLow();
         var predictedSymbolLow = self.getLzpPredictedSymbolLow();
-        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var modelLowFrequency = self.getApmLow(lzpStateLow);
         var matchLow = nextSymbol == predictedSymbolLow;
         _encodeFlag(modelLowFrequency, matchLow);
-        self.updateSeeLow(lzpStateLow, matchLow);
+        self.updateApmLow(lzpStateLow, matchLow);
         self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         if (!matchLow) {
             _encodeSymbol(nextSymbol, predictedSymbolLow);
@@ -112,29 +112,29 @@ function newEncoder(inputStream, outputStream, options) {
         self.computeHashes();
         var lzpStateLow = self.getLzpStateLow();
         var predictedSymbolLow = self.getLzpPredictedSymbolLow();
-        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var modelLowFrequency = self.getApmLow(lzpStateLow);
         var lzpStateHigh = self.getLzpStateHigh();
         var predictedSymbolHigh = self.getLzpPredictedSymbolHigh();
-        var modelHighFrequency = self.getSeeHigh(lzpStateHigh);
+        var modelHighFrequency = self.getApmHigh(lzpStateHigh);
         var matchLow, matchHigh;
         if (modelLowFrequency >= modelHighFrequency) {
             matchHigh = nextSymbol == predictedSymbolHigh;
-            self.updateSeeHistoryHigh(matchHigh);
+            self.updateApmHistoryHigh(matchHigh);
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             matchLow = nextSymbol == predictedSymbolLow;
             _encodeFlag(modelLowFrequency, matchLow);
-            self.updateSeeLow(lzpStateLow, matchLow);
+            self.updateApmLow(lzpStateLow, matchLow);
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             if (!matchLow) {
                 _encodeSymbol(nextSymbol, predictedSymbolLow);
             }
         } else {
             matchLow = nextSymbol == predictedSymbolLow;
-            self.updateSeeHistoryLow(matchLow);
+            self.updateApmHistoryLow(matchLow);
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             matchHigh = nextSymbol == predictedSymbolHigh;
             _encodeFlag(modelHighFrequency, matchHigh);
-            self.updateSeeHigh(lzpStateHigh, matchHigh);
+            self.updateApmHigh(lzpStateHigh, matchHigh);
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             if (!matchHigh) {
                 _encodeSymbol(nextSymbol, predictedSymbolHigh);
@@ -145,13 +145,13 @@ function newEncoder(inputStream, outputStream, options) {
 
     function _encodeSymbol(nextSymbol, mispredictedSymbol) {
         _normalize();
-        self.computePpmContext();
-        var index = (self.getLastPpmContext() << 8) + nextSymbol;
+        self.computeLiteralCoderContext();
+        var index = (self.getLastLiteralCoderContext() << 8) + nextSymbol;
         if (!self.useFixedProbabilities()) {
             var cumulativeExclusiveFrequency = 0;
             var symbolGroup = index >> 4;
             var indexPartial;
-            for (indexPartial = self.getLastPpmContext() << 4;
+            for (indexPartial = self.getLastLiteralCoderContext() << 4;
                  indexPartial < symbolGroup; indexPartial++) {
                 cumulativeExclusiveFrequency +=
                     self.getRangesGrouped()[indexPartial];
@@ -162,12 +162,13 @@ function newEncoder(inputStream, outputStream, options) {
                     self.getRangesSingle()[indexPartial];
             }
             var mispredictedSymbolFrequency = self.getRangesSingle()[
-                (self.getLastPpmContext() << 8) + mispredictedSymbol];
+                (self.getLastLiteralCoderContext() << 8) + mispredictedSymbol];
             if (nextSymbol > mispredictedSymbol) {
                 cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
             }
             var rcHelper = rcRange / (self.getRangesTotal()[
-                self.getLastPpmContext()] - mispredictedSymbolFrequency) >> 0;
+                self.getLastLiteralCoderContext()]
+                - mispredictedSymbolFrequency) >> 0;
             _addWithCarry(rcHelper * cumulativeExclusiveFrequency);
             rcRange = rcHelper * self.getRangesSingle()[index];
         } else {
@@ -176,8 +177,8 @@ function newEncoder(inputStream, outputStream, options) {
                 (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
         self.updateRecentCost(self.getRangesSingle()[index],
-            self.getRangesTotal()[self.getLastPpmContext()]);
-        self.updatePpm(index);
+            self.getRangesTotal()[self.getLastLiteralCoderContext()]);
+        self.updateLiteralCoder(index);
     }
 
     self.flush = function () {

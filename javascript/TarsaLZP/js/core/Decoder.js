@@ -93,9 +93,9 @@ function newDecoder(inputStream, outputStream, options) {
         self.computeHashesOnlyLowLzp();
         var lzpStateLow = self.getLzpStateLow();
         var predictedSymbolLow = self.getLzpPredictedSymbolLow();
-        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var modelLowFrequency = self.getApmLow(lzpStateLow);
         var matchLow = _decodeFlag(modelLowFrequency);
-        self.updateSeeLow(lzpStateLow, matchLow);
+        self.updateApmLow(lzpStateLow, matchLow);
         var nextSymbol = matchLow ? predictedSymbolLow
             : _decodeSymbol(predictedSymbolLow);
         self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
@@ -107,29 +107,29 @@ function newDecoder(inputStream, outputStream, options) {
         self.computeHashes();
         var lzpStateLow = self.getLzpStateLow();
         var predictedSymbolLow = self.getLzpPredictedSymbolLow();
-        var modelLowFrequency = self.getSeeLow(lzpStateLow);
+        var modelLowFrequency = self.getApmLow(lzpStateLow);
         var lzpStateHigh = self.getLzpStateHigh();
         var predictedSymbolHigh = self.getLzpPredictedSymbolHigh();
-        var modelHighFrequency = self.getSeeHigh(lzpStateHigh);
+        var modelHighFrequency = self.getApmHigh(lzpStateHigh);
         var nextSymbol;
         var matchLow, matchHigh;
         if (modelLowFrequency >= modelHighFrequency) {
             matchLow = _decodeFlag(modelLowFrequency);
-            self.updateSeeLow(lzpStateLow, matchLow);
+            self.updateApmLow(lzpStateLow, matchLow);
             nextSymbol = matchLow ? predictedSymbolLow
                 : _decodeSymbol(predictedSymbolLow);
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             matchHigh = nextSymbol == predictedSymbolHigh;
-            self.updateSeeHistoryHigh(matchHigh);
+            self.updateApmHistoryHigh(matchHigh);
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
         } else {
             matchHigh = _decodeFlag(modelHighFrequency);
-            self.updateSeeHigh(lzpStateHigh, matchHigh);
+            self.updateApmHigh(lzpStateHigh, matchHigh);
             nextSymbol = matchHigh ? predictedSymbolHigh
                 : _decodeSymbol(predictedSymbolHigh);
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             matchLow = nextSymbol == predictedSymbolLow;
-            self.updateSeeHistoryLow(matchLow);
+            self.updateApmHistoryLow(matchLow);
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         }
         self.updateContext(nextSymbol);
@@ -138,23 +138,24 @@ function newDecoder(inputStream, outputStream, options) {
 
     function _decodeSymbol(mispredictedSymbol) {
         _normalize();
-        self.computePpmContext();
+        self.computeLiteralCoderContext();
         var index;
         var nextSymbol;
         var rcHelper;
         if (!self.useFixedProbabilities()) {
             var mispredictedSymbolFrequency = self.getRangesSingle()[
-                (self.getLastPpmContext() << 8) + mispredictedSymbol];
-            rcRange = rcRange / (self.getRangesTotal()[self.getLastPpmContext()]
+                (self.getLastLiteralCoderContext() << 8) + mispredictedSymbol];
+            rcRange = rcRange / (self.getRangesTotal()[
+                self.getLastLiteralCoderContext()]
                 - mispredictedSymbolFrequency) >> 0;
-            self.getRangesSingle()[(self.getLastPpmContext() << 8)
+            self.getRangesSingle()[(self.getLastLiteralCoderContext() << 8)
                 + mispredictedSymbol] = 0;
-            self.getRangesGrouped()[((self.getLastPpmContext() << 8)
+            self.getRangesGrouped()[((self.getLastLiteralCoderContext() << 8)
                 + mispredictedSymbol) >> 4] -=
                 mispredictedSymbolFrequency;
             rcHelper = rcBuffer / rcRange >> 0;
             var cumulativeFrequency = rcHelper;
-            for (index = self.getLastPpmContext() << 4;
+            for (index = self.getLastLiteralCoderContext() << 4;
                  rcHelper >= self.getRangesGrouped()[index]; index++) {
                 rcHelper -= self.getRangesGrouped()[index];
             }
@@ -165,20 +166,20 @@ function newDecoder(inputStream, outputStream, options) {
             rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
             rcRange *= self.getRangesSingle()[index];
             nextSymbol = index & 0xff;
-            self.getRangesSingle()[(self.getLastPpmContext() << 8)
+            self.getRangesSingle()[(self.getLastLiteralCoderContext() << 8)
                 + mispredictedSymbol] = mispredictedSymbolFrequency;
-            self.getRangesGrouped()[((self.getLastPpmContext() << 8)
+            self.getRangesGrouped()[((self.getLastLiteralCoderContext() << 8)
                 + mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
         } else {
             rcRange = rcRange / 255 >> 0;
             rcHelper = rcBuffer / rcRange >> 0;
             rcBuffer -= rcHelper * rcRange;
             nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
-            index = (self.getLastPpmContext() << 8) + nextSymbol;
+            index = (self.getLastLiteralCoderContext() << 8) + nextSymbol;
         }
         self.updateRecentCost(self.getRangesSingle()[index],
-            self.getRangesTotal()[self.getLastPpmContext()]);
-        self.updatePpm(index);
+            self.getRangesTotal()[self.getLastLiteralCoderContext()]);
+        self.updateLiteralCoder(index);
         return nextSymbol;
     }
 

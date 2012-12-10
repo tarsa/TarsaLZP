@@ -108,21 +108,22 @@ extern "C" {
 
     int32_t decodeSymbol(int32_t const mispredictedSymbol) {
         decoderNormalize();
-        computePpmContext();
+        computeLiteralCoderContext();
         int32_t index;
         int32_t nextSymbol;
         if (!useFixedProbabilities()) {
-            int16_t const mispredictedSymbolFrequency =
-                    rangesSingle[(lastPpmContext << 8) + mispredictedSymbol];
-            rcRange /= rangesTotal[lastPpmContext]
+            int16_t const mispredictedSymbolFrequency = rangesSingle[
+                    (lastLiteralCoderContext << 8) + mispredictedSymbol];
+            rcRange /= rangesTotal[lastLiteralCoderContext]
                     - mispredictedSymbolFrequency;
-            rangesSingle[(lastPpmContext << 8) + mispredictedSymbol] = 0;
-            rangesGrouped[((lastPpmContext << 8) + mispredictedSymbol) >> 4] -=
-                    mispredictedSymbolFrequency;
+            rangesSingle[(lastLiteralCoderContext << 8) + mispredictedSymbol] =
+                    0;
+            rangesGrouped[((lastLiteralCoderContext << 8) + mispredictedSymbol)
+                    >> 4] -= mispredictedSymbolFrequency;
             int32_t rcHelper = rcBuffer / rcRange;
             int32_t const cumulativeFrequency = rcHelper;
-            for (index = lastPpmContext << 4; rcHelper >= rangesGrouped[index];
-                    index++) {
+            for (index = lastLiteralCoderContext << 4; rcHelper
+                    >= rangesGrouped[index]; index++) {
                 rcHelper -= rangesGrouped[index];
             }
             for (index <<= 4; rcHelper >= rangesSingle[index]; index++) {
@@ -131,19 +132,20 @@ extern "C" {
             nextSymbol = index & 0xff;
             rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
             rcRange *= rangesSingle[index];
-            rangesSingle[(lastPpmContext << 8) + mispredictedSymbol] =
+            rangesSingle[(lastLiteralCoderContext << 8) + mispredictedSymbol] =
                     mispredictedSymbolFrequency;
-            rangesGrouped[((lastPpmContext << 8) + mispredictedSymbol) >> 4] +=
-                    mispredictedSymbolFrequency;
+            rangesGrouped[((lastLiteralCoderContext << 8) + mispredictedSymbol)
+                    >> 4] += mispredictedSymbolFrequency;
         } else {
             rcRange /= 255;
             int32_t const rcHelper = rcBuffer / rcRange;
             rcBuffer -= rcHelper * rcRange;
             nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
-            index = (lastPpmContext << 8) + nextSymbol;
+            index = (lastLiteralCoderContext << 8) + nextSymbol;
         }
-        updateRecentCost(rangesSingle[index], rangesTotal[lastPpmContext]);
-        updatePpm(index);
+        updateRecentCost(rangesSingle[index],
+                rangesTotal[lastLiteralCoderContext]);
+        updateLiteralCoder(index);
         return nextSymbol;
     }
 
@@ -151,9 +153,9 @@ extern "C" {
         computeHashesOnlyLowLzp();
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
-        int32_t const modelLowFrequency = getSeeLow(lzpStateLow);
+        int32_t const modelLowFrequency = getApmLow(lzpStateLow);
         bool const matchLow = decodeFlag(modelLowFrequency);
-        updateSeeLow(lzpStateLow, matchLow);
+        updateApmLow(lzpStateLow, matchLow);
         int32_t const nextSymbol = matchLow ? predictedSymbolLow
                 : decodeSymbol(predictedSymbolLow);
         updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
@@ -165,28 +167,28 @@ extern "C" {
         computeHashes();
         int32_t const lzpStateLow = getLzpStateLow();
         int32_t const predictedSymbolLow = getLzpPredictedSymbolLow();
-        int32_t const modelLowFrequency = getSeeLow(lzpStateLow);
+        int32_t const modelLowFrequency = getApmLow(lzpStateLow);
         int32_t const lzpStateHigh = getLzpStateHigh();
         int32_t const predictedSymbolHigh = getLzpPredictedSymbolHigh();
-        int32_t const modelHighFrequency = getSeeHigh(lzpStateHigh);
+        int32_t const modelHighFrequency = getApmHigh(lzpStateHigh);
         int32_t nextSymbol;
         if (modelLowFrequency >= modelHighFrequency) {
             bool const matchLow = decodeFlag(modelLowFrequency);
-            updateSeeLow(lzpStateLow, matchLow);
+            updateApmLow(lzpStateLow, matchLow);
             nextSymbol = matchLow ? predictedSymbolLow
                     : decodeSymbol(predictedSymbolLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             bool const matchHigh = nextSymbol == predictedSymbolHigh;
-            updateSeeHistoryHigh(matchHigh);
+            updateApmHistoryHigh(matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
         } else {
             bool const matchHigh = decodeFlag(modelHighFrequency);
-            updateSeeHigh(lzpStateHigh, matchHigh);
+            updateApmHigh(lzpStateHigh, matchHigh);
             nextSymbol = matchHigh ? predictedSymbolHigh
                     : decodeSymbol(predictedSymbolHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             bool const matchLow = nextSymbol == predictedSymbolLow;
-            updateSeeHistoryLow(matchLow);
+            updateApmHistoryLow(matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         }
         updateContext(nextSymbol);

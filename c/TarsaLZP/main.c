@@ -71,10 +71,10 @@ void printHelp() {
     fprintf(stderr, "\tlzpLowMaskSize=%d\n", lzpLowMaskSize);
     fprintf(stderr, "\tlzpHighContextLength=%d\n", lzpHighContextLength);
     fprintf(stderr, "\tlzpHighMaskSize=%d\n", lzpHighMaskSize);
-    fprintf(stderr, "\tppmOrder=%d\n", ppmOrder);
-    fprintf(stderr, "\tppmInit=%d\n", ppmInit);
-    fprintf(stderr, "\tppmStep=%d\n", ppmStep);
-    fprintf(stderr, "\tppmLimit=%d\n", ppmLimit);
+    fprintf(stderr, "\tliteralCoderOrder=%d\n", literalCoderOrder);
+    fprintf(stderr, "\tliteralCoderInit=%d\n", literalCoderInit);
+    fprintf(stderr, "\tliteralCoderStep=%d\n", literalCoderStep);
+    fprintf(stderr, "\tliteralCoderLimit=%d\n", literalCoderLimit);
 }
 
 void checkParameter(bool * const isSetFlag) {
@@ -107,10 +107,10 @@ void mainEncode(int const argc, char const * const * const argv) {
     bool lzpLowMaskSizeSet = false;
     bool lzpHighContextLengthSet = false;
     bool lzpHighMaskSizeSet = false;
-    bool ppmOrderSet = false;
-    bool ppmInitSet = false;
-    bool ppmStepSet = false;
-    bool ppmLimitSet = false;
+    bool literalCoderOrderSet = false;
+    bool literalCoderInitSet = false;
+    bool literalCoderStepSet = false;
+    bool literalCoderLimitSet = false;
 
     input = stdin;
     output = stdout;
@@ -131,16 +131,19 @@ void mainEncode(int const argc, char const * const * const argv) {
         } else {
             char const * const * const optionsNames = (char const * const []){
                 "lzpLowContextLength", "lzpLowMaskSize", "lzpHighContextLength",
-                "lzpHighMaskSize", "ppmOrder", "ppmInit", "ppmStep", "ppmLimit"
+                "lzpHighMaskSize", "literalCoderOrder", "literalCoderInit",
+                "literalCoderStep", "literalCoderLimit"
             };
             bool * const * const optionsFlags = (bool * const []){
                 &lzpLowContextLengthSet, &lzpLowMaskSizeSet,
                 &lzpHighContextLengthSet, &lzpHighMaskSizeSet,
-                &ppmOrderSet, &ppmInitSet, &ppmStepSet, &ppmLimitSet
+                &literalCoderOrderSet, &literalCoderInitSet, 
+                &literalCoderStepSet, &literalCoderLimitSet
             };
             int32_t * const * const options = (int32_t * const []){
                 &lzpLowContextLength, &lzpLowMaskSize, &lzpHighContextLength,
-                &lzpHighMaskSize, &ppmOrder, &ppmInit, &ppmStep, &ppmLimit
+                &lzpHighMaskSize, &literalCoderOrder, &literalCoderInit, 
+                &literalCoderStep, &literalCoderLimit
             };
             bool foundOption = false;
             for (int32_t i = 0; i < 8 && !foundOption; i++) {
@@ -252,10 +255,10 @@ void showOptions(int const argc, char const * const * const argv) {
     fprintf(stderr, "lzpLowMaskSize=%d\n", lzpLowMaskSize);
     fprintf(stderr, "lzpHighContextLength=%d\n", lzpHighContextLength);
     fprintf(stderr, "lzpHighMaskSize=%d\n", lzpHighMaskSize);
-    fprintf(stderr, "ppmOrder=%d\n", ppmOrder);
-    fprintf(stderr, "ppmInit=%d\n", ppmInit);
-    fprintf(stderr, "ppmStep=%d\n", ppmStep);
-    fprintf(stderr, "ppmLimit=%d\n", ppmLimit);
+    fprintf(stderr, "literalCoderOrder=%d\n", literalCoderOrder);
+    fprintf(stderr, "literalCoderInit=%d\n", literalCoderInit);
+    fprintf(stderr, "literalCoderStep=%d\n", literalCoderStep);
+    fprintf(stderr, "literalCoderLimit=%d\n", literalCoderLimit);
 }
 
 void dispatchCommand(int const argc, char const * const * const argv) {

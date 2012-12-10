@@ -86,10 +86,10 @@ class Decoder(Common):
         self.computeHashesOnlyLowLzp()
         lzpStateLow = self.getLzpStateLow()
         predictedSymbolLow = self.getLzpPredictedSymbolLow()
-        modelLowFrequency = self.getSeeLow(lzpStateLow)
+        modelLowFrequency = self.getApmLow(lzpStateLow)
         matchLow = self.decodeFlag(modelLowFrequency)
-        self.updateSeeLow(lzpStateLow, matchLow)
-        nextSymbol = predictedSymbolLow if matchLow else \
+        self.updateApmLow(lzpStateLow, matchLow)
+        nextSymbol = predictedSymbolLow if matchLow else\
         self.decodeSymbol(predictedSymbolLow)
         self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
         self.updateContext(nextSymbol)
@@ -99,46 +99,48 @@ class Decoder(Common):
         self.computeHashes()
         lzpStateLow = self.getLzpStateLow()
         predictedSymbolLow = self.getLzpPredictedSymbolLow()
-        modelLowFrequency = self.getSeeLow(lzpStateLow)
+        modelLowFrequency = self.getApmLow(lzpStateLow)
         lzpStateHigh = self.getLzpStateHigh()
         predictedSymbolHigh = self.getLzpPredictedSymbolHigh()
-        modelHighFrequency = self.getSeeHigh(lzpStateHigh)
+        modelHighFrequency = self.getApmHigh(lzpStateHigh)
         if modelLowFrequency >= modelHighFrequency:
             matchLow = self.decodeFlag(modelLowFrequency)
-            self.updateSeeLow(lzpStateLow, matchLow)
-            nextSymbol = predictedSymbolLow if matchLow else \
+            self.updateApmLow(lzpStateLow, matchLow)
+            nextSymbol = predictedSymbolLow if matchLow else\
             self.decodeSymbol(predictedSymbolLow)
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
             matchHigh = nextSymbol == predictedSymbolHigh
-            self.updateSeeHistoryHigh(matchHigh)
+            self.updateApmHistoryHigh(matchHigh)
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh)
         else:
             matchHigh = self.decodeFlag(modelHighFrequency)
-            self.updateSeeHigh(lzpStateHigh, matchHigh)
-            nextSymbol = predictedSymbolHigh if matchHigh else \
+            self.updateApmHigh(lzpStateHigh, matchHigh)
+            nextSymbol = predictedSymbolHigh if matchHigh else\
             self.decodeSymbol(predictedSymbolHigh)
             self.updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh)
             matchLow = nextSymbol == predictedSymbolLow
-            self.updateSeeHistoryLow(matchLow)
+            self.updateApmHistoryLow(matchLow)
             self.updateLzpStateLow(lzpStateLow, nextSymbol, matchLow)
         self.updateContext(nextSymbol)
         return nextSymbol
 
     def decodeSymbol(self, mispredictedSymbol):
         self.normalize()
-        self.computePpmContext()
+        self.computeLiteralCoderContext()
         if not self.useFixedProbabilities():
-            mispredictedSymbolFrequency = \
-            self.rangesSingle[(self.lastPpmContext << 8) + mispredictedSymbol]
-            self.rcRange /= \
-            self.rangesTotal[self.lastPpmContext] - mispredictedSymbolFrequency
-            self.rangesSingle[(self.lastPpmContext << 8)
+            mispredictedSymbolFrequency =\
+            self.rangesSingle[(self.lastLiteralCoderContext << 8)\
+            + mispredictedSymbol]
+            self.rcRange /=\
+            self.rangesTotal[self.lastLiteralCoderContext]\
+            - mispredictedSymbolFrequency
+            self.rangesSingle[(self.lastLiteralCoderContext << 8)
             + mispredictedSymbol] = 0
-            self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
-            >> 4] -= mispredictedSymbolFrequency
+            self.rangesGrouped[((self.lastLiteralCoderContext << 8)
+            + mispredictedSymbol) >> 4] -= mispredictedSymbolFrequency
             rcHelper = self.rcBuffer / self.rcRange
             cumulativeFrequency = rcHelper
-            index = self.lastPpmContext << 4
+            index = self.lastLiteralCoderContext << 4
             while rcHelper >= self.rangesGrouped[index]:
                 rcHelper -= self.rangesGrouped[index]
                 index += 1
@@ -149,19 +151,20 @@ class Decoder(Common):
             self.rcBuffer -= (cumulativeFrequency - rcHelper) * self.rcRange
             self.rcRange *= self.rangesSingle[index]
             nextSymbol = index & 0xff
-            self.rangesSingle[(self.lastPpmContext << 8)
+            self.rangesSingle[(self.lastLiteralCoderContext << 8)
             + mispredictedSymbol] = mispredictedSymbolFrequency
-            self.rangesGrouped[((self.lastPpmContext << 8) + mispredictedSymbol)
+            self.rangesGrouped[
+            ((self.lastLiteralCoderContext << 8) + mispredictedSymbol)
             >> 4] += mispredictedSymbolFrequency
         else:
             self.rcRange /= 255
             rcHelper = self.rcBuffer / self.rcRange
             self.rcBuffer -= rcHelper * self.rcRange
             nextSymbol = rcHelper + (1 if rcHelper >= mispredictedSymbol else 0)
-            index = (self.lastPpmContext << 8) + nextSymbol
+            index = (self.lastLiteralCoderContext << 8) + nextSymbol
         self.updateRecentCost(self.rangesSingle[index],
-            self.rangesTotal[self.lastPpmContext])
-        self.updatePpm(index)
+            self.rangesTotal[self.lastLiteralCoderContext])
+        self.updateLiteralCoder(index)
         return nextSymbol
 
     def decode(self, limit):

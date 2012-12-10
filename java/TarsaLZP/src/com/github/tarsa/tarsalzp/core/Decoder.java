@@ -107,9 +107,9 @@ public final class Decoder extends Common {
         computeHashesOnlyLowLzp();
         final int lzpStateLow = getLzpStateLow();
         final int predictedSymbolLow = getLzpPredictedSymbolLow();
-        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int modelLowFrequency = getApmLow(lzpStateLow);
         final boolean matchLow = decodeFlag(modelLowFrequency);
-        updateSeeLow(lzpStateLow, matchLow);
+        updateApmLow(lzpStateLow, matchLow);
         final int nextSymbol = matchLow ? predictedSymbolLow
                 : decodeSymbol(predictedSymbolLow);
         updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
@@ -121,28 +121,28 @@ public final class Decoder extends Common {
         computeHashes();
         final int lzpStateLow = getLzpStateLow();
         final int predictedSymbolLow = getLzpPredictedSymbolLow();
-        final int modelLowFrequency = getSeeLow(lzpStateLow);
+        final int modelLowFrequency = getApmLow(lzpStateLow);
         final int lzpStateHigh = getLzpStateHigh();
         final int predictedSymbolHigh = getLzpPredictedSymbolHigh();
-        final int modelHighFrequency = getSeeHigh(lzpStateHigh);
+        final int modelHighFrequency = getApmHigh(lzpStateHigh);
         int nextSymbol;
         if (modelLowFrequency >= modelHighFrequency) {
             final boolean matchLow = decodeFlag(modelLowFrequency);
-            updateSeeLow(lzpStateLow, matchLow);
+            updateApmLow(lzpStateLow, matchLow);
             nextSymbol = matchLow ? predictedSymbolLow
                     : decodeSymbol(predictedSymbolLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
             final boolean matchHigh = nextSymbol == predictedSymbolHigh;
-            updateSeeHistoryHigh(matchHigh);
+            updateApmHistoryHigh(matchHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
         } else {
             final boolean matchHigh = decodeFlag(modelHighFrequency);
-            updateSeeHigh(lzpStateHigh, matchHigh);
+            updateApmHigh(lzpStateHigh, matchHigh);
             nextSymbol = matchHigh ? predictedSymbolHigh
                     : decodeSymbol(predictedSymbolHigh);
             updateLzpStateHigh(lzpStateHigh, nextSymbol, matchHigh);
             final boolean matchLow = nextSymbol == predictedSymbolLow;
-            updateSeeHistoryLow(matchLow);
+            updateApmHistoryLow(matchLow);
             updateLzpStateLow(lzpStateLow, nextSymbol, matchLow);
         }
         updateContext(nextSymbol);
@@ -151,20 +151,21 @@ public final class Decoder extends Common {
 
     private int decodeSymbol(final int mispredictedSymbol) throws IOException {
         normalize();
-        computePpmContext();
+        computeLiteralCoderContext();
         int index;
         int nextSymbol;
         if (!useFixedProbabilities()) {
             final short mispredictedSymbolFrequency = rangesSingle[
-                    (getLastPpmContext() << 8) + mispredictedSymbol];
-            rcRange /= rangesTotal[getLastPpmContext()]
+                    (getLastLiteralCoderContext() << 8) + mispredictedSymbol];
+            rcRange /= rangesTotal[getLastLiteralCoderContext()]
                     - mispredictedSymbolFrequency;
-            rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] = 0;
-            rangesGrouped[((getLastPpmContext() << 8) + 
-                    mispredictedSymbol) >> 4] -= mispredictedSymbolFrequency;
+            rangesSingle[(getLastLiteralCoderContext() << 8)
+                    + mispredictedSymbol] = 0;
+            rangesGrouped[((getLastLiteralCoderContext() << 8)
+                    + mispredictedSymbol) >> 4] -= mispredictedSymbolFrequency;
             int rcHelper = rcBuffer / rcRange;
             final int cumulativeFrequency = rcHelper;
-            for (index = getLastPpmContext() << 4; rcHelper 
+            for (index = getLastLiteralCoderContext() << 4; rcHelper
                     >= rangesGrouped[index]; index++) {
                 rcHelper -= rangesGrouped[index];
             }
@@ -174,19 +175,20 @@ public final class Decoder extends Common {
             rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
             rcRange *= rangesSingle[index];
             nextSymbol = index & 0xff;
-            rangesSingle[(getLastPpmContext() << 8) + mispredictedSymbol] =
-                    mispredictedSymbolFrequency;
-            rangesGrouped[((getLastPpmContext() << 8) + 
-                    mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
+            rangesSingle[(getLastLiteralCoderContext() << 8)
+                    + mispredictedSymbol] = mispredictedSymbolFrequency;
+            rangesGrouped[((getLastLiteralCoderContext() << 8)
+                    + mispredictedSymbol) >> 4] += mispredictedSymbolFrequency;
         } else {
             rcRange /= 255;
             final int rcHelper = rcBuffer / rcRange;
             rcBuffer -= rcHelper * rcRange;
             nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
-            index = (getLastPpmContext() << 8) + nextSymbol;
+            index = (getLastLiteralCoderContext() << 8) + nextSymbol;
         }
-        updateRecentCost(rangesSingle[index], rangesTotal[getLastPpmContext()]);
-        updatePpm(index);
+        updateRecentCost(rangesSingle[index],
+                rangesTotal[getLastLiteralCoderContext()]);
+        updateLiteralCoder(index);
         return nextSymbol;
     }
 

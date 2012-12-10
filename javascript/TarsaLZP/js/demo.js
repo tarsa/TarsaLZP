@@ -32,10 +32,10 @@ var lzpLowContextLength = document.getElementById("lzpLowContextLength");
 var lzpLowMaskSize = document.getElementById("lzpLowMaskSize");
 var lzpHighContextLength = document.getElementById("lzpHighContextLength");
 var lzpHighMaskSize = document.getElementById("lzpHighMaskSize");
-var ppmOrder = document.getElementById("ppmOrder");
-var ppmInit = document.getElementById("ppmInit");
-var ppmStep = document.getElementById("ppmStep");
-var ppmLimit = document.getElementById("ppmLimit");
+var literalCoderOrder = document.getElementById("literalCoderOrder");
+var literalCoderInit = document.getElementById("literalCoderInit");
+var literalCoderStep = document.getElementById("literalCoderStep");
+var literalCoderLimit = document.getElementById("literalCoderLimit");
 var encode = document.getElementById("encode");
 var decode = document.getElementById("decode");
 var showOptions = document.getElementById("showOptions");
@@ -45,10 +45,10 @@ lzpLowContextLength.value = optionsBean.getLzpLowContextLength();
 lzpLowMaskSize.value = optionsBean.getLzpLowMaskSize();
 lzpHighContextLength.value = optionsBean.getLzpHighContextLength();
 lzpHighMaskSize.value = optionsBean.getLzpHighMaskSize();
-ppmOrder.value = optionsBean.getPpmOrder();
-ppmInit.value = optionsBean.getPpmInit();
-ppmStep.value = optionsBean.getPpmStep();
-ppmLimit.value = optionsBean.getPpmLimit();
+literalCoderOrder.value = optionsBean.getLiteralCoderOrder();
+literalCoderInit.value = optionsBean.getLiteralCoderInit();
+literalCoderStep.value = optionsBean.getLiteralCoderStep();
+literalCoderLimit.value = optionsBean.getLiteralCoderLimit();
 
 function statusToString(valid) {
     return valid ? "Valid" : "Invalid";
@@ -73,20 +73,20 @@ lzpHighMaskSize.addEventListener("input", function () {
     optionsBean.setLzpHighMaskSize(parseInt(lzpHighMaskSize.value));
 }, false);
 
-ppmOrder.addEventListener("input", function () {
-    optionsBean.setPpmOrder(parseInt(ppmOrder.value));
+literalCoderOrder.addEventListener("input", function () {
+    optionsBean.setLiteralCoderOrder(parseInt(literalCoderOrder.value));
 }, false);
 
-ppmInit.addEventListener("input", function () {
-    optionsBean.setPpmInit(parseInt(ppmInit.value));
+literalCoderInit.addEventListener("input", function () {
+    optionsBean.setLiteralCoderInit(parseInt(literalCoderInit.value));
 }, false);
 
-ppmStep.addEventListener("input", function () {
-    optionsBean.setPpmStep(parseInt(ppmStep.value));
+literalCoderStep.addEventListener("input", function () {
+    optionsBean.setLiteralCoderStep(parseInt(literalCoderStep.value));
 }, false);
 
-ppmLimit.addEventListener("input", function () {
-    optionsBean.setPpmLimit(parseInt(ppmLimit.value));
+literalCoderLimit.addEventListener("input", function () {
+    optionsBean.setLiteralCoderLimit(parseInt(literalCoderLimit.value));
 }, false);
 
 optionsBean.addChangeListener(function (propertyName) {
@@ -162,17 +162,16 @@ function processData() {
             outputStream.flush();
         } else if (showOptions.checked) {
             options = Coder.getOptions(inputStream);
-            var optionsDescription = "Options:\n"
-                + "LZP Low Context Length: "
-                + options.getLzpLowContextLength() + "\n"
-                + "LZP Low Mask Size: " + options.getLzpLowMaskSize() + "\n"
-                + "LZP High Context Length: "
-                + options.getLzpHighContextLength() + "\n"
-                + "LZP High Mask Size: " + options.getLzpHighMaskSize() + "\n"
-                + "PPM Order: " + options.getPpmOrder() + "\n"
-                + "PPM Init: " + options.getPpmInit() + "\n"
-                + "PPM Step: " + options.getPpmStep() + "\n"
-                + "PPM Limit: " + options.getPpmLimit();
+            var optionsDescription = "Options:\nLZP Low Context Length: "
+                + options.getLzpLowContextLength()
+                + "\nLZP Low Mask Size: " + options.getLzpLowMaskSize()
+                + "\nLZP High Context Length: "
+                + options.getLzpHighContextLength() + "\nLZP High Mask Size: "
+                + options.getLzpHighMaskSize() + "\nLiteral Coder Order: "
+                + options.getLiteralCoderOrder() + "\nLiteral Coder Init: "
+                + options.getLiteralCoderInit() + "\nLiteral Coder Step: "
+                + options.getLiteralCoderStep() + "\nLiteral Coder Limit: "
+                + options.getLiteralCoderLimit();
             alert(optionsDescription);
             showTime = false;
         } // nothing else should happen
