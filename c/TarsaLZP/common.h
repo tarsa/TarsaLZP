@@ -32,6 +32,7 @@
 #ifndef COMMON_H
 #define	COMMON_H
 
+#include <malloc.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -115,14 +116,14 @@ extern "C" {
         literalCoderContextMask = (1 << literalCoderContextMaskSize) - 1;
         int32_t const rangesGroupedAndSingleCount =
                 (1 << literalCoderContextMaskSize) * 272;
-        rangesGroupedAndSingle = malloc(sizeof (int16_t)
+        rangesGroupedAndSingle = memalign(512, sizeof (int16_t)
                 * rangesGroupedAndSingleCount);
         if (rangesGroupedAndSingle == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
         }
         int32_t const rangesTotalCount = 1 << literalCoderContextMaskSize;
-        rangesTotal = malloc(sizeof (int16_t) * rangesTotalCount);
+        rangesTotal = memalign(512, sizeof (int16_t) * rangesTotalCount);
         if (rangesTotal == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
