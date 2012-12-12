@@ -140,10 +140,12 @@ extern "C" {
             int32_t const mispredictedSymbol) {
         encoderNormalize();
         computeLiteralCoderContext();
-        int32_t const index = (lastLiteralCoderContext << 8) + nextSymbol;
+        int16_t * const rangesGrouped = rangesGroupedAndSingle 
+                + lastLiteralCoderContext * 272;
+        int16_t * const rangesSingle = rangesGrouped + 16;
         if (!useFixedProbabilities()) {
             int16_t cumulativeExclusiveFrequency = 0;
-            int32_t const symbolGroup = index >> 4;
+            int32_t const symbolGroup = nextSymbol >> 4;
 #ifndef NO_VECTOR
 
             union {
@@ -153,13 +155,12 @@ extern "C" {
                 uint32_t v[4];
             } a, b, c;
             a.m = __builtin_ia32_pxor128(a.m, a.m);
-            b.m = masksA[symbolGroup & 15].v8;
-            c.v8 = *(__v8hi*) (rangesGrouped + (lastLiteralCoderContext << 4));
+            b.m = masksA[symbolGroup].v8;
+            c.v8 = *(__v8hi*) (rangesGrouped + 0);
             b.m = __builtin_ia32_pand128(b.m, c.m);
             a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
-            b.m = masksB[symbolGroup & 15].v8;
-            c.v8 = *(__v8hi*) (rangesGrouped + (lastLiteralCoderContext << 4)
-                    + 8);
+            b.m = masksB[symbolGroup].v8;
+            c.v8 = *(__v8hi*) (rangesGrouped + 8);
             b.m = __builtin_ia32_pand128(b.m, c.m);
             a.v8 = __builtin_ia32_paddw128(a.v8, b.v8);
             b.m = masksA[nextSymbol & 15].v8;
@@ -174,32 +175,31 @@ extern "C" {
             cumulativeExclusiveFrequency += (packedSum & 0xffff)
                     + (packedSum >> 16);
 #else
-            for (int32_t indexPartial = lastLiteralCoderContext << 4;
-                    indexPartial < symbolGroup; indexPartial++) {
-                cumulativeExclusiveFrequency += rangesGrouped[indexPartial];
+            for (int32_t group = 0; group < symbolGroup; group++) {
+                cumulativeExclusiveFrequency += rangesGrouped[group];
             }
-            for (int32_t indexPartial = symbolGroup << 4; indexPartial < index;
-                    indexPartial++) {
-                cumulativeExclusiveFrequency += rangesSingle[indexPartial];
+            for (int32_t single = symbolGroup << 4; single < nextSymbol; 
+                    single++) {
+                cumulativeExclusiveFrequency += rangesSingle[single];
             }
 #endif
             int16_t const mispredictedSymbolFrequency = rangesSingle[
-                    (lastLiteralCoderContext << 8) + mispredictedSymbol];
+                    mispredictedSymbol];
             if (nextSymbol > mispredictedSymbol) {
                 cumulativeExclusiveFrequency -= mispredictedSymbolFrequency;
             }
             int32_t const rcHelper = rcRange / (rangesTotal[
                     lastLiteralCoderContext] - mispredictedSymbolFrequency);
             encoderAddWithCarry(rcHelper * cumulativeExclusiveFrequency);
-            rcRange = rcHelper * rangesSingle[index];
+            rcRange = rcHelper * rangesSingle[nextSymbol];
         } else {
             rcRange /= 255;
             encoderAddWithCarry(rcRange *
                     (nextSymbol - (nextSymbol > mispredictedSymbol ? 1 : 0)));
         }
-        updateRecentCost(rangesSingle[index],
+        updateRecentCost(rangesSingle[nextSymbol],
                 rangesTotal[lastLiteralCoderContext]);
-        updateLiteralCoder(index);
+        updateLiteralCoder(nextSymbol);
     }
 
     void encodeSingleOnlyLowLzp(int32_t const nextSymbol) {

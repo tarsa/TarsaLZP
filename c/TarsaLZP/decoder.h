@@ -112,39 +112,39 @@ extern "C" {
     int32_t decodeSymbol(int32_t const mispredictedSymbol) {
         decoderNormalize();
         computeLiteralCoderContext();
-        int32_t index;
+        int16_t * const rangesGrouped = rangesGroupedAndSingle 
+                + lastLiteralCoderContext * 272;
+        int16_t * const rangesSingle = rangesGrouped + 16;
         int32_t nextSymbol;
         if (!useFixedProbabilities()) {
             int16_t const mispredictedSymbolFrequency = rangesSingle[
-                    (lastLiteralCoderContext << 8) + mispredictedSymbol];
+                    mispredictedSymbol];
             rcRange /= rangesTotal[lastLiteralCoderContext]
                     - mispredictedSymbolFrequency;
-            rangesSingle[(lastLiteralCoderContext << 8) + mispredictedSymbol] =
-                    0;
-            rangesGrouped[((lastLiteralCoderContext << 8) + mispredictedSymbol)
-                    >> 4] -= mispredictedSymbolFrequency;
+            rangesSingle[mispredictedSymbol] = 0;
+            rangesGrouped[mispredictedSymbol >> 4] -= 
+                    mispredictedSymbolFrequency;
             int32_t rcHelper = rcBuffer / rcRange;
             int32_t const cumulativeFrequency = rcHelper;
-            for (index = lastLiteralCoderContext << 4; rcHelper
-                    >= rangesGrouped[index]; index++) {
-                rcHelper -= rangesGrouped[index];
+            int32_t nextSymbolGroup;
+            for (nextSymbolGroup = 0; rcHelper 
+                    >= rangesGrouped[nextSymbolGroup]; nextSymbolGroup++) {
+                rcHelper -= rangesGrouped[nextSymbolGroup];
             }
-            for (index <<= 4; rcHelper >= rangesSingle[index]; index++) {
-                rcHelper -= rangesSingle[index];
+            for (nextSymbol = nextSymbolGroup << 4; rcHelper 
+                    >= rangesSingle[nextSymbol]; nextSymbol++) {
+                rcHelper -= rangesSingle[nextSymbol];
             }
-            nextSymbol = index & 0xff;
             rcBuffer -= (cumulativeFrequency - rcHelper) * rcRange;
-            rcRange *= rangesSingle[index];
-            rangesSingle[(lastLiteralCoderContext << 8) + mispredictedSymbol] =
+            rcRange *= rangesSingle[nextSymbol];
+            rangesSingle[mispredictedSymbol] = mispredictedSymbolFrequency;
+            rangesGrouped[mispredictedSymbol >> 4] += 
                     mispredictedSymbolFrequency;
-            rangesGrouped[((lastLiteralCoderContext << 8) + mispredictedSymbol)
-                    >> 4] += mispredictedSymbolFrequency;
         } else {
             rcRange /= 255;
             int32_t const rcHelper = rcBuffer / rcRange;
             rcBuffer -= rcHelper * rcRange;
             nextSymbol = rcHelper + (rcHelper >= mispredictedSymbol ? 1 : 0);
-            index = (lastLiteralCoderContext << 8) + nextSymbol;
         }
 #ifndef NO_PREFETCH    
         if (onlyLowLzp) {
@@ -153,9 +153,9 @@ extern "C" {
             computeHashesForNextIteration(nextSymbol);
         }
 #endif         
-        updateRecentCost(rangesSingle[index],
+        updateRecentCost(rangesSingle[nextSymbol],
                 rangesTotal[lastLiteralCoderContext]);
-        updateLiteralCoder(index);
+        updateLiteralCoder(nextSymbol);
         return nextSymbol;
     }
 

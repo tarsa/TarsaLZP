@@ -57,8 +57,7 @@ extern "C" {
     // Literal coder section
     int32_t literalCoderContextMaskSize;
     int32_t literalCoderContextMask;
-    int16_t * rangesSingle;
-    int16_t * rangesGrouped;
+    int16_t * rangesGroupedAndSingle;
     int16_t * rangesTotal;
     int32_t recentCost;
     // Adaptive probability map section
@@ -114,23 +113,13 @@ extern "C" {
         // Literal coder init
         literalCoderContextMaskSize = 8 * literalCoderOrder;
         literalCoderContextMask = (1 << literalCoderContextMaskSize) - 1;
-        int32_t const rangesSingleCount = 1 << literalCoderContextMaskSize + 8;
-        rangesSingle = malloc(sizeof (int16_t) * rangesSingleCount);
-        if (rangesSingle == NULL) {
+        int32_t const rangesGroupedAndSingleCount =
+                (1 << literalCoderContextMaskSize) * 272;
+        rangesGroupedAndSingle = malloc(sizeof (int16_t)
+                * rangesGroupedAndSingleCount);
+        if (rangesGroupedAndSingle == NULL) {
             err("Memory allocation failure.");
             exit(EXIT_FAILURE);
-        }
-        for (int32_t i = 0; i < rangesSingleCount; i++) {
-            rangesSingle[i] = literalCoderInit;
-        }
-        int32_t const rangesGroupedCount = 1 << literalCoderContextMaskSize + 4;
-        rangesGrouped = malloc(sizeof (int16_t) * rangesGroupedCount);
-        if (rangesGrouped == NULL) {
-            err("Memory allocation failure.");
-            exit(EXIT_FAILURE);
-        }
-        for (int32_t i = 0; i < rangesGroupedCount; i++) {
-            rangesGrouped[i] = literalCoderInit * 16;
         }
         int32_t const rangesTotalCount = 1 << literalCoderContextMaskSize;
         rangesTotal = malloc(sizeof (int16_t) * rangesTotalCount);
@@ -140,6 +129,14 @@ extern "C" {
         }
         for (int32_t i = 0; i < rangesTotalCount; i++) {
             rangesTotal[i] = literalCoderInit * 256;
+            int16_t * const rangesGrouped = rangesGroupedAndSingle + i * 272;
+            for (int32_t j = 0; j < 16; j++) {
+                rangesGrouped[j] = literalCoderInit * 16;
+            }
+            int16_t * const rangesSingle = rangesGrouped + 16;
+            for (int32_t j = 0; j < 256; j++) {
+                rangesSingle[j] = literalCoderInit;
+            }
         }
         recentCost = 8 << CostScale + 14;
         // Adaptive probability map init
@@ -345,16 +342,15 @@ extern "C" {
     // Literal coder stuff
 
     void rescaleLiteralCoder() {
-        for (int32_t indexCurrent = lastLiteralCoderContext << 8; indexCurrent
-                < (lastLiteralCoderContext + 1) << 8; indexCurrent++) {
-            rangesSingle[indexCurrent] -= rangesSingle[indexCurrent] >> 1;
-        }
+        int16_t * const rangesGrouped = rangesGroupedAndSingle
+                + lastLiteralCoderContext * 272;
+        int16_t * const rangesSingle = rangesGrouped + 16;
         int16_t totalFrequency = 0;
-        for (int32_t groupCurrent = lastLiteralCoderContext << 4; groupCurrent
-                < (lastLiteralCoderContext + 1) << 4; groupCurrent++) {
+        for (int32_t groupCurrent = 0; groupCurrent < 16; groupCurrent++) {
             int16_t groupFrequency = 0;
             for (int32_t indexCurrent = groupCurrent << 4; indexCurrent
                     < (groupCurrent + 1) << 4; indexCurrent++) {
+                rangesSingle[indexCurrent] -= rangesSingle[indexCurrent] >> 1;
                 groupFrequency += rangesSingle[indexCurrent];
             }
             rangesGrouped[groupCurrent] = groupFrequency;
@@ -363,9 +359,10 @@ extern "C" {
         rangesTotal[lastLiteralCoderContext] = totalFrequency;
     }
 
-    void updateLiteralCoder(int32_t const index) {
-        rangesSingle[index] += literalCoderStep;
-        rangesGrouped[index >> 4] += literalCoderStep;
+    void updateLiteralCoder(int32_t const symbol) {
+        int32_t const baseIndex = lastLiteralCoderContext * 272;
+        rangesGroupedAndSingle[baseIndex + (symbol >> 4)] += literalCoderStep;
+        rangesGroupedAndSingle[baseIndex + 16 + symbol] += literalCoderStep;
         rangesTotal[lastLiteralCoderContext] += literalCoderStep;
         if (rangesTotal[lastLiteralCoderContext] > literalCoderLimit) {
             rescaleLiteralCoder();
