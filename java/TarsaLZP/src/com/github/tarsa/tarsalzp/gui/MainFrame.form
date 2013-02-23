@@ -294,9 +294,7 @@
             <Property name="toolTipText" type="java.lang.String" value="Value must be higher than Literal Coder Order and not higher than LZP High Context Length"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false">
-              <Property name="name" type="java.lang.String" value=""/>
-            </BindingProperty>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${lzpLowContextLength}" target="lzpLowContextLengthSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="lzpLowMaskSizeSpinner">
@@ -348,9 +346,7 @@
             <Property name="toolTipText" type="java.lang.String" value="Value must be not lower than 1 and not higher than 2 or LZP Low Context Length"/>
           </Properties>
           <BindingProperties>
-            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderOrder}" target="literalCoderOrderSpinner" targetPath="value" updateStrategy="0" immediately="false">
-              <Property name="name" type="java.lang.String" value=""/>
-            </BindingProperty>
+            <BindingProperty name="value" source="optionsBean" sourcePath="${literalCoderOrder}" target="literalCoderOrderSpinner" targetPath="value" updateStrategy="0" immediately="false"/>
           </BindingProperties>
         </Component>
         <Component class="javax.swing.JSpinner" name="literalCoderInitSpinner">

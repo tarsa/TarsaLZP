@@ -211,7 +211,7 @@ public class MainFrame extends JFrame {
 
         lzpLowContextLengthSpinner.setToolTipText("Value must be higher than Literal Coder Order and not higher than LZP High Context Length");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${lzpLowContextLength}"), lzpLowContextLengthSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
         lzpLowMaskSizeSpinner.setToolTipText("Value must be between 15 and 30 (inclusive)");
@@ -239,7 +239,7 @@ public class MainFrame extends JFrame {
 
         literalCoderOrderSpinner.setToolTipText("Value must be not lower than 1 and not higher than 2 or LZP Low Context Length");
 
-        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderOrder}"), literalCoderOrderSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"), "");
+        binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, optionsBean, org.jdesktop.beansbinding.ELProperty.create("${literalCoderOrder}"), literalCoderOrderSpinner, org.jdesktop.beansbinding.BeanProperty.create("value"));
         bindingGroup.addBinding(binding);
 
         literalCoderInitSpinner.setToolTipText("Value must be between 1 and 127 (inclusive)");
