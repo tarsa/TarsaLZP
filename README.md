@@ -26,7 +26,7 @@ All tests are performed on following system:
 - RAM: 8 GiB A-Data DDR3 RAM @ CL5, 1000 MHz
 - OS: Ubuntu 12.04 64-bit
 
-Encoding speed on [enwik8] [1] (command line interface implementations) - revision [b69b99d] [2]:
+Encoding speed on [enwik8] [1] (command line interface implementations) - revision [53a85ed] [2]:
 <table>
   <thead>
     <tr>
@@ -41,48 +41,56 @@ Encoding speed on [enwik8] [1] (command line interface implementations) - revisi
   <tbody>
     <tr>
       <td>C</td>
-      <td>7.876s</td>
-      <td>7.607s</td>
-      <td>0.240s</td>
+      <td>7.473s</td>
+      <td>7.165s</td>
+      <td>0.276s</td>
       <td>GNU GCC 4.6.3</td>
       <td>Three runs average, SSE optimizations (vectors and prefetching)</td>
     </tr>
     <tr>
       <td>C</td>
-      <td>12.922s</td>
-      <td>12.653s</td>
-      <td>0.235s</td>
+      <td>12.734s</td>
+      <td>12.437s</td>
+      <td>0.279s</td>
       <td>GNU GCC 4.6.3</td>
       <td>Three runs average, no SSE optimizations</td>
     </tr>
     <tr>
       <td>Java</td>
-      <td>21.999s</td>
-      <td>21.786s</td>
-      <td>0.323s</td>
-      <td>Oracle JDK 7 update 9</td>
+      <td>20.587s</td>
+      <td>20.326s</td>
+      <td>0.280s</td>
+      <td>Oracle JDK 7 update 15</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Python</td>
-      <td>151.667s</td>
-      <td>144.684s</td>
-      <td>6.363s</td>
+      <td>60.346s</td>
+      <td>59.907s</td>
+      <td>0.367s</td>
+      <td>ShedSkin 0.9.3 + GNU GCC 4.6.3</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>139.983s</td>
+      <td>132.384s</td>
+      <td>6.339s</td>
       <td>PyPy 1.9.0</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Python</td>
-      <td>1752.591s</td>
-      <td>1751.693s</td>
-      <td>0.424s</td>
+      <td>1806.230s</td>
+      <td>1804.573s</td>
+      <td>0.436s</td>
       <td>CPython 2.7.3</td>
       <td>Single run, -OO</td>
     </tr>
   </tbody>
 </table>
 
-Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [b69b99d] [2]:
+Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [53a85ed] [2]:
 <table>
   <thead>
     <tr>
@@ -95,26 +103,26 @@ Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [b69b99d] [2]
   <tbody>
     <tr>
       <td>Chrome</td>
-      <td>54.770s</td>
-      <td>23.0.1271.95</td>
+      <td>47.136s</td>
+      <td>25.0.1364.97</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Opera</td>
-      <td>144.922s</td>
+      <td>137.397s</td>
       <td>12.11 (build 1661)</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Firefox</td>
-      <td>180.985s</td>
-      <td>17.0</td>
+      <td>153.289s</td>
+      <td>19.0</td>
       <td>Three runs average</td>
     </tr>
   </tbody>
 </table>
 
-Encoding speed on [enwik9] [1] (command line interface implementations) - revision [b69b99d] [2]:
+Encoding speed on [enwik9] [1] (command line interface implementations) - revision [b69b99d] [3]:
 <table>
   <thead>
     <tr>
@@ -170,7 +178,7 @@ Encoding speed on [enwik9] [1] (command line interface implementations) - revisi
   </tbody>
 </table>
 
-Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [2]:
+Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [3]:
 <table>
   <thead>
     <tr>
@@ -202,14 +210,9 @@ Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [2]
   </tbody>
 </table>
 
-I have failed to get working the following execution environments:
-
- - ShedSkin (Python)
- - GNU GCJ (Java)
- - Jython (Python)
-
 
 
   [1]: http://mattmahoney.net/dc/textdata.html "LTCB: About the Test data"
-  [2]: https://github.com/tarsa/TarsaLZP/commit/b69b99d775981668b8b09a71f181db3959955640 "b69b99d775981668b8b09a71f181db3959955640"
+  [2]: https://github.com/tarsa/TarsaLZP/commit/53a85edea75516883076f4a5d0c32e98ae7e8aaa "53a85edea75516883076f4a5d0c32e98ae7e8aaa"
+  [3]: https://github.com/tarsa/TarsaLZP/commit/b69b99d775981668b8b09a71f181db3959955640 "b69b99d775981668b8b09a71f181db3959955640"
 
