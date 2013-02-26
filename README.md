@@ -122,7 +122,7 @@ Encoding speed on [enwik8] [1] (JavaScript in browsers) - revision [53a85ed] [2]
   </tbody>
 </table>
 
-Encoding speed on [enwik9] [1] (command line interface implementations) - revision [b69b99d] [3]:
+Encoding speed on [enwik9] [1] (command line interface implementations) - revision [53a85ed] [2]:
 <table>
   <thead>
     <tr>
@@ -137,48 +137,56 @@ Encoding speed on [enwik9] [1] (command line interface implementations) - revisi
   <tbody>
     <tr>
       <td>C</td>
-      <td>71.553s</td>
-      <td>70.545s</td>
-      <td>0.791s</td>
+      <td>67.853s</td>
+      <td>66.129s</td>
+      <td>0.764s</td>
       <td>GNU GCC 4.6.3</td>
       <td>Three runs average, SSE optimizations (vectors and prefetching)</td>
     </tr>
     <tr>
       <td>C</td>
-      <td>115.379s</td>
-      <td>114.378s</td>
-      <td>0.800s</td>
+      <td>114.255s</td>
+      <td>112.308s</td>
+      <td>0.757s</td>
       <td>GNU GCC 4.6.3</td>
       <td>Three runs average, no SSE optimizations</td>
     </tr>
     <tr>
       <td>Java</td>
-      <td>197.634s</td>
-      <td>196.535s</td>
-      <td>1.204s</td>
-      <td>Oracle JDK 7 update 9</td>
+      <td>189.163s</td>
+      <td>186.413s</td>
+      <td>0.845s</td>
+      <td>Oracle JDK 7 update 15</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Python</td>
-      <td>1186.708s</td>
-      <td>1177.413s</td>
-      <td>7.060s</td>
+      <td>545.170s</td>
+      <td>540.163s</td>
+      <td>1.023s</td>
+      <td>ShedSkin 0.9.3 + GNU GCC 4.6.3</td>
+      <td>Three runs average</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>1086.181s</td>
+      <td>1069.226s</td>
+      <td>6.840s</td>
       <td>PyPy 1.9.0</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Python</td>
-      <td>16858.427s</td>
-      <td>16850.569s</td>
-      <td>2.932s</td>
+      <td>16799.145s</td>
+      <td>16789.525s</td>
+      <td>3.668s</td>
       <td>CPython 2.7.3</td>
-      <td>Single run, without -OO</td>
+      <td>Single run, -OO</td>
     </tr>
   </tbody>
 </table>
 
-Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [3]:
+Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [53a85ed] [2]:
 <table>
   <thead>
     <tr>
@@ -191,20 +199,20 @@ Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [3]
   <tbody>
     <tr>
       <td>Chrome</td>
-      <td>456.905s</td>
-      <td>23.0.1271.95</td>
+      <td>422.509s</td>
+      <td>25.0.1364.97</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Opera</td>
-      <td>1305.686s</td>
+      <td>1287.090s</td>
       <td>12.11 (build 1661)</td>
       <td>Three runs average</td>
     </tr>
     <tr>
       <td>Firefox</td>
-      <td>1703.568s</td>
-      <td>17.0</td>
+      <td>1434.559s</td>
+      <td>19.0</td>
       <td>Three runs average</td>
     </tr>
   </tbody>
@@ -214,5 +222,4 @@ Encoding speed on [enwik9] [1] (JavaScript in browsers) - revision [b69b99d] [3]
 
   [1]: http://mattmahoney.net/dc/textdata.html "LTCB: About the Test data"
   [2]: https://github.com/tarsa/TarsaLZP/commit/53a85edea75516883076f4a5d0c32e98ae7e8aaa "53a85edea75516883076f4a5d0c32e98ae7e8aaa"
-  [3]: https://github.com/tarsa/TarsaLZP/commit/b69b99d775981668b8b09a71f181db3959955640 "b69b99d775981668b8b09a71f181db3959955640"
 
