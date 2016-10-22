@@ -127,17 +127,15 @@ function loadContents() {
     var file = inputFileChooser.files[0];
     if (!file)
         return;
-    var reader = new FileReader();
     setButtonsState(false);
-    reader.readAsArrayBuffer(file);
-    reader.onload = loaded;
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        inputStream = newArrayInputStream(new Uint8Array(event.target.result));
+    }
     reader.onloadend = function (/*event*/) {
         setButtonsState(true);
     }
-}
-
-function loaded(event) {
-    inputStream = newArrayInputStream(new Uint8Array(event.target.result));
+    reader.readAsArrayBuffer(file);
 }
 
 function processData() {
@@ -187,11 +185,12 @@ function processData() {
 
 function saveResults() {
     if (outputStream != null) {
-        var bb = new BlobBuilder;
-        outputStream.getChunksArray().forEach(function (chunk) {
-            bb.append(chunk.truncatedBuffer());
+        var rawChunks = outputStream.getChunksArray();
+        var chunks = [];
+        rawChunks.forEach(function (rawChunk) {
+          chunks.push(rawChunk.truncatedBuffer());
         });
-        var blob = bb.getBlob("example/binary");
+        var blob = new Blob(chunks, { type: 'example/binary' });
         saveAs(blob, "filename");
     }
 }
