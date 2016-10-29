@@ -34,9 +34,10 @@ import scala.scalajs.js.annotation.JSExport
 import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
 
 @JSExport
-object TarsaLZP {
+object TarsaLZP extends js.JSApp {
   @JSExport
-  def main(mainDiv: dom.Element): Unit = {
+  def main(): Unit = {
+    val mainDiv = dom.document.getElementById("mainDiv")
     val fileChooser = <.input(^.`type` := "file").render
     val loadButton = <.input(^.`type` := "button",
       ^.value := "Load contents from file").render
@@ -106,7 +107,7 @@ object TarsaLZP {
         val inputStream = new Streams.ArrayInputStream(
           new Uint8Array(inputBuffer))
         if (!exactlyOneChecked) {
-          dom.alert("Something wrong with radio buttons!")
+          dom.window.alert("Something wrong with radio buttons!")
         } else if (encodeChecked) {
           val startTime = js.Date.now()
           val outputStream = new Streams.ChunksArrayOutputStream
@@ -115,7 +116,7 @@ object TarsaLZP {
             OptionsView.currentOptions)
           outputStream.flush()
           val totalTime = js.Date.now() - startTime
-          dom.alert(f"Encoding done! Time: $totalTime%.3fms")
+          dom.window.alert(f"Encoding done! Time: $totalTime%.3fms")
         } else if (decodeChecked) {
           val startTime = js.Date.now()
           val outputStream = new Streams.ChunksArrayOutputStream
@@ -123,10 +124,10 @@ object TarsaLZP {
           Coder.decode(inputStream, outputStream, null, 123456)
           outputStream.flush()
           val totalTime = js.Date.now() - startTime
-          dom.alert(f"Decoding done! $totalTime%.3fms")
+          dom.window.alert(f"Decoding done! $totalTime%.3fms")
         } else if (showOptionsChecked) {
           val options = Coder.getOptions(inputStream)
-          dom.alert(options.prettyFormat)
+          dom.window.alert(options.prettyFormat)
         }
         println("Processed!")
       }
