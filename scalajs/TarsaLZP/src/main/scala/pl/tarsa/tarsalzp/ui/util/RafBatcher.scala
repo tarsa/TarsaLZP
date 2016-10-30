@@ -28,15 +28,23 @@ import diode._
 import org.scalajs.dom._
 
 // marker trait to identify actions that should be RAF batched
-trait RAFAction extends Action
+trait RafAction extends Action
 
-private[util] final case class RAFWrapper(action: Any, dispatch: Dispatcher)
+private[util] final case class RafWrapper(action: Any, dispatch: Dispatcher)
   extends Action
 
-final case class RAFTimeStamp(time: Double) extends Action
+private[util] final case class RafTimeStamp(timestamp: Double) extends Action
 
-class RAFBatcher[M <: AnyRef] extends ActionProcessor[M] {
-  private var batch = List.empty[RAFWrapper]
+class RafTimestampHandler[M](modelRw: ModelRW[M, Double])
+  extends ActionHandler[M, Double](modelRw) {
+  override protected def handle: PartialFunction[Any, ActionResult[M]] = {
+    case RafTimeStamp(timestamp) =>
+      updated(timestamp)
+  }
+}
+
+class RafBatcher[M <: AnyRef] extends ActionProcessor[M] {
+  private var batch = List.empty[RafWrapper]
   private var frameRequested = false
 
   /**
@@ -58,7 +66,7 @@ class RAFBatcher[M <: AnyRef] extends ActionProcessor[M] {
           // When dispatching a sequence, Circuit optimizes processing
           // internally and only calls listeners after all the actions are
           // processed
-          dispatch(RAFTimeStamp(time) +: ActionBatch(actions: _*))
+          dispatch(RafTimeStamp(time) +: ActionBatch(actions: _*))
       }
       // request next frame
       requestAnimationFrame()
@@ -81,14 +89,14 @@ class RAFBatcher[M <: AnyRef] extends ActionProcessor[M] {
   override def process(dispatch: Dispatcher, action: Any,
     next: Any => ActionResult[M], currentModel: M) = {
     action match {
-      case rafAction: RAFAction =>
+      case rafAction: RafAction =>
         // save action into the batch using a wrapper
-        batch = RAFWrapper(rafAction, dispatch) :: batch
+        batch = RafWrapper(rafAction, dispatch) :: batch
         // request animation frame to run the batch
         requestAnimationFrame()
         // skip processing of the action for now
         ActionResult.NoChange
-      case RAFWrapper(rafAction, _) =>
+      case RafWrapper(rafAction, _) =>
         // unwrap the RAF action and continue processing normally
         next(rafAction)
       case _ =>
