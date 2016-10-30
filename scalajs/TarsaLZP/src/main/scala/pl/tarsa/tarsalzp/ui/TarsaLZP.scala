@@ -23,6 +23,7 @@ package pl.tarsa.tarsalzp.ui
 import japgolly.scalajs.react.ReactDOM
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
+import pl.tarsa.tarsalzp.ui.util.RAFBatcher
 import pl.tarsa.tarsalzp.ui.views.MainView
 
 import scala.scalajs.js
@@ -32,7 +33,9 @@ import scala.scalajs.js.annotation.JSExport
 object TarsaLZP extends js.JSApp {
   @JSExport
   def main(): Unit = {
-    val mainWrapper = (new MainStateHolder).connect(identity[MainModel] _)
+    val mainCircuit = new MainStateHolder
+    mainCircuit.addProcessor(new RAFBatcher)
+    val mainWrapper = mainCircuit.connect(identity[MainModel] _)
     val mainComponent = mainWrapper(MainView.apply)
     ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
   }
