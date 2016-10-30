@@ -18,16 +18,22 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.imports
+package pl.tarsa.tarsalzp.ui
 
-import scalatags.{DataConverters, JsDom, LowPriorityImplicits}
+import japgolly.scalajs.react.ReactDOM
+import org.scalajs.dom
+import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
+import pl.tarsa.tarsalzp.ui.views.MainView
 
-object ScalaTagsJsDom
-  extends JsDom.Cap
-    with DataConverters
-    with JsDom.Aggregate
-    with LowPriorityImplicits {
-  val ^ = JsDom.attrs
-  val < = JsDom.tags
-  val << = JsDom.tags2
+import scala.scalajs.js
+import scala.scalajs.js.annotation.JSExport
+
+@JSExport
+object TarsaLZP extends js.JSApp {
+  @JSExport
+  def main(): Unit = {
+    val mainWrapper = MainStateHolder.connect(identity[MainModel] _)
+    val mainComponent = mainWrapper(MainView.apply)
+    ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
+  }
 }

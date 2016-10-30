@@ -18,11 +18,11 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.engine
+package pl.tarsa.tarsalzp.compression.engine
 
 import java.io.{IOException, InputStream, OutputStream}
 
-import pl.tarsa.tarsalzp.options.Options
+import pl.tarsa.tarsalzp.compression.options.Options
 
 object Coder {
   private val HeaderValue = 2345174324078614718l

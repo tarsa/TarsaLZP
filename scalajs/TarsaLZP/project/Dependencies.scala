@@ -5,15 +5,16 @@ object Dependencies {
   object Versions {
     object ScalaJs {
       // production
+      val diode = "1.0.0"
       val scalaJsDom = "0.9.1"
-      val scalaTags = "0.6.1"
+      val scalaJsReact = "0.11.2"
       // test
       val scalaTest = "3.0.0"
     }
 
     object Js {
       // production
-      val jQuery = "2.1.4"
+      val react = "15.3.2"
     }
   }
 
@@ -21,8 +22,11 @@ object Dependencies {
     import Versions.ScalaJs._
     Def.setting(Seq(
       // production
+      "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReact,
+      "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReact,
+      "me.chrons" %%% "diode" % diode,
+      "me.chrons" %%% "diode-react" % diode,
       "org.scala-js" %%% "scalajs-dom" % scalaJsDom,
-      "com.lihaoyi" %%% "scalatags" % scalaTags,
       // test
       "org.scalatest" %%% "scalatest" % scalaTest % "test"
     ))
@@ -32,7 +36,11 @@ object Dependencies {
     import Versions.Js._
     Def.setting(Seq(
       // production
-      "org.webjars" % "jquery" % jQuery / s"$jQuery/jquery.js",
+      "org.webjars.bower" % "react" % react / "react-with-addons.js"
+        minified "react-with-addons.min.js" commonJSName "React",
+      "org.webjars.bower" % "react" % react / "react-dom.js"
+        minified "react-dom.min.js" dependsOn "react-with-addons.js"
+        commonJSName "ReactDOM",
       ProvidedJS / "eligrey/Blob.js",
       ProvidedJS / "eligrey/FileSaver.js" dependsOn "eligrey/Blob.js",
       // test

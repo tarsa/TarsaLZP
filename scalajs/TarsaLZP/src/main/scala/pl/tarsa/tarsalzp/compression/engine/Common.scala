@@ -18,9 +18,9 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.engine
+package pl.tarsa.tarsalzp.compression.engine
 
-import pl.tarsa.tarsalzp.options.Options
+import pl.tarsa.tarsalzp.compression.options.Options
 
 import scala.scalajs.js.typedarray.{Int16Array, Int32Array}
 

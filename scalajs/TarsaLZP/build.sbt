@@ -10,7 +10,8 @@ scalaVersion := "2.11.8"
 
 workbenchSettings
 
-bootSnippet := "alert(\"booting!\")"
+// why it's needed for refreshing?
+bootSnippet := "console.log(\"i'm just refreshing\")"
 
 persistLauncher := true
 

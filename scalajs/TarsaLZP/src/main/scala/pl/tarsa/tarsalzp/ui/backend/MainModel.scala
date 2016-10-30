@@ -18,16 +18,30 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package eligrey
+package pl.tarsa.tarsalzp.ui.backend
 
-import org.scalajs.dom.Blob
+import org.scalajs.dom.File
+import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.prelude.Streams
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSGlobalScope
+import scala.scalajs.js.typedarray.ArrayBuffer
 
-@js.native
-@JSGlobalScope
-object FileSaver extends js.Object {
-  def saveAs(contents: Blob, fileName: String,
-    noAutoBom: Boolean = js.native): Unit = js.native
-}
+case class MainModel(
+  options: Options,
+  chosenFileOpt: Option[File],
+  mode: ProcessingMode,
+  buffers: Buffers,
+  busy: Boolean)
+
+case class Buffers(
+  inputBufferOpt: Option[ArrayBuffer],
+  outputStreamOpt: Option[Streams.ChunksArrayOutputStream])
+
+
+sealed trait ProcessingMode
+
+case object Encode extends ProcessingMode
+
+case object Decode extends ProcessingMode
+
+case object ShowOptions extends ProcessingMode

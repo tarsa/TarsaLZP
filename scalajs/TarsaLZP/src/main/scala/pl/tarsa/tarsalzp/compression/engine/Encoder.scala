@@ -18,11 +18,11 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.engine
+package pl.tarsa.tarsalzp.compression.engine
 
 import java.io.{InputStream, OutputStream}
 
-import pl.tarsa.tarsalzp.options.Options
+import pl.tarsa.tarsalzp.compression.options.Options
 
 
 class Encoder(

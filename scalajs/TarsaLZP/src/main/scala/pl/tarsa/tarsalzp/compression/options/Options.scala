@@ -18,7 +18,7 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.options
+package pl.tarsa.tarsalzp.compression.options
 
 case class Options(
   lzpLowContextLength: Int,
