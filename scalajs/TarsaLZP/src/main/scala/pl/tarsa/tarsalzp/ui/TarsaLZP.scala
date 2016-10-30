@@ -32,7 +32,7 @@ import scala.scalajs.js.annotation.JSExport
 object TarsaLZP extends js.JSApp {
   @JSExport
   def main(): Unit = {
-    val mainWrapper = MainStateHolder.connect(identity[MainModel] _)
+    val mainWrapper = (new MainStateHolder).connect(identity[MainModel] _)
     val mainComponent = mainWrapper(MainView.apply)
     ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
   }

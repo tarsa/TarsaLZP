@@ -44,8 +44,6 @@ class MainStateHolder
     composeHandlers(new MainActionHandler(zoomRW(identity)((_, m) => m)))
 }
 
-object MainStateHolder extends MainStateHolder
-
 class MainActionHandler[M](modelRW: ModelRW[M, MainModel])
   extends ActionHandler(modelRW) {
 
