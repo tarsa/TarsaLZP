@@ -18,28 +18,14 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.ui
+package pl.tarsa.tarsalzp.ui.util
 
-import japgolly.scalajs.react.ReactDOM
-import org.scalajs.dom
-import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
-import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
-import pl.tarsa.tarsalzp.ui.views.MainView
+import diode.{ActionProcessor, ActionResult, Dispatcher}
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
-
-@JSExport
-object TarsaLZP extends js.JSApp {
-  @JSExport
-  def main(): Unit = {
-    val mainCircuit = new MainStateHolder
-    mainCircuit.addProcessor(new RafBatcher)
-    mainCircuit.addProcessor(new LoggingProcessor)
-    mainCircuit.subscribe(mainCircuit.zoom(identity[MainModel]))(model =>
-      println(s"Listener got fired!"))
-    val mainWrapper = mainCircuit.connect(identity[MainModel] _)
-    val mainComponent = mainWrapper(MainView.apply)
-    ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
+class LoggingProcessor[M <: AnyRef] extends ActionProcessor[M] {
+  override def process(dispatch: Dispatcher, action: Any,
+    next: Any => ActionResult[M], currentModel: M): ActionResult[M] = {
+    println(s"Action: ${action.getClass.getSimpleName}")
+    next(action)
   }
 }
