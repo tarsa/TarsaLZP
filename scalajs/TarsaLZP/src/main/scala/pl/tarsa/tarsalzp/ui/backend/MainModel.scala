@@ -20,28 +20,84 @@
  */
 package pl.tarsa.tarsalzp.ui.backend
 
-import org.scalajs.dom.File
+import org.scalajs.dom
+import pl.tarsa.tarsalzp.compression.engine.{Decoder, Encoder}
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.prelude.Streams
 
+import scala.scalajs.js
 import scala.scalajs.js.typedarray.ArrayBuffer
 
 case class MainModel(
   options: Options,
-  chosenFileOpt: Option[File],
+  chosenFileOpt: Option[dom.File],
+  chunkSize: Int,
+  currentTask: ProcessingTask)
+
+sealed trait ProcessingTask {
+  def mode: ProcessingMode
+}
+
+sealed abstract class CodingInProgress[CoderType](
+  val mode: WithCodingMode[CoderType]
+) extends ProcessingTask {
+  def coder: CoderType
+
+  def inputBuffer: ArrayBuffer
+
+  def processedSymbols: Int
+
+  def outputStream: Streams.ChunksArrayOutputStream
+
+  def startTime: js.Date
+
+  def accumulateProgress(processedSymbols: Int): CodingInProgress[CoderType]
+}
+
+case class EncodingInProgress(
+  coder: Encoder,
+  inputBuffer: ArrayBuffer,
+  processedSymbols: Int,
+  outputStream: Streams.ChunksArrayOutputStream,
+  startTime: js.Date
+) extends CodingInProgress(EncodingMode) {
+  override def accumulateProgress(processedSymbols: Int) =
+    copy(processedSymbols = this.processedSymbols + processedSymbols)
+}
+
+case class DecodingInProgress(
+  coder: Decoder,
+  inputBuffer: ArrayBuffer,
+  processedSymbols: Int,
+  outputStream: Streams.ChunksArrayOutputStream,
+  startTime: js.Date
+) extends CodingInProgress(DecodingMode) {
+  override def accumulateProgress(processedSymbols: Int) =
+    copy(processedSymbols = this.processedSymbols + processedSymbols)
+}
+
+case class IdleState(
   mode: ProcessingMode,
-  buffers: Buffers,
-  busy: Boolean)
-
-case class Buffers(
   inputBufferOpt: Option[ArrayBuffer],
-  outputStreamOpt: Option[Streams.ChunksArrayOutputStream])
+  codingResultOpt: Option[CodingResult],
+  loadingInProgress: Boolean
+) extends ProcessingTask
 
+case class CodingResult(
+  mode: WithCodingMode[_],
+  resultBlob: dom.Blob,
+  startTime: js.Date,
+  endTime: js.Date,
+  totalSymbols: Int)
 
 sealed trait ProcessingMode
 
-case object Encode extends ProcessingMode
+sealed trait WithoutCodingMode extends ProcessingMode
 
-case object Decode extends ProcessingMode
+case object ShowOptions extends WithoutCodingMode
 
-case object ShowOptions extends ProcessingMode
+sealed abstract class WithCodingMode[CoderType] extends ProcessingMode
+
+case object EncodingMode extends WithCodingMode[Encoder]
+
+case object DecodingMode extends WithCodingMode[Decoder]

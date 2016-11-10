@@ -18,24 +18,9 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.ui.backend
+package pl.tarsa.tarsalzp.ui.util
 
-import diode.Circuit
-import diode.react.ReactConnector
-import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.ui.util.RafTimestampHandler
-
-class MainStateHolder
-  extends Circuit[MainModel]
-    with ReactConnector[MainModel] {
-  override protected def initialModel =
-    MainModel(Options.default, None, 1234567,
-      IdleState(EncodingMode, None, None, loadingInProgress = false))
-
-  override protected val actionHandler = {
-    composeHandlers(
-      new MainActionHandler(zoomRW(identity)((_, m) => m)),
-      new RafTimestampHandler(zoomRW(_ => 0.0)((m, _) => m))
-    )
-  }
+object IdsGenerator {
+  def freshUnique(): String =
+    java.util.UUID.randomUUID().toString
 }

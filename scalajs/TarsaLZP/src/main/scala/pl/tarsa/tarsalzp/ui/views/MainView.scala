@@ -20,27 +20,42 @@
  */
 package pl.tarsa.tarsalzp.ui.views
 
-import java.util.UUID._
-
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend._
-import pl.tarsa.tarsalzp.ui.util.TagModJoiner
+import pl.tarsa.tarsalzp.ui.util.{IdsGenerator, TagModJoiner}
 
 import scala.scalajs.js
 
 object MainView {
+
   case class Props(proxy: ModelProxy[MainModel])
 
   private def render(p: Props) = {
     val model = p.proxy()
+    def foldTask[T](onIdle: IdleState => T,
+      onCoding: CodingInProgress[_] => T): T = {
+      model.currentTask match {
+        case codingState: CodingInProgress[_] =>
+          onCoding(codingState)
+        case idleState: IdleState =>
+          onIdle(idleState)
+      }
+    }
+
+    val busy = foldTask(_.loadingInProgress, _ => true)
+
+    val chunkSizeLabelledSpinner = {
+      LabelledSpinner(model.chunkSize, "Chunk size", event =>
+        p.proxy.dispatch(ChangeChunkSize(event.target.valueAsNumber)), busy)
+    }
 
     val fileChooser =
       <.input(
         ^.`type` := "file",
-        ^.disabled := model.busy,
+        ^.disabled := busy,
         ^.onChange ==> { (e: ReactEventI) =>
           println("File chooser changed!")
           p.proxy.dispatch(
@@ -49,30 +64,31 @@ object MainView {
       )
     val loadButton =
       <.input(
-      ^.`type` := "button",
-      ^.disabled := model.busy || model.chosenFileOpt.isEmpty,
-      ^.value := "Load contents from file",
+        ^.`type` := "button",
+        ^.disabled := busy ||
+          foldTask(_ => model.chosenFileOpt.isEmpty, _ => true),
+        ^.value := "Load contents from file",
         ^.onClick --> p.proxy.dispatch(LoadFile))
     val processButton =
       <.input(
         ^.`type` := "button",
-        ^.disabled := model.busy || model.buffers.inputBufferOpt.isEmpty,
-      ^.value := "Process data",
-        ^.onClick --> p.proxy.dispatch(ProcessFile))
+        ^.disabled := busy || foldTask(_.inputBufferOpt.isEmpty, _ => true),
+        ^.value := "Process data",
+        ^.onClick --> p.proxy.dispatch(StartProcessing))
     val saveButton =
       <.input(
         ^.`type` := "button",
-        ^.disabled := model.busy || model.buffers.outputStreamOpt.isEmpty,
-      ^.value := "Save results to file",
+        ^.disabled := busy || foldTask(_.codingResultOpt.isEmpty, _ => true),
+        ^.value := "Save results to file",
         ^.onClick --> p.proxy.dispatch(SaveFile))
 
     def makeModeSwitch(value: String, description: String,
       mode: ProcessingMode) = {
-      val id = randomUUID().toString
+      val id = IdsGenerator.freshUnique()
       val input =
         <.input(
           ^.id := id,
-          ^.disabled := model.busy,
+          ^.disabled := busy,
           ^.name := "mode",
           ^.`type` := "radio",
           ^.value := value,
@@ -81,19 +97,52 @@ object MainView {
       val label =
         <.label(
           ^.`for` := id,
-          ^.checked := mode == model.mode,
+          ^.checked := mode == model.currentTask.mode,
           description)
       (input, label)
     }
 
-    val encodeLabelledButton = makeModeSwitch("encode", "Encode", Encode)
-    val decodeLabelledButton = makeModeSwitch("decode", "Decode", Decode)
+    val encodeLabelledButton = makeModeSwitch("encode", "Encode", EncodingMode)
+    val decodeLabelledButton = makeModeSwitch("decode", "Decode", DecodingMode)
     val showOptionsLabelledButton =
       makeModeSwitch("showOptions", "Show options", ShowOptions)
 
+    val codingResultInfo = {
+      model.currentTask match {
+        case coding: CodingInProgress[_] =>
+          val elapsedMillis = js.Date.now() - coding.startTime.getTime()
+          val speed = coding.processedSymbols / (elapsedMillis / 1000.0)
+          <.div(
+            <.div("Coding in progress:"),
+            <.div(s"Coding mode: ${coding.mode}"),
+            <.div(s"Coding start time: ${coding.startTime}"),
+            <.div(f"Elapsed milliseconds: $elapsedMillis%.1f"),
+            <.div(s"Processed symbols: ${coding.processedSymbols}"),
+            <.div(f"Coding speed: $speed%.1f symbols / second")
+          )
+        case IdleState(_, _, Some(codingResult), _) =>
+          val elapsedMillis = codingResult.endTime.getTime() -
+            codingResult.startTime.getTime()
+          val speed = codingResult.totalSymbols / (elapsedMillis / 1000.0)
+          <.div(
+            <.div("Coding result:"),
+            <.div(s"Coding mode: ${codingResult.mode}"),
+            <.div(s"Coding start time: ${codingResult.startTime}"),
+            <.div(s"Coding end time: ${codingResult.endTime}"),
+            <.div(f"Elapsed milliseconds: $elapsedMillis%.1f"),
+            <.div(s"Total symbols: ${codingResult.totalSymbols}"),
+            <.div(f"Coding speed: $speed%.1f symbols / second")
+          )
+        case _ =>
+          <.div("No coding result")
+      }
+    }
 
     <.div(
       TagModJoiner(
+        chunkSizeLabelledSpinner.label,
+        chunkSizeLabelledSpinner.spinner,
+        <.br(), <.br(),
         OptionsView(p.proxy.zoom(_.options))
       )(
         encodeLabelledButton._1,
@@ -107,7 +156,9 @@ object MainView {
         fileChooser,
         loadButton,
         processButton,
-        saveButton
+        saveButton,
+        <.br(), <.br(), <.br(),
+        codingResultInfo
       ): _*
     )
   }

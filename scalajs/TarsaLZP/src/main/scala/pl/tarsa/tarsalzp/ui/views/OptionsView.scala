@@ -20,25 +20,15 @@
  */
 package pl.tarsa.tarsalzp.ui.views
 
-import java.util.UUID.randomUUID
-
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
-import japgolly.scalajs.react.vdom.ReactTagOf
 import japgolly.scalajs.react.vdom.prefix_<^._
-import org.scalajs.dom.html
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.UpdateOptions
-
 
 object OptionsView {
 
   case class Props(proxy: ModelProxy[Options])
-
-  class LabelledSpinner(
-    val label: ReactTagOf[html.Label],
-    val spinner: ReactTagOf[html.Input]
-  )
 
   private def render(p: Props) = {
     val options = p.proxy()
@@ -49,11 +39,8 @@ object OptionsView {
       def updateAction(e: ReactEventI) =
         p.proxy.dispatch(UpdateOptions(saveValue(_, e.target.valueAsNumber)))
 
-      val id = randomUUID().toString
-      val spinner = <.input(^.id := id, ^.`type` := "number",
-        ^.value := loadValue(options), ^.onChange ==> updateAction)
-      val label = <.label(^.`for` := id, description + ':')
-      new LabelledSpinner(label, spinner)
+      LabelledSpinner(loadValue(options), description, updateAction,
+        disabled = false)
     }
 
     def lzpLowContextLength = make("LZP Low Context Length",

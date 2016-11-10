@@ -18,24 +18,28 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.ui.backend
+package pl.tarsa.tarsalzp.ui.views
 
-import diode.Circuit
-import diode.react.ReactConnector
-import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.ui.util.RafTimestampHandler
+import japgolly.scalajs.react.{Callback, ReactEventI}
+import japgolly.scalajs.react.vdom.ReactTagOf
+import japgolly.scalajs.react.vdom.prefix_<^._
+import org.scalajs.dom.html
+import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
-class MainStateHolder
-  extends Circuit[MainModel]
-    with ReactConnector[MainModel] {
-  override protected def initialModel =
-    MainModel(Options.default, None, 1234567,
-      IdleState(EncodingMode, None, None, loadingInProgress = false))
+class LabelledSpinner(
+  val label: ReactTagOf[html.Label],
+  val spinner: ReactTagOf[html.Input]
+)
 
-  override protected val actionHandler = {
-    composeHandlers(
-      new MainActionHandler(zoomRW(identity)((_, m) => m)),
-      new RafTimestampHandler(zoomRW(_ => 0.0)((m, _) => m))
-    )
+object LabelledSpinner {
+  def apply(loadValue: => Int, description: String,
+    onChangeAction: ReactEventI => Callback,
+    disabled: Boolean): LabelledSpinner = {
+    val id = IdsGenerator.freshUnique()
+    val spinner = <.input(^.id := id, ^.`type` := "number",
+      ^.value := loadValue, ^.onChange ==> onChangeAction,
+      ^.disabled := disabled)
+    val label = <.label(^.`for` := id, description + ':')
+    new LabelledSpinner(label, spinner)
   }
 }

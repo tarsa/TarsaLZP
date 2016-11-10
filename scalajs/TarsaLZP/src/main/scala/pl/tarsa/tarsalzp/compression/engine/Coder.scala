@@ -25,108 +25,51 @@ import java.io.{IOException, InputStream, OutputStream}
 import pl.tarsa.tarsalzp.compression.options.Options
 
 object Coder {
-  private val HeaderValue = 2345174324078614718l
+  private val HeaderValue = 2345174324078614718L
 
-
-  private trait Callback {
-    def progressChanged(processedSymbols: Long): Unit
-  }
-
-  def getOptions(inputStream: InputStream): Options = {
-    var header = 0l
-    for (i <- 0 until 8) {
-      header <<= 8
-      val inputByte = inputStream.read()
-      if (inputByte == -1) {
-        throw new IOException("Unexpected end of file")
-      }
-      header |= inputByte
-    }
+  def checkHeader(inputStream: InputStream): Unit = {
+    val header = readLong(inputStream)
     if (header != HeaderValue) {
       throw new IOException(
         "Wrong file header. Probably not a compressed file.")
     }
-    getOptionsHeaderless(inputStream)
   }
 
-  private def getOptionsHeaderless(inputStream: InputStream): Options = {
-    var packedOptions = 0l
-    for (i <- 0 until 8) {
-      packedOptions <<= 8
-      val inputByte = inputStream.read()
-      if (inputByte == -1) {
-        throw new IOException("Unexpected end of file")
-      }
-      packedOptions |= inputByte
-    }
-    val result = Options.fromPacked(packedOptions)
-    if (result.isValid) {
-      result
-    } else {
-      throw new IllegalArgumentException("Invalid compression options")
-    }
+  def getOptions(inputStream: InputStream): Options = {
+    val packedOptions = readLong(inputStream)
+    Options.fromPacked(packedOptions).validated.getOrElse(
+      throw new IllegalArgumentException("Invalid compression options"))
   }
 
-  private def checkInterval(intervalLength: Long): Unit = {
-    if (intervalLength <= 0) {
-      throw new IllegalArgumentException(
-        "Interval length has to be positive")
-    }
-  }
-
-  def decode(inputStream: InputStream, outputStream: OutputStream,
-    callback: Callback, intervalLength: Long): Unit = {
-    checkInterval(intervalLength)
+  def startDecoder(inputStream: InputStream,
+    outputStream: OutputStream): Decoder = {
+    checkHeader(inputStream)
     val options = getOptions(inputStream)
-    decodeRaw(inputStream, outputStream, callback, intervalLength, options)
+    new Decoder(inputStream, outputStream, options)
   }
 
-  private def decodeRaw(inputStream: InputStream, outputStream: OutputStream,
-    callback: Callback, intervalLength: Long, options: Options): Unit = {
-    checkInterval(intervalLength)
-    val decoder = new Decoder(inputStream, outputStream, options)
-    var totalAmountProcessed = 0l
-    var shouldContinue = true
-    while (shouldContinue) {
-      val currentAmountProcessed = decoder.decode(intervalLength)
-      totalAmountProcessed += currentAmountProcessed
-      if (callback != null) {
-        callback.progressChanged(totalAmountProcessed)
-      }
-      shouldContinue = currentAmountProcessed == intervalLength
-    }
+  def startEncoder(inputStream: InputStream, outputStream: OutputStream,
+    options: Options): Encoder = {
+    writeLong(outputStream, HeaderValue)
+    val packedOptions = options.toPacked
+    writeLong(outputStream, packedOptions)
+    new Encoder(inputStream, outputStream, options)
   }
 
-  def encode(inputStream: InputStream, outputStream: OutputStream,
-    callback: Callback, intervalLength: Long, options: Options): Unit = {
-    checkInterval(intervalLength)
-    var header = HeaderValue
+  private def readLong(inputStream: InputStream): Long = {
+    Iterator.continually(inputStream.read()).take(8).foldLeft(0L)(
+      (accumulator, inputByte) =>
+        if (inputByte == -1) {
+          throw new IOException("Unexpected end of file")
+        } else {
+          (accumulator << 8) + inputByte
+        }
+    )
+  }
+
+  private def writeLong(outputStream: OutputStream, value: Long): Unit = {
     for (i <- 0 until 8) {
-      outputStream.write((header >>> 56).toInt & 0xff)
-      header <<= 8
+      outputStream.write((value << i * 8 >>> 56).toInt & 0xff)
     }
-    var packedOptions = options.toPacked
-    for (i <- 0 until 8) {
-      outputStream.write((packedOptions >>> 56).toInt & 0xff)
-      packedOptions <<= 8
-    }
-    encodeRaw(inputStream, outputStream, callback, intervalLength, options)
-  }
-
-  private def encodeRaw(inputStream: InputStream, outputStream: OutputStream,
-    callback: Callback, intervalLength: Long, options: Options): Unit = {
-    checkInterval(intervalLength)
-    val encoder = new Encoder(inputStream, outputStream, options)
-    var totalAmountProcessed = 0l
-    var shouldContinue = true
-    while (shouldContinue) {
-      val currentAmountProcessed = encoder.encode(intervalLength)
-      totalAmountProcessed += currentAmountProcessed
-      if (callback != null) {
-        callback.progressChanged(totalAmountProcessed)
-      }
-      shouldContinue = currentAmountProcessed == intervalLength
-    }
-    encoder.flush()
   }
 }

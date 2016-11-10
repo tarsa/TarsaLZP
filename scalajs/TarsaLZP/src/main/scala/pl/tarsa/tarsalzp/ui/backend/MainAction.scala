@@ -21,24 +21,40 @@
 package pl.tarsa.tarsalzp.ui.backend
 
 import diode.Action
-import org.scalajs.dom.File
+import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.ui.util.RafAction
 
+import scala.scalajs.js
 import scala.scalajs.js.typedarray.ArrayBuffer
 
 sealed trait MainAction extends Action
 
-case class UpdateOptions(modify: Options => Options) extends MainAction
+sealed trait IdleStateAction extends MainAction
 
-case class ChangedMode(newMode: ProcessingMode) extends MainAction
+case class UpdateOptions(modify: Options => Options) extends IdleStateAction
 
-case class SelectedFile(fileOpt: Option[File]) extends MainAction
+case class ChangeChunkSize(newChunkSize: Int) extends IdleStateAction
 
-case object LoadFile extends MainAction
+case class ChangedMode(newMode: ProcessingMode) extends IdleStateAction
+
+case class SelectedFile(fileOpt: Option[dom.File]) extends IdleStateAction
+
+case object LoadFile extends IdleStateAction
 
 case class LoadingFinished(inputBufferOpt: Option[ArrayBuffer])
-  extends MainAction
+  extends IdleStateAction
 
-case object ProcessFile extends MainAction
+case object StartProcessing extends IdleStateAction
 
-case object SaveFile extends MainAction
+case object SaveFile extends IdleStateAction
+
+sealed trait CodingInProgressAction extends MainAction
+
+case object ContinueProcessing extends CodingInProgressAction
+
+case class ChunkProcessed(symbols: Int) extends CodingInProgressAction
+  with RafAction
+
+case class ProcessingFinished(endTime: js.Date) extends CodingInProgressAction
+  with RafAction

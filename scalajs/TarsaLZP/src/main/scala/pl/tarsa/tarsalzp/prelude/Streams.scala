@@ -22,6 +22,8 @@ package pl.tarsa.tarsalzp.prelude
 
 import java.io.{InputStream, OutputStream}
 
+import org.scalajs.dom
+
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
@@ -42,23 +44,23 @@ object Streams {
   }
 
   class ChunksArrayOutputStream extends OutputStream {
-    private val _chunksArray = js.Array[Chunk]()
+    private val chunksArray = js.Array[Chunk]()
     private var chunk = new Chunk()
 
     override def write(value: Int): Unit = {
       if (chunk.isFull) {
-        _chunksArray.push(chunk)
+        chunksArray.push(chunk)
         chunk = new Chunk()
       }
       chunk.write(value.toByte)
     }
 
-    override def flush(): Unit = {
-      _chunksArray.push(chunk)
-      chunk = new Chunk()
+    def toBlob(blobType: String = "example/binary"): dom.Blob = {
+      val chunks = new js.Array[js.Any]()
+      chunksArray.foreach(chunk => chunks.push(chunk.truncatedBuffer))
+      chunks.push(chunk.truncatedBuffer)
+      new dom.Blob(chunks,
+        dom.raw.BlobPropertyBag(s"{type: '$blobType'}"))
     }
-
-    def chunksArray: js.Array[Chunk] =
-      _chunksArray
   }
 }
