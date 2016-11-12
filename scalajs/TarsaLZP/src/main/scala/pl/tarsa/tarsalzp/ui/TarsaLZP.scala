@@ -24,7 +24,7 @@ import japgolly.scalajs.react.ReactDOM
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
 import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
-import pl.tarsa.tarsalzp.ui.views.MainView
+import pl.tarsa.tarsalzp.ui.views.{MainView, OptionsView}
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
@@ -39,7 +39,11 @@ object TarsaLZP extends js.JSApp {
     mainCircuit.subscribe(mainCircuit.zoom(identity[MainModel]))(model =>
       println(s"Listener got fired!"))
     val mainWrapper = mainCircuit.connect(identity[MainModel] _)
-    val mainComponent = mainWrapper(MainView.apply)
+    val optionsView = {
+      val optionsViewProxy = mainCircuit.connect(_.options)
+      optionsViewProxy(OptionsView.apply)
+    }
+    val mainComponent = mainWrapper(MainView.apply(_, optionsView))
     ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
   }
 }

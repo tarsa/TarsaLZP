@@ -32,7 +32,7 @@ import scala.scalajs.js
 
 object MainView {
 
-  case class Props(proxy: ModelProxy[MainModel])
+  case class Props(proxy: ModelProxy[MainModel], optionsView: ReactElement)
 
   private def render(p: Props) = {
     val model = p.proxy()
@@ -144,7 +144,7 @@ object MainView {
         chunkSizeLabelledSpinner.label,
         chunkSizeLabelledSpinner.spinner,
         <.br(), <.br(),
-        OptionsView(p.proxy.zoom(_.options))
+        p.optionsView
       )(
         encodeLabelledButton._1,
         encodeLabelledButton._2,
@@ -171,5 +171,6 @@ object MainView {
     .configure(LogLifecycle.short)
     .build
 
-  def apply(proxy: ModelProxy[MainModel]) = component(Props(proxy))
+  def apply(proxy: ModelProxy[MainModel], optionsView: ReactElement) =
+    component(Props(proxy, optionsView))
 }
