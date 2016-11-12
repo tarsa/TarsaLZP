@@ -22,6 +22,7 @@ package pl.tarsa.tarsalzp.ui.views
 
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend._
@@ -167,6 +168,7 @@ object MainView {
   val component = ReactComponentB[Props]("MainView")
     .stateless
     .render_P(render)
+    .configure(LogLifecycle.short)
     .build
 
   def apply(proxy: ModelProxy[MainModel]) = component(Props(proxy))

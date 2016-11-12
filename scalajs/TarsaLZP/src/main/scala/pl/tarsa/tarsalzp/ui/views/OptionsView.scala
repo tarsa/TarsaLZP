@@ -22,6 +22,7 @@ package pl.tarsa.tarsalzp.ui.views
 
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.UpdateOptions
@@ -95,6 +96,7 @@ object OptionsView {
   private val component = ReactComponentB[Props]("OptionsView")
     .stateless
     .render_P(render)
+    .configure(LogLifecycle.short)
     .build
 
   def apply(proxy: ModelProxy[Options]) =
