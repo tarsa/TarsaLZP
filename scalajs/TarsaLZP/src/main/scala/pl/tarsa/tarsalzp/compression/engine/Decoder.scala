@@ -187,13 +187,13 @@ class Decoder(
     nextSymbol
   }
 
-  def decode(limit: Long): Long = {
+  def decode(limit: Int): Int = {
     if (!started) {
       init()
     }
     var endReached = false
     var result = limit
-    for (processed <- 0l until limit if !endReached) {
+    for (processed <- 0 until limit if !endReached) {
       if (decodeSkewed()) {
         val symbol =
           if (onlyLowLzp) {

@@ -22,28 +22,56 @@ package pl.tarsa.tarsalzp.ui
 
 import japgolly.scalajs.react.ReactDOM
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
+import pl.tarsa.tarsalzp.ui.backend._
 import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
-import pl.tarsa.tarsalzp.ui.views.{MainView, OptionsView}
+import pl.tarsa.tarsalzp.ui.views.ChartView.Model
+import pl.tarsa.tarsalzp.ui.views.{ChartView, MainView, OptionsView}
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
+import scalacss.Defaults._
+import scalacss.ScalaCssReact._
 
 @JSExport
 object TarsaLZP extends js.JSApp {
   @JSExport
   def main(): Unit = {
+    MyStyleSheet.addToDocument()
+
     val mainCircuit = new MainStateHolder
     mainCircuit.addProcessor(new RafBatcher)
     mainCircuit.addProcessor(new LoggingProcessor)
     mainCircuit.subscribe(mainCircuit.zoom(identity[MainModel]))(model =>
       println(s"Listener got fired!"))
-    val mainWrapper = mainCircuit.connect(identity[MainModel] _)
+
+    val mainViewProxy = mainCircuit.connect(_.viewData)
     val optionsView = {
-      val optionsViewProxy = mainCircuit.connect(_.options)
+      val optionsViewProxy = mainCircuit.connect(_.viewData.options)
       optionsViewProxy(OptionsView.apply)
     }
-    val mainComponent = mainWrapper(MainView.apply(_, optionsView))
+    val chartView = {
+      val modelReader = mainCircuit.zoom(_.viewData).zoom { viewData =>
+        val chunkSize = viewData.chunkSize
+        val (totalSymbolsOpt, timeline) = viewData.taskViewData match {
+          case idleState: IdleStateViewData =>
+            idleState.codingResultOpt.map { codingResult =>
+              (Option(codingResult.totalSymbols), codingResult.codingTimeline)
+            }.getOrElse((None, Nil))
+          case codingInProgress: CodingInProgressViewData =>
+            val totalSymbolsOpt = codingInProgress.mode match {
+              case EncodingMode =>
+                Some(codingInProgress.inputBufferLength)
+              case DecodingMode =>
+                None
+            }
+            (totalSymbolsOpt, codingInProgress.codingTimeline)
+        }
+        Model(chunkSize, totalSymbolsOpt, timeline)
+      }
+      val chartViewProxy = mainCircuit.connect(modelReader)
+      chartViewProxy(ChartView.apply)
+    }
+    val mainComponent = mainViewProxy(MainView.apply(_, optionsView, chartView))
     ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
   }
 }

@@ -53,8 +53,8 @@ sealed trait CodingInProgressAction extends MainAction
 
 case object ContinueProcessing extends CodingInProgressAction
 
-case class ChunkProcessed(symbols: Int) extends CodingInProgressAction
-  with RafAction
+case class ChunkProcessed(measurements: ChunkCodingMeasurement)
+  extends CodingInProgressAction with RafAction
 
 case class ProcessingFinished(endTime: js.Date) extends CodingInProgressAction
   with RafAction

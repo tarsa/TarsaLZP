@@ -179,10 +179,10 @@ class Encoder(
     }
   }
 
-  def encode(limit: Long): Long = {
+  def encode(limit: Int): Int = {
     var endReached = false
     var result = limit
-    for (i <- 0l until limit if !endReached) {
+    for (i <- 0 until limit if !endReached) {
       val symbol = inputStream.read()
       endReached = symbol == -1
       encodeSkewed(!endReached)

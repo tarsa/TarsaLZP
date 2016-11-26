@@ -29,27 +29,35 @@ import scala.scalajs.js.typedarray.Uint8Array
 
 object Streams {
 
-  class ArrayInputStream(array: Uint8Array) extends InputStream {
-    private var position = 0
+  class ArrayInputStream(val array: Uint8Array) extends InputStream {
+    private var _position = 0
+
+    def position: Int =
+      _position
 
     override def read(): Int = {
-      if (position == array.length) {
+      if (_position == array.length) {
         -1
       } else {
-        val result = array(position)
-        position += 1
+        val result = array(_position)
+        _position += 1
         result
       }
     }
   }
 
   class ChunksArrayOutputStream extends OutputStream {
+    private var cumulativeExclusiveChunksArraySize = 0
     private val chunksArray = js.Array[Chunk]()
     private var chunk = new Chunk()
+
+    def position: Int =
+      cumulativeExclusiveChunksArraySize + chunk.position
 
     override def write(value: Int): Unit = {
       if (chunk.isFull) {
         chunksArray.push(chunk)
+        cumulativeExclusiveChunksArraySize += chunk.position
         chunk = new Chunk()
       }
       chunk.write(value.toByte)

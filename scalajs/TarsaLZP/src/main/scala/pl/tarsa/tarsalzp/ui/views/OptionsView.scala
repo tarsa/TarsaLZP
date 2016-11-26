@@ -38,7 +38,7 @@ object OptionsView {
       saveValue: (Options, Int) => Options): LabelledSpinner = {
 
       def updateAction(e: ReactEventI) =
-        p.proxy.dispatch(UpdateOptions(saveValue(_, e.target.valueAsNumber)))
+        p.proxy.dispatchCB(UpdateOptions(saveValue(_, e.target.valueAsNumber)))
 
       LabelledSpinner(loadValue(options), description, updateAction,
         disabled = false)

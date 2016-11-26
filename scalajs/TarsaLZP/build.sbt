@@ -8,6 +8,8 @@ version := "0-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")
+
 workbenchSettings
 
 // why it's needed for refreshing?

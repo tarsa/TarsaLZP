@@ -25,16 +25,19 @@ import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
 class Chunk(chunkSize: Int = 64 * 1024) {
   private val buffer = new ArrayBuffer(chunkSize)
   private val view = new Uint8Array(buffer)
-  private var position = 0
+  private var _position = 0
+
+  def position: Int =
+    _position
 
   def write(value: Byte): Unit = {
-    view(position) = value
-    position += 1
+    view(_position) = value
+    _position += 1
   }
 
   def isFull: Boolean =
-    position == chunkSize
+    _position == chunkSize
 
   def truncatedBuffer: ArrayBuffer =
-    buffer.slice(0, position)
+    buffer.slice(0, _position)
 }

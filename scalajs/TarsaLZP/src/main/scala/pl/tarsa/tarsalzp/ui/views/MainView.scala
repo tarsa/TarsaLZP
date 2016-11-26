@@ -32,16 +32,18 @@ import scala.scalajs.js
 
 object MainView {
 
-  case class Props(proxy: ModelProxy[MainModel], optionsView: ReactElement)
+  case class Props(proxy: ModelProxy[ViewData], optionsView: ReactElement,
+    chartView: ReactElement)
 
   private def render(p: Props) = {
-    val model = p.proxy()
-    def foldTask[T](onIdle: IdleState => T,
-      onCoding: CodingInProgress[_] => T): T = {
-      model.currentTask match {
-        case codingState: CodingInProgress[_] =>
+    val data = p.proxy()
+
+    def foldTask[T](onIdle: IdleStateViewData => T,
+      onCoding: CodingInProgressViewData => T): T = {
+      data.taskViewData match {
+        case codingState: CodingInProgressViewData =>
           onCoding(codingState)
-        case idleState: IdleState =>
+        case idleState: IdleStateViewData =>
           onIdle(idleState)
       }
     }
@@ -49,8 +51,8 @@ object MainView {
     val busy = foldTask(_.loadingInProgress, _ => true)
 
     val chunkSizeLabelledSpinner = {
-      LabelledSpinner(model.chunkSize, "Chunk size", event =>
-        p.proxy.dispatch(ChangeChunkSize(event.target.valueAsNumber)), busy)
+      LabelledSpinner(data.chunkSize, "Chunk size", event =>
+        p.proxy.dispatchCB(ChangeChunkSize(event.target.valueAsNumber)), busy)
     }
 
     val fileChooser =
@@ -59,7 +61,7 @@ object MainView {
         ^.disabled := busy,
         ^.onChange ==> { (e: ReactEventI) =>
           println("File chooser changed!")
-          p.proxy.dispatch(
+          p.proxy.dispatchCB(
             SelectedFile((e.target.files(0): js.UndefOr[dom.File]).toOption))
         }
       )
@@ -67,21 +69,21 @@ object MainView {
       <.input(
         ^.`type` := "button",
         ^.disabled := busy ||
-          foldTask(_ => model.chosenFileOpt.isEmpty, _ => true),
+          foldTask(_ => data.chosenFileOpt.isEmpty, _ => true),
         ^.value := "Load contents from file",
-        ^.onClick --> p.proxy.dispatch(LoadFile))
+        ^.onClick --> p.proxy.dispatchCB(LoadFile))
     val processButton =
       <.input(
         ^.`type` := "button",
-        ^.disabled := busy || foldTask(_.inputBufferOpt.isEmpty, _ => true),
+        ^.disabled := busy || foldTask(_.inputArrayOpt.isEmpty, _ => true),
         ^.value := "Process data",
-        ^.onClick --> p.proxy.dispatch(StartProcessing))
+        ^.onClick --> p.proxy.dispatchCB(StartProcessing))
     val saveButton =
       <.input(
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.codingResultOpt.isEmpty, _ => true),
         ^.value := "Save results to file",
-        ^.onClick --> p.proxy.dispatch(SaveFile))
+        ^.onClick --> p.proxy.dispatchCB(SaveFile))
 
     def makeModeSwitch(value: String, description: String,
       mode: ProcessingMode) = {
@@ -92,13 +94,13 @@ object MainView {
           ^.disabled := busy,
           ^.name := "mode",
           ^.`type` := "radio",
+          ^.checked := mode == data.taskViewData.mode,
           ^.value := value,
-          ^.onClick --> p.proxy.dispatch(ChangedMode(mode))
+          ^.onChange --> p.proxy.dispatchCB(ChangedMode(mode))
         )
       val label =
         <.label(
           ^.`for` := id,
-          ^.checked := mode == model.currentTask.mode,
           description)
       (input, label)
     }
@@ -108,30 +110,60 @@ object MainView {
     val showOptionsLabelledButton =
       makeModeSwitch("showOptions", "Show options", ShowOptions)
 
+    def codingTimeline(totalSymbolsOpt: Option[Int],
+      timeline: Seq[ChunkCodingMeasurement]) = {
+      <.div(s"Chunks number: ${timeline.size}")
+    }
+
     val codingResultInfo = {
-      model.currentTask match {
-        case coding: CodingInProgress[_] =>
+      data.taskViewData match {
+        case coding: CodingInProgressViewData =>
           val elapsedMillis = js.Date.now() - coding.startTime.getTime()
-          val speed = coding.processedSymbols / (elapsedMillis / 1000.0)
+          val processedSymbols =
+            coding.mode match {
+              case EncodingMode =>
+                coding.inputStreamPosition
+              case DecodingMode =>
+                coding.outputStreamPosition
+            }
+          val speed = processedSymbols / (elapsedMillis / 1000.0)
+          val totalSymbolsOpt =
+            coding.mode match {
+              case EncodingMode =>
+                Some(coding.inputBufferLength)
+              case DecodingMode =>
+                None
+            }
           <.div(
+            codingTimeline(totalSymbolsOpt, coding.codingTimeline),
             <.div("Coding in progress:"),
             <.div(s"Coding mode: ${coding.mode}"),
+            <.div("Input progress:",
+              <.progress(^.value := coding.inputStreamPosition,
+                ^.max := coding.inputBufferLength),
+              s"${coding.inputStreamPosition} / " +
+                s"${coding.inputBufferLength} bytes"
+            ),
+            <.div("Output progress: " +
+              s"${coding.outputStreamPosition} / ??? bytes"),
             <.div(s"Coding start time: ${coding.startTime}"),
             <.div(f"Elapsed milliseconds: $elapsedMillis%.1f"),
-            <.div(s"Processed symbols: ${coding.processedSymbols}"),
             <.div(f"Coding speed: $speed%.1f symbols / second")
           )
-        case IdleState(_, _, Some(codingResult), _) =>
+        case IdleStateViewData(_, _, Some(codingResult), _) =>
           val elapsedMillis = codingResult.endTime.getTime() -
             codingResult.startTime.getTime()
           val speed = codingResult.totalSymbols / (elapsedMillis / 1000.0)
           <.div(
+            codingTimeline(Some(codingResult.totalSymbols),
+              codingResult.codingTimeline),
             <.div("Coding result:"),
             <.div(s"Coding mode: ${codingResult.mode}"),
             <.div(s"Coding start time: ${codingResult.startTime}"),
             <.div(s"Coding end time: ${codingResult.endTime}"),
             <.div(f"Elapsed milliseconds: $elapsedMillis%.1f"),
             <.div(s"Total symbols: ${codingResult.totalSymbols}"),
+            <.div(s"Compressed size in bytes: ${codingResult.compressedSize}"),
             <.div(f"Coding speed: $speed%.1f symbols / second")
           )
         case _ =>
@@ -159,18 +191,21 @@ object MainView {
         processButton,
         saveButton,
         <.br(), <.br(), <.br(),
+        <.div(p.chartView),
         codingResultInfo
       ): _*
     )
   }
 
 
-  val component = ReactComponentB[Props]("MainView")
-    .stateless
-    .render_P(render)
-    .configure(LogLifecycle.short)
-    .build
+  private val component =
+    ReactComponentB[Props]("MainView")
+      .stateless
+      .render_P(render)
+      .configure(LogLifecycle.short)
+      .build
 
-  def apply(proxy: ModelProxy[MainModel], optionsView: ReactElement) =
-    component(Props(proxy, optionsView))
+  def apply(proxy: ModelProxy[ViewData],
+    optionsView: ReactElement, chartView: ReactElement): ReactElement =
+    component(Props(proxy, optionsView, chartView))
 }

@@ -18,28 +18,15 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.ui.backend
+package pl.tarsa.tarsalzp.ui
 
-import diode.Circuit
-import diode.react.ReactConnector
-import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.ui.util.RafTimestampHandler
+import scalacss.Defaults._
 
-class MainStateHolder
-  extends Circuit[MainModel]
-    with ReactConnector[MainModel] {
-  override protected def initialModel = {
-    MainModel(
-      ViewData(Options.default, None, 1234567,
-        IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)),
-      IdleStateProcessingData
-    )
-  }
+object MyStyleSheet extends StyleSheet.Inline {
 
-  override protected val actionHandler = {
-    composeHandlers(
-      new MainActionHandler(zoomRW(identity)((_, m) => m)),
-      new RafTimestampHandler(zoomRW(_ => 0.0)((m, _) => m))
-    )
-  }
+  import dsl._
+
+  val svg: StyleA = style(
+    border(1.px, solid, black)
+  )
 }

@@ -24,71 +24,89 @@ import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.engine.{Decoder, Encoder}
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.prelude.Streams
+import pl.tarsa.tarsalzp.prelude.Streams.ArrayInputStream
 
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.ArrayBuffer
+import scala.scalajs.js.typedarray.Uint8Array
 
 case class MainModel(
+  viewData: ViewData,
+  processingData: ProcessingData)
+
+
+case class ViewData(
   options: Options,
   chosenFileOpt: Option[dom.File],
   chunkSize: Int,
-  currentTask: ProcessingTask)
+  taskViewData: ProcessingTaskViewData)
 
-sealed trait ProcessingTask {
+sealed trait ProcessingTaskViewData {
   def mode: ProcessingMode
 }
 
-sealed abstract class CodingInProgress[CoderType](
-  val mode: WithCodingMode[CoderType]
-) extends ProcessingTask {
-  def coder: CoderType
-
-  def inputBuffer: ArrayBuffer
-
-  def processedSymbols: Int
-
-  def outputStream: Streams.ChunksArrayOutputStream
-
-  def startTime: js.Date
-
-  def accumulateProgress(processedSymbols: Int): CodingInProgress[CoderType]
-}
-
-case class EncodingInProgress(
-  coder: Encoder,
-  inputBuffer: ArrayBuffer,
-  processedSymbols: Int,
-  outputStream: Streams.ChunksArrayOutputStream,
-  startTime: js.Date
-) extends CodingInProgress(EncodingMode) {
-  override def accumulateProgress(processedSymbols: Int) =
-    copy(processedSymbols = this.processedSymbols + processedSymbols)
-}
-
-case class DecodingInProgress(
-  coder: Decoder,
-  inputBuffer: ArrayBuffer,
-  processedSymbols: Int,
-  outputStream: Streams.ChunksArrayOutputStream,
-  startTime: js.Date
-) extends CodingInProgress(DecodingMode) {
-  override def accumulateProgress(processedSymbols: Int) =
-    copy(processedSymbols = this.processedSymbols + processedSymbols)
-}
-
-case class IdleState(
+case class IdleStateViewData(
   mode: ProcessingMode,
-  inputBufferOpt: Option[ArrayBuffer],
+  inputArrayOpt: Option[Uint8Array],
   codingResultOpt: Option[CodingResult],
   loadingInProgress: Boolean
-) extends ProcessingTask
+) extends ProcessingTaskViewData
 
 case class CodingResult(
-  mode: WithCodingMode[_],
-  resultBlob: dom.Blob,
+  mode: WithCodingMode,
+  totalSymbols: Int,
+  compressedSize: Int,
   startTime: js.Date,
   endTime: js.Date,
-  totalSymbols: Int)
+  codingTimeline: Seq[ChunkCodingMeasurement],
+  resultBlob: dom.Blob)
+
+case class CodingInProgressViewData(
+  mode: WithCodingMode,
+  inputBufferLength: Int,
+  inputStreamPosition: Int,
+  outputStreamPosition: Int,
+  startTime: js.Date,
+  codingTimeline: Seq[ChunkCodingMeasurement]
+) extends ProcessingTaskViewData
+
+
+sealed trait ProcessingData
+
+object IdleStateProcessingData extends ProcessingData
+
+sealed trait CodingInProgressProcessingData extends ProcessingData {
+  def inputStream: ArrayInputStream
+
+  def outputStream: Streams.ChunksArrayOutputStream
+}
+
+class EncodingProcessingData(
+  val encoder: Encoder,
+  val inputStream: ArrayInputStream,
+  val outputStream: Streams.ChunksArrayOutputStream
+) extends CodingInProgressProcessingData
+
+class DecodingProcessingData(
+  val decoder: Decoder,
+  val inputStream: ArrayInputStream,
+  val outputStream: Streams.ChunksArrayOutputStream
+) extends CodingInProgressProcessingData
+
+
+case class ChunkCodingMeasurement(
+  startTime: js.Date,
+  endTime: js.Date,
+  symbolsNumber: Int,
+  compressedSize: Int)
+
+
+sealed trait CombinedData
+
+object CombinedData {
+  type CodingInProgressCombinedData =
+  (CodingInProgressViewData, CodingInProgressProcessingData)
+}
+
 
 sealed trait ProcessingMode
 
@@ -96,8 +114,8 @@ sealed trait WithoutCodingMode extends ProcessingMode
 
 case object ShowOptions extends WithoutCodingMode
 
-sealed abstract class WithCodingMode[CoderType] extends ProcessingMode
+sealed abstract class WithCodingMode extends ProcessingMode
 
-case object EncodingMode extends WithCodingMode[Encoder]
+case object EncodingMode extends WithCodingMode
 
-case object DecodingMode extends WithCodingMode[Decoder]
+case object DecodingMode extends WithCodingMode
