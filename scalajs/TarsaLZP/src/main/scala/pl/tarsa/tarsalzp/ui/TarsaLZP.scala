@@ -27,11 +27,10 @@ import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
 import pl.tarsa.tarsalzp.ui.views.ChartView.Model
 import pl.tarsa.tarsalzp.ui.views.{ChartView, MainView, OptionsView}
 
-import scala.scalajs.js
 import scalacss.Defaults._
 import scalacss.ScalaCssReact._
 
-object TarsaLZP extends js.JSApp {
+object TarsaLZP {
   def main(): Unit = {
     MyStyleSheet.addToDocument()
 
