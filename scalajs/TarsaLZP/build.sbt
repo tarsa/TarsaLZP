@@ -1,27 +1,18 @@
-import com.lihaoyi.workbench.Plugin._
-
 enablePlugins(ScalaJSPlugin)
+
+enablePlugins(WorkbenchPlugin)
 
 name := "TarsaLZP"
 
 version := "0-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.9"
 
 scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature")
 
-workbenchSettings
+scalaJSUseMainModuleInitializer := true
 
-// why it's needed for refreshing?
-bootSnippet := "console.log(\"i'm just refreshing\")"
-
-persistLauncher := true
-
-persistLauncher in Test := false
-
-refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
-
-skip in packageJSDependencies := false
+scalaJSUseMainModuleInitializer in Test := false
 
 libraryDependencies ++= Dependencies.scalajsDependencies.value
 

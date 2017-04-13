@@ -28,13 +28,10 @@ import pl.tarsa.tarsalzp.ui.views.ChartView.Model
 import pl.tarsa.tarsalzp.ui.views.{ChartView, MainView, OptionsView}
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
 import scalacss.Defaults._
 import scalacss.ScalaCssReact._
 
-@JSExport
 object TarsaLZP extends js.JSApp {
-  @JSExport
   def main(): Unit = {
     MyStyleSheet.addToDocument()
 
