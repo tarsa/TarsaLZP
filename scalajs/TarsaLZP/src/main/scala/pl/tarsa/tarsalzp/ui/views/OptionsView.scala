@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -25,7 +25,7 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.ui.backend.UpdateOptions
+import pl.tarsa.tarsalzp.ui.backend.MainAction.UpdateOptions
 
 object OptionsView {
 
@@ -99,6 +99,6 @@ object OptionsView {
     .configure(LogLifecycle.short)
     .build
 
-  def apply(proxy: ModelProxy[Options]) =
+  def apply(proxy: ModelProxy[Options]): ReactElement =
     component(Props(proxy))
 }

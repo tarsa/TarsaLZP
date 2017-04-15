@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -20,29 +20,40 @@
  */
 package pl.tarsa.tarsalzp.ui.backend
 
-import diode.Implicits.runAfterImpl
+import akka.actor.ActorRef
 import diode._
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.compression.engine.Coder
+import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.prelude.Streams
-import pl.tarsa.tarsalzp.ui.backend.CombinedData._
+import pl.tarsa.tarsalzp.ui.backend.MainAction._
+import pl.tarsa.tarsalzp.ui.backend.MainModel.{
+  CodingInProgressViewData,
+  CodingResult,
+  IdleStateViewData
+}
+import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
+  DecodingMode,
+  EncodingMode,
+  ShowOptions,
+  WithCodingMode
+}
 
 import scala.concurrent.Promise
-import scala.concurrent.duration.Duration
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
 import scalajs.bindings.eligrey.FileSaver
 
-class MainActionHandler[M](modelRW: ModelRW[M, MainModel])
-  extends ActionHandler(modelRW) {
+class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
+                           compressionActor: ActorRef)
+    extends ActionHandler(modelRW) {
 
-  type IdleStateActionHandler = PartialFunction[
-    (IdleStateAction, IdleStateViewData), ActionResult[M]]
+  type IdleStateActionHandler =
+    PartialFunction[(IdleStateAction, IdleStateViewData), ActionResult[M]]
 
-  type CodingInProgressActionHandler = PartialFunction[
-    (CodingInProgressAction, CodingInProgressCombinedData), ActionResult[M]]
+  type CodingInProgressActionHandler =
+    PartialFunction[(CodingInProgressAction, CodingInProgressViewData),
+                    ActionResult[M]]
 
   override protected val handle: PartialFunction[Any, ActionResult[M]] = {
     val liftedIdleStateActionHandler =
@@ -50,20 +61,16 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel])
     val liftedCodingInProgressActionHandler =
       codingInProgressActionHandler.lift
     val liftedHandler = (action: Any) => {
-      (action, value.viewData.taskViewData, value.processingData) match {
+      (action, value.taskViewData) match {
         case (action: CodingInProgressAction,
-        viewData: CodingInProgressViewData,
-        processingData: CodingInProgressProcessingData) =>
-          val combinedData =
-            new CodingInProgressCombinedData(viewData, processingData)
-          liftedCodingInProgressActionHandler(action, combinedData)
-        case (action: IdleStateAction, viewData: IdleStateViewData,
-        IdleStateProcessingData) =>
+            viewData: CodingInProgressViewData) =>
+          liftedCodingInProgressActionHandler(action, viewData)
+        case (action: IdleStateAction, viewData: IdleStateViewData) =>
           liftedIdleStateActionHandler(action, viewData)
-        case (action: MainAction, _, _) =>
-          println(s"Unhandled action $action. Current data types: " +
-            s"view - ${value.viewData.getClass}, " +
-            s"processing - ${value.processingData.getClass}")
+        case (action: MainAction, _) =>
+          println(
+              s"Unhandled action $action. Current view data type: " +
+                s"${value.taskViewData.getClass}")
           None
         case _ =>
           None
@@ -73,12 +80,8 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel])
   }
 
   private def codingInProgressActionHandler: CodingInProgressActionHandler = {
-    case (ContinueProcessing, combinedData) =>
-      effectOnly(MainActionHandler.continueProcessing(combinedData._2,
-        value.viewData.chunkSize))
-    case (ChunkProcessed(measurements), combinedData) =>
-      val oldViewData = combinedData._1
-      import oldViewData._
+    case (ChunkProcessed(measurements), viewData) =>
+      import viewData._
       val (inputAdvance, outputAdvance) =
         mode match {
           case EncodingMode =>
@@ -86,111 +89,73 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel])
           case DecodingMode =>
             (measurements.compressedSize, measurements.symbolsNumber)
         }
-      val newViewData = oldViewData.copy(
-        inputStreamPosition = oldViewData.inputStreamPosition + inputAdvance,
-        outputStreamPosition = oldViewData.outputStreamPosition + outputAdvance,
-        codingTimeline = oldViewData.codingTimeline :+ measurements)
-      updated(value.copy(viewData =
-        value.viewData.copy(taskViewData = newViewData)))
-    case (ProcessingFinished(endTime), combinedData) =>
+      val newViewData = viewData.copy(
+        inputStreamPosition = viewData.inputStreamPosition + inputAdvance,
+        outputStreamPosition = viewData.outputStreamPosition + outputAdvance,
+        codingTimeline = viewData.codingTimeline :+ measurements
+      )
+      updated(value.copy(taskViewData = newViewData))
+    case (ProcessingFinished(endTime, resultBlob), viewData) =>
       val idleStateViewData =
-        MainActionHandler.processingFinished(combinedData, endTime)
-      updated(value.copy(
-        viewData = value.viewData.copy(taskViewData = idleStateViewData),
-        processingData = IdleStateProcessingData))
+        MainActionHandler.processingFinished(viewData, endTime, resultBlob)
+      updated(value.copy(taskViewData = idleStateViewData))
   }
 
   private def idleStateActionHandler: IdleStateActionHandler = {
     case (UpdateOptions(modify), _) =>
-      updated(transformView(viewData =>
-        viewData.copy(options = modify(viewData.options))))
+      updated(value.copy(options = modify(value.options)))
     case (ChangeChunkSize(newChunkSize), _) =>
-      updated(transformView(_.copy(chunkSize = newChunkSize)))
+      updated(value.copy(chunkSize = newChunkSize))
     case (ChangedMode(newMode), idleStateViewData) =>
-      updated(transformView(_.copy(taskViewData =
-        idleStateViewData.copy(mode = newMode))))
+      val newModel =
+        value.copy(taskViewData = idleStateViewData.copy(mode = newMode))
+      updated(newModel)
     case (SelectedFile(fileOpt), _) =>
       println(s"fileOpt = $fileOpt")
-      updated(transformView(_.copy(chosenFileOpt = fileOpt)))
+      updated(value.copy(chosenFileOpt = fileOpt))
     case (LoadFile, idleStateViewData) =>
-      val chosenFile = value.viewData.chosenFileOpt.get
-      updated(
-        transformView(_.copy(taskViewData =
-          idleStateViewData.copy(loadingInProgress = true))),
-        MainActionHandler.loadFileContents(chosenFile))
-    case (LoadingFinished(inputBufferOpt), idleStateViewData) =>
-      updated(transformView(_.copy(taskViewData = idleStateViewData.copy(
-        inputArrayOpt = inputBufferOpt.map(buffer => new Uint8Array(buffer)),
-        loadingInProgress = false))))
-    case (StartProcessing, idleStateViewData) =>
-      val (newTaskOpt, action) = MainActionHandler.startProcessingData(
-        idleStateViewData.mode, idleStateViewData.inputArrayOpt.get,
-        value.viewData.options, value.viewData.chunkSize)
-      val (newViewData, newProcessingData) = newTaskOpt.getOrElse(
-        (idleStateViewData, IdleStateProcessingData))
+      val chosenFile = value.chosenFileOpt.get
       val newModel = value.copy(
-        viewData = value.viewData.copy(taskViewData = newViewData),
-        processingData = newProcessingData)
-      updated(newModel, Effect.action(action))
+          taskViewData = idleStateViewData.copy(loadingInProgress = true))
+      updated(newModel, MainActionHandler.loadFileContents(chosenFile))
+    case (LoadingFinished(inputBufferOpt), idleStateViewData) =>
+      val newModel = value.copy(
+          taskViewData = idleStateViewData.copy(
+              inputArrayOpt = inputBufferOpt.map(
+                  buffer => new Uint8Array(buffer)),
+              loadingInProgress = false))
+      updated(newModel)
+    case (StartProcessing, idleStateViewData) =>
+      val newViewData = MainActionHandler
+        .startProcessingData(idleStateViewData.mode,
+          idleStateViewData.inputArrayOpt.get, value.options, value.chunkSize,
+          compressionActor)
+        .getOrElse(idleStateViewData)
+      updated(value.copy(taskViewData = newViewData))
     case (SaveFile, idleStateViewData) =>
       MainActionHandler.saveResults(
-        idleStateViewData.codingResultOpt.get.resultBlob)
+          idleStateViewData.codingResultOpt.get.resultBlob)
       noChange
   }
-
-  private def transformView(transform: ViewData => ViewData): MainModel =
-    value.copy(viewData = transform(value.viewData))
 }
 
 object MainActionHandler {
   def loadFileContents(file: dom.File): Effect = {
     val bufferPromise = Promise[LoadingFinished]()
     val reader = new dom.FileReader()
-    reader.onloadstart = (event: dom.ProgressEvent) => {
+    reader.onloadstart = (_: dom.ProgressEvent) => {
       println("Loading...")
     }
-    reader.onload = (event: dom.UIEvent) => {
+    reader.onload = (_: dom.UIEvent) => {
       bufferPromise.success(
-        LoadingFinished(Some(reader.result.asInstanceOf[ArrayBuffer])))
+          LoadingFinished(Some(reader.result.asInstanceOf[ArrayBuffer])))
       println("Loaded!")
     }
-    reader.onloadend = (event: dom.ProgressEvent) => {
+    reader.onloadend = (_: dom.ProgressEvent) => {
       bufferPromise.trySuccess(LoadingFinished(None))
     }
     reader.readAsArrayBuffer(file)
     Effect(bufferPromise.future)
-  }
-
-  def startProcessingData(
-    mode: ProcessingMode, inputArray: Uint8Array, options: Options,
-    chunkSize: Int): (Option[CodingInProgressCombinedData], Action) = {
-    val inputStream = new Streams.ArrayInputStream(inputArray)
-    mode match {
-      case EncodingMode =>
-        val outputStream = new Streams.ChunksArrayOutputStream
-        val startTime = new js.Date
-        val encoder = Coder.startEncoder(inputStream, outputStream,
-          options)
-        val encodingInProgress = new CodingInProgressCombinedData(
-          CodingInProgressViewData(EncodingMode, inputArray.length, 0, 0,
-            startTime, Nil),
-          new EncodingProcessingData(encoder, inputStream, outputStream))
-        (Some(encodingInProgress), ContinueProcessing)
-      case DecodingMode =>
-        val outputStream = new Streams.ChunksArrayOutputStream
-        val startTime = new js.Date
-        val decoder = Coder.startDecoder(inputStream, outputStream)
-        val decodingInProgress = new CodingInProgressCombinedData(
-          CodingInProgressViewData(DecodingMode, inputArray.length, 0, 0,
-            startTime, Nil),
-          new DecodingProcessingData(decoder, inputStream, outputStream))
-        (Some(decodingInProgress), ContinueProcessing)
-      case ShowOptions =>
-        Coder.checkHeader(inputStream)
-        val options = Coder.getOptions(inputStream)
-        dom.window.alert(options.prettyFormat)
-        (None, NoAction)
-    }
   }
 
   def saveResults(results: dom.Blob): Unit = {
@@ -198,52 +163,31 @@ object MainActionHandler {
     println("Saved!")
   }
 
-  def continueProcessing(processingData: CodingInProgressProcessingData,
-    chunkSize: Int): Effect = {
-    val startTime = new js.Date
-    val (symbolsNumber, compressedSize, nextCodingStep) =
-      processingData match {
-        case encoding: EncodingProcessingData =>
-          import encoding._
-          val compressedSizeBefore = outputStream.position
-          val encodedSymbols = encoder.encode(chunkSize)
-          val compressedSizeAfter = outputStream.position
-          val nextCodingStep =
-            if (encodedSymbols == chunkSize) {
-              ContinueProcessing
-            } else {
-              encoder.flush()
-              ProcessingFinished(new js.Date)
-            }
-          (encodedSymbols, compressedSizeAfter - compressedSizeBefore,
-            nextCodingStep)
-        case decoding: DecodingProcessingData =>
-          import decoding._
-          val compressedSizeBefore = inputStream.position
-          val decodedSymbols = decoder.decode(chunkSize)
-          val compressedSizeAfter = inputStream.position
-          val nextCodingStep =
-            if (decodedSymbols == chunkSize) {
-              ContinueProcessing
-            } else {
-              ProcessingFinished(new js.Date)
-            }
-          (decodedSymbols, compressedSizeAfter - compressedSizeBefore,
-            nextCodingStep)
-      }
-    val endTime = new js.Date
-    val updateAction = ChunkProcessed(ChunkCodingMeasurement(
-      startTime, endTime, symbolsNumber, compressedSize))
-    Effect.action(nextCodingStep).after(Duration.Zero) +
-      Effect.action(updateAction)
+  def startProcessingData(
+      mode: ProcessingMode,
+      inputArray: Uint8Array,
+      options: Options,
+      chunkSize: Int,
+      compressionActor: ActorRef): Option[CodingInProgressViewData] = {
+    mode match {
+      case withCodingMode: WithCodingMode =>
+        compressionActor !
+          ProcessRequest(withCodingMode, inputArray, options, chunkSize)
+        val startTime = new js.Date
+        val viewData = CodingInProgressViewData(withCodingMode, inputArray,
+          inputArray.length, 0, 0, startTime, Nil)
+        Some(viewData)
+      case ShowOptions =>
+        compressionActor !
+          ProcessRequest(ShowOptions, inputArray, options, chunkSize)
+        None
+    }
   }
 
-  def processingFinished(
-    codingInProgressData: CodingInProgressCombinedData,
-    endTime: js.Date): IdleStateViewData = {
-    val (viewData, processingData) = codingInProgressData
-    import processingData._
-    import viewData._
+  def processingFinished(codingInProgressViewData: CodingInProgressViewData,
+                         endTime: js.Date,
+                         resultBlob: dom.Blob): IdleStateViewData = {
+    import codingInProgressViewData._
     val (totalSymbols, compressedSize) =
       mode match {
         case EncodingMode =>
@@ -252,9 +196,8 @@ object MainActionHandler {
           (outputStreamPosition, inputBufferLength)
       }
     val codingResult = CodingResult(mode, totalSymbols, compressedSize,
-      startTime, endTime, codingTimeline, processingData.outputStream.toBlob())
-    IdleStateViewData(mode, Some(inputStream.array), Some(codingResult),
-      loadingInProgress = false
-    )
+      startTime, endTime, codingTimeline, resultBlob)
+    IdleStateViewData(mode, Some(inputArray), Some(codingResult),
+      loadingInProgress = false)
   }
 }

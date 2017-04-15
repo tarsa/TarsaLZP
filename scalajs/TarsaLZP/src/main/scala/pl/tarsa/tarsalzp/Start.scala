@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -24,7 +24,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import pl.tarsa.tarsalzp.ui.TarsaLZP
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
 import scala.scalajs.js
 
 object Start extends js.JSApp {
@@ -41,7 +41,7 @@ object Start extends js.JSApp {
     val system = ActorSystem("TarsaLZP-system", conf)
     import system.dispatcher
     system.scheduler.scheduleOnce(Duration.Zero) {
-      TarsaLZP.main()
+      TarsaLZP.main(system)
     }
   }
 }

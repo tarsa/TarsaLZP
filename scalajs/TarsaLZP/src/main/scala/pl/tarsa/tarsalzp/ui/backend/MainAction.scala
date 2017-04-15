@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -23,6 +23,7 @@ package pl.tarsa.tarsalzp.ui.backend
 import diode.Action
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.ui.backend.MainModel.ChunkCodingMeasurement
 import pl.tarsa.tarsalzp.ui.util.RafAction
 
 import scala.scalajs.js
@@ -30,31 +31,33 @@ import scala.scalajs.js.typedarray.ArrayBuffer
 
 sealed trait MainAction extends Action
 
-sealed trait IdleStateAction extends MainAction
+object MainAction {
+  sealed trait IdleStateAction extends MainAction
 
-case class UpdateOptions(modify: Options => Options) extends IdleStateAction
+  case class UpdateOptions(modify: Options => Options) extends IdleStateAction
 
-case class ChangeChunkSize(newChunkSize: Int) extends IdleStateAction
+  case class ChangeChunkSize(newChunkSize: Int) extends IdleStateAction
 
-case class ChangedMode(newMode: ProcessingMode) extends IdleStateAction
+  case class ChangedMode(newMode: ProcessingMode) extends IdleStateAction
 
-case class SelectedFile(fileOpt: Option[dom.File]) extends IdleStateAction
+  case class SelectedFile(fileOpt: Option[dom.File]) extends IdleStateAction
 
-case object LoadFile extends IdleStateAction
+  case object LoadFile extends IdleStateAction
 
-case class LoadingFinished(inputBufferOpt: Option[ArrayBuffer])
-  extends IdleStateAction
+  case class LoadingFinished(inputBufferOpt: Option[ArrayBuffer])
+      extends IdleStateAction
 
-case object StartProcessing extends IdleStateAction
+  case object StartProcessing extends IdleStateAction
 
-case object SaveFile extends IdleStateAction
+  case object SaveFile extends IdleStateAction
 
-sealed trait CodingInProgressAction extends MainAction
+  sealed trait CodingInProgressAction extends MainAction
 
-case object ContinueProcessing extends CodingInProgressAction
+  case class ChunkProcessed(measurements: ChunkCodingMeasurement)
+      extends CodingInProgressAction
+      with RafAction
 
-case class ChunkProcessed(measurements: ChunkCodingMeasurement)
-  extends CodingInProgressAction with RafAction
-
-case class ProcessingFinished(endTime: js.Date) extends CodingInProgressAction
-  with RafAction
+  case class ProcessingFinished(endTime: js.Date, resultBlob: dom.Blob)
+      extends CodingInProgressAction
+      with RafAction
+}

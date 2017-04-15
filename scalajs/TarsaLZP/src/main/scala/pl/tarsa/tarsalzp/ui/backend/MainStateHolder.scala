@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -20,26 +20,32 @@
  */
 package pl.tarsa.tarsalzp.ui.backend
 
+import akka.actor.ActorSystem
 import diode.Circuit
 import diode.react.ReactConnector
+import pl.tarsa.tarsalzp.compression.CompressionActor
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.ui.backend.MainModel.IdleStateViewData
+import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
 import pl.tarsa.tarsalzp.ui.util.RafTimestampHandler
 
-class MainStateHolder
-  extends Circuit[MainModel]
+class MainStateHolder(system: ActorSystem)
+    extends Circuit[MainModel]
     with ReactConnector[MainModel] {
-  override protected def initialModel = {
-    MainModel(
-      ViewData(Options.default, None, 1234567,
-        IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)),
-      IdleStateProcessingData
-    )
+  override protected def initialModel: MainModel = {
+    val viewData =
+      IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)
+    MainModel(Options.default, None, 1234567, viewData)
   }
 
-  override protected val actionHandler = {
+  override protected val actionHandler: HandlerFunction = {
     composeHandlers(
-      new MainActionHandler(zoomRW(identity)((_, m) => m)),
+      new MainActionHandler(zoomRW(identity)((_, m) => m),
+        compressionActorRef),
       new RafTimestampHandler(zoomRW(_ => 0.0)((m, _) => m))
     )
   }
+
+  private lazy val compressionActorRef =
+    system.actorOf(CompressionActor.props(dispatch))
 }

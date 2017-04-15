@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -21,101 +21,70 @@
 package pl.tarsa.tarsalzp.ui.backend
 
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.compression.engine.{Decoder, Encoder}
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.prelude.Streams
-import pl.tarsa.tarsalzp.prelude.Streams.ArrayInputStream
+import pl.tarsa.tarsalzp.ui.backend.MainModel.ProcessingTaskViewData
+import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.WithCodingMode
 
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
 case class MainModel(
-  viewData: ViewData,
-  processingData: ProcessingData)
+    options: Options,
+    chosenFileOpt: Option[dom.File],
+    chunkSize: Int,
+    taskViewData: ProcessingTaskViewData
+)
 
+object MainModel {
+  sealed trait ProcessingTaskViewData {
+    def mode: ProcessingMode
+  }
 
-case class ViewData(
-  options: Options,
-  chosenFileOpt: Option[dom.File],
-  chunkSize: Int,
-  taskViewData: ProcessingTaskViewData)
+  case class IdleStateViewData(
+      mode: ProcessingMode,
+      inputArrayOpt: Option[Uint8Array],
+      codingResultOpt: Option[CodingResult],
+      loadingInProgress: Boolean
+  ) extends ProcessingTaskViewData
 
-sealed trait ProcessingTaskViewData {
-  def mode: ProcessingMode
+  case class CodingResult(
+      mode: WithCodingMode,
+      totalSymbols: Int,
+      compressedSize: Int,
+      startTime: js.Date,
+      endTime: js.Date,
+      codingTimeline: Seq[ChunkCodingMeasurement],
+      resultBlob: dom.Blob
+  )
+
+  case class CodingInProgressViewData(
+      mode: WithCodingMode,
+      inputArray: Uint8Array,
+      inputBufferLength: Int,
+      inputStreamPosition: Int,
+      outputStreamPosition: Int,
+      startTime: js.Date,
+      codingTimeline: Seq[ChunkCodingMeasurement]
+  ) extends ProcessingTaskViewData
+
+  case class ChunkCodingMeasurement(
+      startTime: js.Date,
+      endTime: js.Date,
+      symbolsNumber: Int,
+      compressedSize: Int
+  )
 }
-
-case class IdleStateViewData(
-  mode: ProcessingMode,
-  inputArrayOpt: Option[Uint8Array],
-  codingResultOpt: Option[CodingResult],
-  loadingInProgress: Boolean
-) extends ProcessingTaskViewData
-
-case class CodingResult(
-  mode: WithCodingMode,
-  totalSymbols: Int,
-  compressedSize: Int,
-  startTime: js.Date,
-  endTime: js.Date,
-  codingTimeline: Seq[ChunkCodingMeasurement],
-  resultBlob: dom.Blob)
-
-case class CodingInProgressViewData(
-  mode: WithCodingMode,
-  inputBufferLength: Int,
-  inputStreamPosition: Int,
-  outputStreamPosition: Int,
-  startTime: js.Date,
-  codingTimeline: Seq[ChunkCodingMeasurement]
-) extends ProcessingTaskViewData
-
-
-sealed trait ProcessingData
-
-object IdleStateProcessingData extends ProcessingData
-
-sealed trait CodingInProgressProcessingData extends ProcessingData {
-  def inputStream: ArrayInputStream
-
-  def outputStream: Streams.ChunksArrayOutputStream
-}
-
-class EncodingProcessingData(
-  val encoder: Encoder,
-  val inputStream: ArrayInputStream,
-  val outputStream: Streams.ChunksArrayOutputStream
-) extends CodingInProgressProcessingData
-
-class DecodingProcessingData(
-  val decoder: Decoder,
-  val inputStream: ArrayInputStream,
-  val outputStream: Streams.ChunksArrayOutputStream
-) extends CodingInProgressProcessingData
-
-
-case class ChunkCodingMeasurement(
-  startTime: js.Date,
-  endTime: js.Date,
-  symbolsNumber: Int,
-  compressedSize: Int)
-
-
-sealed trait CombinedData
-
-object CombinedData {
-  type CodingInProgressCombinedData =
-  (CodingInProgressViewData, CodingInProgressProcessingData)
-}
-
 
 sealed trait ProcessingMode
 
-sealed trait WithoutCodingMode extends ProcessingMode
+object ProcessingMode {
+  sealed trait WithoutCodingMode extends ProcessingMode
 
-case object ShowOptions extends WithoutCodingMode
+  case object ShowOptions extends WithoutCodingMode
 
-sealed abstract class WithCodingMode extends ProcessingMode
+  sealed trait WithCodingMode extends ProcessingMode
 
-case object EncodingMode extends WithCodingMode
+  case object EncodingMode extends WithCodingMode
 
-case object DecodingMode extends WithCodingMode
+  case object DecodingMode extends WithCodingMode
+}

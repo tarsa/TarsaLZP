@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -27,7 +27,7 @@ import japgolly.scalajs.react.vdom.prefix_<^._
 import org.singlespaced.d3js.Ops._
 import org.singlespaced.d3js.d3
 import pl.tarsa.tarsalzp.ui.MyStyleSheet
-import pl.tarsa.tarsalzp.ui.backend.ChunkCodingMeasurement
+import pl.tarsa.tarsalzp.ui.backend.MainModel.ChunkCodingMeasurement
 
 import scalacss.ScalaCssReact._
 

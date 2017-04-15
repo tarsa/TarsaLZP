@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -25,6 +25,17 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import org.scalajs.dom
+import pl.tarsa.tarsalzp.ui.backend.MainAction._
+import pl.tarsa.tarsalzp.ui.backend.MainModel.{
+  ChunkCodingMeasurement,
+  CodingInProgressViewData,
+  IdleStateViewData
+}
+import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
+  DecodingMode,
+  EncodingMode,
+  ShowOptions
+}
 import pl.tarsa.tarsalzp.ui.backend._
 import pl.tarsa.tarsalzp.ui.util.{IdsGenerator, TagModJoiner}
 
@@ -32,7 +43,7 @@ import scala.scalajs.js
 
 object MainView {
 
-  case class Props(proxy: ModelProxy[ViewData], optionsView: ReactElement,
+  case class Props(proxy: ModelProxy[MainModel], optionsView: ReactElement,
     chartView: ReactElement)
 
   private def render(p: Props) = {
@@ -205,7 +216,7 @@ object MainView {
       .configure(LogLifecycle.short)
       .build
 
-  def apply(proxy: ModelProxy[ViewData],
+  def apply(proxy: ModelProxy[MainModel],
     optionsView: ReactElement, chartView: ReactElement): ReactElement =
     component(Props(proxy, optionsView, chartView))
 }

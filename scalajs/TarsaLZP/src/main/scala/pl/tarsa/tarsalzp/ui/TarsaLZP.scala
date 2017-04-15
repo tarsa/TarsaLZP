@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -20,8 +20,14 @@
  */
 package pl.tarsa.tarsalzp.ui
 
+import akka.actor.ActorSystem
 import japgolly.scalajs.react.ReactDOM
 import org.scalajs.dom
+import pl.tarsa.tarsalzp.ui.backend.MainModel.{
+  CodingInProgressViewData,
+  IdleStateViewData
+}
+import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{DecodingMode, EncodingMode}
 import pl.tarsa.tarsalzp.ui.backend._
 import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
 import pl.tarsa.tarsalzp.ui.views.ChartView.Model
@@ -31,28 +37,31 @@ import scalacss.Defaults._
 import scalacss.ScalaCssReact._
 
 object TarsaLZP {
-  def main(): Unit = {
+  def main(system: ActorSystem): Unit = {
     MyStyleSheet.addToDocument()
 
-    val mainCircuit = new MainStateHolder
+    val mainCircuit = new MainStateHolder(system)
     mainCircuit.addProcessor(new RafBatcher)
     mainCircuit.addProcessor(new LoggingProcessor)
-    mainCircuit.subscribe(mainCircuit.zoom(identity[MainModel]))(model =>
-      println(s"Listener got fired!"))
+    mainCircuit.subscribe(mainCircuit.zoom(identity[MainModel]))(
+        _ => println(s"Listener got fired!"))
 
-    val mainViewProxy = mainCircuit.connect(_.viewData)
+    val mainViewProxy = mainCircuit.connect(identity[MainModel] _)
     val optionsView = {
-      val optionsViewProxy = mainCircuit.connect(_.viewData.options)
+      val optionsViewProxy = mainCircuit.connect(_.options)
       optionsViewProxy(OptionsView.apply)
     }
     val chartView = {
-      val modelReader = mainCircuit.zoom(_.viewData).zoom { viewData =>
+      val modelReader = mainCircuit.zoom { viewData =>
         val chunkSize = viewData.chunkSize
         val (totalSymbolsOpt, timeline) = viewData.taskViewData match {
           case idleState: IdleStateViewData =>
-            idleState.codingResultOpt.map { codingResult =>
-              (Option(codingResult.totalSymbols), codingResult.codingTimeline)
-            }.getOrElse((None, Nil))
+            idleState.codingResultOpt
+              .map { codingResult =>
+                (Option(codingResult.totalSymbols),
+                  codingResult.codingTimeline)
+              }
+              .getOrElse((None, Nil))
           case codingInProgress: CodingInProgressViewData =>
             val totalSymbolsOpt = codingInProgress.mode match {
               case EncodingMode =>
@@ -67,7 +76,9 @@ object TarsaLZP {
       val chartViewProxy = mainCircuit.connect(modelReader)
       chartViewProxy(ChartView.apply)
     }
-    val mainComponent = mainViewProxy(MainView.apply(_, optionsView, chartView))
-    ReactDOM.render(mainComponent, dom.document.getElementById("mainDiv"))
+    ReactDOM.render(
+      mainViewProxy(MainView.apply(_, optionsView, chartView)),
+      dom.document.getElementById("mainDiv")
+    )
   }
 }
