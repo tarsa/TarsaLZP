@@ -25,6 +25,7 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import org.scalajs.dom
+import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   ChunkCodingMeasurement,
@@ -37,6 +38,7 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
   ShowOptions
 }
 import pl.tarsa.tarsalzp.ui.backend._
+import pl.tarsa.tarsalzp.ui.util.DiodeTypes.DiodeWrapperU
 import pl.tarsa.tarsalzp.ui.util.{IdsGenerator, TagModJoiner}
 
 import scala.scalajs.js
@@ -217,6 +219,7 @@ object MainView {
       .build
 
   def apply(proxy: ModelProxy[MainModel],
-    optionsView: ReactElement, chartView: ReactElement): ReactElement =
+    optionsView: DiodeWrapperU[Options],
+    chartView: DiodeWrapperU[ChartView.Model]): ReactElement =
     component(Props(proxy, optionsView, chartView))
 }
