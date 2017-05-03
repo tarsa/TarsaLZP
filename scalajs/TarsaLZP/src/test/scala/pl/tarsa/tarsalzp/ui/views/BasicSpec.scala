@@ -18,7 +18,8 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-import BasicSpec.Models
+package pl.tarsa.tarsalzp.ui.views
+
 import _infrastructure.domtest.DomNodeInfo
 import _infrastructure.domtest.DomNodeInfo.{A, F}
 import _infrastructure.domtest.Extractor.{H, N}
@@ -39,13 +40,13 @@ import pl.tarsa.tarsalzp.ui.backend.MainAction.{
 import pl.tarsa.tarsalzp.ui.backend.MainModel.IdleStateViewData
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
 import pl.tarsa.tarsalzp.ui.backend.{MainAction, MainModel}
-import pl.tarsa.tarsalzp.ui.views.MainView
+import pl.tarsa.tarsalzp.ui.views.BasicSpec.Models
 
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-// TODO rename to MainViewSpec and move to appropriate package
+// TODO rename to MainViewSpec
 class BasicSpec extends SyncSpecBase {
   it must s"show initial state properly" in {
     withModel(Models.initialModel) { fixture =>
