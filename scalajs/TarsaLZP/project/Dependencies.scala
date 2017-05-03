@@ -52,7 +52,8 @@ object Dependencies {
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReact,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReact,
       "io.suzaku" %%% "diode" % diode,
-      "io.suzaku" %%% "diode-react" % diode,
+      // diode-react sources copied verbatim
+      // "io.suzaku" %%% "diode-react" % diode,
       "org.akka-js" %%% "akkajsactor" % akkaJs,
       "org.scala-js" %%% "scalajs-dom" % scalaJsDom,
       "org.singlespaced" %%% "scalajs-d3" % scalaJsD3,
