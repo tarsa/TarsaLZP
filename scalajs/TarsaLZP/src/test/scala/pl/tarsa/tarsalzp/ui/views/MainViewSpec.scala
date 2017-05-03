@@ -20,29 +20,25 @@
  */
 package pl.tarsa.tarsalzp.ui.views
 
+import _infrastructure.data.Models
 import _infrastructure.domtest.DomNodeInfo
 import _infrastructure.domtest.DomNodeInfo.{A, F}
 import _infrastructure.domtest.Extractor.{H, N}
 import _infrastructure.specs.FrontendSpecBase
-import diode._
 import diode.react.{ModelProxy, ReactConnector}
+import diode.{ActionResult, ActionType, Circuit}
 import japgolly.scalajs.react.component.Scala.Unmounted
-import japgolly.scalajs.react.test._
+import japgolly.scalajs.react.test.{ReactTestUtils, Simulate}
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainAction.{
   LoadFile,
   SelectedFile,
   StartProcessing
 }
-import pl.tarsa.tarsalzp.ui.backend.MainModel.IdleStateViewData
-import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
 import pl.tarsa.tarsalzp.ui.backend.{MainAction, MainModel}
-import pl.tarsa.tarsalzp.ui.views.MainViewSpec.Models
 
 import scala.collection.mutable
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
 class MainViewSpec extends FrontendSpecBase {
   typeBehavior[MainView.type]
@@ -205,27 +201,5 @@ class MainViewSpec extends FrontendSpecBase {
       dummyTag()._2
     )
     (testCircuit, unmountedMain)
-  }
-}
-
-object MainViewSpec {
-  object Models {
-    private val initialTaskViewData =
-      IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)
-
-    val initialModel =
-      MainModel(Options.default, None, 345, initialTaskViewData)
-
-    val afterFileSelection: MainModel = initialModel.copy(
-      chosenFileOpt = Some(new dom.Blob().asInstanceOf[dom.File])
-    )
-
-    val duringFileLoading: MainModel = afterFileSelection.copy(
-      taskViewData = initialTaskViewData.copy(loadingInProgress = true)
-    )
-
-    val withLoadedFile: MainModel = initialModel.copy(
-        taskViewData = initialTaskViewData.copy(
-            inputArrayOpt = Some(new Uint8Array(3))))
   }
 }
