@@ -20,10 +20,9 @@
  */
 package pl.tarsa.tarsalzp.ui.util
 
-import diode.react.ModelProxy
-import japgolly.scalajs.react.{ReactComponentU, ReactElement, TopNode}
+import diode.react.ReactConnectProps
+import japgolly.scalajs.react.component.Generic.UnmountedWithRoot
 
 object DiodeTypes {
-  type DiodeWrapperU[A] =
-    ReactComponentU[ModelProxy[A] => ReactElement, A, Any, TopNode]
+  type DiodeWrapperU[A] = UnmountedWithRoot[ReactConnectProps[A], _, _, _]
 }

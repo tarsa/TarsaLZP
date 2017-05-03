@@ -21,7 +21,6 @@
 package pl.tarsa.tarsalzp.ui
 
 import akka.actor.ActorSystem
-import japgolly.scalajs.react.ReactDOM
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
@@ -35,7 +34,7 @@ import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
 import pl.tarsa.tarsalzp.ui.views.ChartView.Model
 import pl.tarsa.tarsalzp.ui.views.{ChartView, MainView, OptionsView}
 
-import scalacss.Defaults._
+import scalacss.DevDefaults._
 import scalacss.ScalaCssReact._
 
 object TarsaLZP {
@@ -48,7 +47,7 @@ object TarsaLZP {
     val chartView = makeChartView(diodeCircuit)
     val mainView = makeMainView(diodeCircuit, optionsView, chartView)
 
-    ReactDOM.render(mainView, dom.document.getElementById("mainDiv"))
+    mainView.renderIntoDOM(dom.document.getElementById("mainDiv"))
   }
 
   private def setupCircuit(system: ActorSystem): MainStateHolder = {
@@ -90,11 +89,14 @@ object TarsaLZP {
     chartViewProxyConstructor(ChartView.apply)
   }
 
-  private def makeMainView(
-      diodeCircuit: MainStateHolder,
+  private def makeMainView(diodeCircuit: MainStateHolder,
       optionsView: DiodeWrapperU[Options],
       chartView: DiodeWrapperU[ChartView.Model]): DiodeWrapperU[MainModel] = {
     val mainViewProxyConstructor = diodeCircuit.connect(identity[MainModel] _)
-    mainViewProxyConstructor(MainView.apply(_, optionsView, chartView))
+    mainViewProxyConstructor { modelProxy =>
+      MainView
+        .apply(modelProxy, optionsView.vdomElement, chartView.vdomElement)
+        .vdomElement
+    }
   }
 }

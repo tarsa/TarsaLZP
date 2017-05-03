@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -18,21 +18,16 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.ui.util
+package bindings.eligrey
 
-import japgolly.scalajs.react.vdom.prefix_<^._
+import org.scalajs.dom.Blob
 
-import scala.language.implicitConversions
+import scala.scalajs.js
+import scala.scalajs.js.annotation.JSGlobalScope
 
-object TagModJoiner {
-  implicit def joinerToSeq(joiner: Joiner): Seq[TagMod] =
-    joiner.current
-
-  class Joiner(private[TagModJoiner] val current: Seq[TagMod]) {
-    def apply(elements: TagMod*) =
-      new Joiner(current ++ elements)
-  }
-
-  def apply(elements: TagMod*): Joiner =
-    new Joiner(elements)
+@js.native
+@JSGlobalScope
+object FileSaver extends js.Object {
+  def saveAs(contents: Blob, fileName: String,
+      noAutoBom: Boolean = js.native): Unit = js.native
 }

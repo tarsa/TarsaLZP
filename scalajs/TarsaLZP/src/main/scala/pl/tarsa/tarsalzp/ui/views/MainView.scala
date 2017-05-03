@@ -22,8 +22,9 @@ package pl.tarsa.tarsalzp.ui.views
 
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.extra.LogLifecycle
-import japgolly.scalajs.react.vdom.prefix_<^._
+import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
@@ -37,14 +38,14 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
   ShowOptions
 }
 import pl.tarsa.tarsalzp.ui.backend._
-import pl.tarsa.tarsalzp.ui.util.{IdsGenerator, TagModJoiner}
+import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
 import scala.scalajs.js
 
 object MainView {
 
-  case class Props(proxy: ModelProxy[MainModel], optionsView: ReactElement,
-    chartView: ReactElement)
+  case class Props(proxy: ModelProxy[MainModel], optionsView: VdomElement,
+    chartView: VdomElement)
 
   private def render(p: Props) = {
     val data = p.proxy()
@@ -71,7 +72,7 @@ object MainView {
         ^.className := "temp_fileChooser",
         ^.`type` := "file",
         ^.disabled := busy,
-        ^.onChange ==> { (e: ReactEventI) =>
+        ^.onChange ==> { (e: ReactEventFromInput) =>
           println("File chooser changed!")
           p.proxy.dispatchCB(
             SelectedFile((e.target.files(0): js.UndefOr[dom.File]).toOption))
@@ -188,7 +189,7 @@ object MainView {
     }
 
     <.div(
-      TagModJoiner(
+      TagMod(
         chunkSizeLabelledSpinner.label,
         chunkSizeLabelledSpinner.spinner,
         <.br(), <.br(),
@@ -209,20 +210,19 @@ object MainView {
         <.br(), <.br(), <.br(),
         <.div(p.chartView),
         codingResultInfo
-      ): _*
+      )
     )
   }
 
-
   private val component =
-    ReactComponentB[Props]("MainView")
+    ScalaComponent.builder[Props]("MainView")
       .stateless
       .render_P(render)
       .configure(LogLifecycle.short)
       .build
 
   def apply(proxy: ModelProxy[MainModel],
-    optionsView: ReactElement,
-    chartView: ReactElement): ReactElement =
+    optionsView: VdomElement,
+    chartView: VdomElement): Unmounted[Props, Unit, Unit] =
     component(Props(proxy, optionsView, chartView))
 }

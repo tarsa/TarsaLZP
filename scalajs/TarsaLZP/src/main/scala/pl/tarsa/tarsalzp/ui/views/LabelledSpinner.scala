@@ -20,25 +20,24 @@
  */
 package pl.tarsa.tarsalzp.ui.views
 
-import japgolly.scalajs.react.{Callback, ReactEventI}
-import japgolly.scalajs.react.vdom.ReactTagOf
-import japgolly.scalajs.react.vdom.prefix_<^._
+import japgolly.scalajs.react.vdom.html_<^._
+import japgolly.scalajs.react.{Callback, ReactEventFromInput}
 import org.scalajs.dom.html
 import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
 class LabelledSpinner(
-  val label: ReactTagOf[html.Label],
-  val spinner: ReactTagOf[html.Input]
+    val label: VdomTagOf[html.Label],
+    val spinner: VdomTagOf[html.Input]
 )
 
 object LabelledSpinner {
   def apply(loadValue: => Int, description: String,
-    onChangeAction: ReactEventI => Callback,
-    disabled: Boolean): LabelledSpinner = {
+      onChangeAction: ReactEventFromInput => Callback,
+      disabled: Boolean): LabelledSpinner = {
     val id = IdsGenerator.freshUnique()
-    val spinner = <.input(^.id := id, ^.`type` := "number",
-      ^.value := loadValue, ^.onChange ==> onChangeAction,
-      ^.disabled := disabled)
+    val spinner =
+      <.input(^.id := id, ^.`type` := "number", ^.value := loadValue,
+        ^.onChange ==> onChangeAction, ^.disabled := disabled)
     val label = <.label(^.`for` := id, description + ':')
     new LabelledSpinner(label, spinner)
   }

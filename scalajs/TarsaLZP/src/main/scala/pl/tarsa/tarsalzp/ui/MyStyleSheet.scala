@@ -20,7 +20,7 @@
  */
 package pl.tarsa.tarsalzp.ui
 
-import scalacss.Defaults._
+import scalacss.DevDefaults._
 
 object MyStyleSheet extends StyleSheet.Inline {
 

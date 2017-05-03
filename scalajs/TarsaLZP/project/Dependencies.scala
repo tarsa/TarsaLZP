@@ -29,17 +29,17 @@ object Dependencies {
       // general
       val akkaJs = "1.2.5.0"
       val diode = "1.1.1"
-      val scalaCss = "0.5.1"
+      val scalaCss = "0.5.3"
       val scalaJsD3 = "0.3.3"
       val scalaJsDom = "0.9.1"
-      val scalaJsReact = "0.11.3"
+      val scalaJsReact = "1.0.0"
       // test only
       val scalaTest = "3.0.1"
     }
 
     object Js {
       // general
-      val react = "15.3.2"
+      val react = "15.5.4"
     }
   }
 

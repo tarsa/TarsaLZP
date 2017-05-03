@@ -25,10 +25,10 @@ import _infrastructure.domtest.Extractor.{H, N}
 import _infrastructure.specs.SyncSpecBase
 import diode._
 import diode.react.{ModelProxy, ReactConnector}
-import japgolly.scalajs.react.ReactElement
+import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.test._
 import japgolly.scalajs.react.vdom.Implicits._
-import japgolly.scalajs.react.vdom.{Attrs, Tags}
+import japgolly.scalajs.react.vdom.{HtmlAttrs, HtmlTags, VdomElement}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainAction.{
@@ -74,7 +74,7 @@ class BasicSpec extends SyncSpecBase {
       val target = js.Dynamic.literal("files" -> js.Array(file))
       val eventData = js.Dynamic.literal("target" -> target)
       val fileChooserDom = findChild(mainViewNode, "temp_fileChooser")
-      ReactTestUtils.Simulate.change(fileChooserDom, eventData)
+      Simulate.change(fileChooserDom, eventData)
       testCircuit.actionsQueue mustBe Seq(SelectedFile(Some(file)))
     }
   }
@@ -85,7 +85,7 @@ class BasicSpec extends SyncSpecBase {
       import mainViewInfo._
       loadContentsButton.mustHaveProps(F.disabled(false))
       val loadButtonDom = findChild(mainViewNode, "temp_loadButton")
-      ReactTestUtils.Simulate.click(loadButtonDom)
+      Simulate.click(loadButtonDom)
       testCircuit.actionsQueue mustBe Seq(LoadFile)
     }
   }
@@ -106,7 +106,7 @@ class BasicSpec extends SyncSpecBase {
       import mainViewInfo._
       processDataButton.mustHaveProps(F.disabled(false))
       val processButtonDom = findChild(mainViewNode, "temp_processButton")
-      ReactTestUtils.Simulate.click(processButtonDom)
+      Simulate.click(processButtonDom)
       testCircuit.actionsQueue mustBe Seq(StartProcessing)
     }
   }
@@ -122,7 +122,7 @@ class BasicSpec extends SyncSpecBase {
       body: Fixture[Repr] => Unit): Unit = {
     val (testCircuit, unmountedMain) = setupDiodeWithComponent(model)
     ReactTestUtils.withRenderedIntoBody(unmountedMain) { mounted =>
-      val mainViewNode = mounted.getDOMNode()
+      val mainViewNode = mounted.getDOMNode
       val domNodeInfo = domNodeInfoProvider(mainViewNode)
       val mainViewInfo = extractMainViewInfo(domNodeInfo)
       val fixture = new Fixture(testCircuit, mainViewNode, mainViewInfo)
@@ -189,9 +189,9 @@ class BasicSpec extends SyncSpecBase {
       loadContentsButton: Repr, processDataButton: Repr,
       saveResultsButton: Repr, codingResult: Repr)
 
-  def dummyTag(): (String, ReactElement) = {
+  def dummyTag(): (String, VdomElement) = {
     val guid = java.util.UUID.randomUUID().toString
-    (guid, Tags.noscript(Attrs.id := guid).render)
+    (guid, HtmlTags.noscript(HtmlAttrs.id := guid).render)
   }
 
   class TestCircuit[Model <: AnyRef](val initialModel: Model)
@@ -209,8 +209,8 @@ class BasicSpec extends SyncSpecBase {
 
   implicit object aType extends ActionType[Any]
 
-  def setupDiodeWithComponent(
-      model: MainModel): (TestCircuit[MainModel], ReactElement) = {
+  def setupDiodeWithComponent(model: MainModel)
+    : (TestCircuit[MainModel], Unmounted[MainView.Props, Unit, Unit]) = {
     val testCircuit = new TestCircuit(model)
     val unmountedMain = MainView(
       ModelProxy(testCircuit.zoom(x => x), testCircuit.dispatch[Any],

@@ -21,6 +21,7 @@
 package pl.tarsa.tarsalzp.ui.backend
 
 import akka.actor.ActorRef
+import bindings.eligrey.FileSaver
 import diode._
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
@@ -42,18 +43,16 @@ import scala.concurrent.Promise
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
-import scalajs.bindings.eligrey.FileSaver
 
 class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
-                           compressionActor: ActorRef)
+    compressionActor: ActorRef)
     extends ActionHandler(modelRW) {
 
   type IdleStateActionHandler =
     PartialFunction[(IdleStateAction, IdleStateViewData), ActionResult[M]]
 
-  type CodingInProgressActionHandler =
-    PartialFunction[(CodingInProgressAction, CodingInProgressViewData),
-                    ActionResult[M]]
+  type CodingInProgressActionHandler = PartialFunction[
+      (CodingInProgressAction, CodingInProgressViewData), ActionResult[M]]
 
   override protected val handle: PartialFunction[Any, ActionResult[M]] = {
     val liftedIdleStateActionHandler =
@@ -163,11 +162,8 @@ object MainActionHandler {
     println("Saved!")
   }
 
-  def startProcessingData(
-      mode: ProcessingMode,
-      inputArray: Uint8Array,
-      options: Options,
-      chunkSize: Int,
+  def startProcessingData(mode: ProcessingMode, inputArray: Uint8Array,
+      options: Options, chunkSize: Int,
       compressionActor: ActorRef): Option[CodingInProgressViewData] = {
     mode match {
       case withCodingMode: WithCodingMode =>
@@ -185,8 +181,7 @@ object MainActionHandler {
   }
 
   def processingFinished(codingInProgressViewData: CodingInProgressViewData,
-                         endTime: js.Date,
-                         resultBlob: dom.Blob): IdleStateViewData = {
+      endTime: js.Date, resultBlob: dom.Blob): IdleStateViewData = {
     import codingInProgressViewData._
     val (totalSymbols, compressedSize) =
       mode match {

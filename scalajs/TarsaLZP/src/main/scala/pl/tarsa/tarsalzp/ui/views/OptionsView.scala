@@ -23,7 +23,7 @@ package pl.tarsa.tarsalzp.ui.views
 import diode.react.ModelProxy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.LogLifecycle
-import japgolly.scalajs.react.vdom.prefix_<^._
+import japgolly.scalajs.react.vdom.html_<^._
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainAction.UpdateOptions
 
@@ -35,9 +35,9 @@ object OptionsView {
     val options = p.proxy()
 
     def make(description: String, loadValue: Options => Int,
-      saveValue: (Options, Int) => Options): LabelledSpinner = {
+        saveValue: (Options, Int) => Options): LabelledSpinner = {
 
-      def updateAction(e: ReactEventI) =
+      def updateAction(e: ReactEventFromInput) =
         p.proxy.dispatchCB(UpdateOptions(saveValue(_, e.target.valueAsNumber)))
 
       LabelledSpinner(loadValue(options), description, updateAction,
@@ -63,15 +63,13 @@ object OptionsView {
 
     def table = {
       val labelledSpinners =
-        Seq(lzpLowContextLength, lzpLowMaskSize,
-          lzpHighContextLength, lzpHighMaskSize, literalCoderOrder,
-          literalCoderInit, literalCoderStep, literalCoderLimit
-        ).map {
-          labelledSpinner =>
-            <.tr(
-              <.td(labelledSpinner.label),
-              <.td(labelledSpinner.spinner)
-            )
+        Seq(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength,
+          lzpHighMaskSize, literalCoderOrder, literalCoderInit,
+          literalCoderStep, literalCoderLimit).map { labelledSpinner =>
+          <.tr(
+            <.td(labelledSpinner.label),
+            <.td(labelledSpinner.spinner)
+          )
         }
       val statusRow = <.tr(
         <.td("Options status:"),
@@ -93,12 +91,13 @@ object OptionsView {
     table
   }
 
-  private val component = ReactComponentB[Props]("OptionsView")
+  private val component = ScalaComponent
+    .builder[Props]("OptionsView")
     .stateless
     .render_P(render)
     .configure(LogLifecycle.short)
     .build
 
-  def apply(proxy: ModelProxy[Options]): ReactElement =
+  def apply(proxy: ModelProxy[Options]): VdomElement =
     component(Props(proxy))
 }
