@@ -45,6 +45,7 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
   ShowOptions
 }
 
+import scala.concurrent.duration.Duration
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
@@ -119,8 +120,10 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
       }
   }
 
-  def continueProcessing(): Unit =
-    self ! ContinueProcessing
+  def continueProcessing(): Unit = {
+    context.system.scheduler.scheduleOnce(Duration.Zero, self,
+      ContinueProcessing)(context.dispatcher)
+  }
 
   override def unhandled(message: Any): Unit = {
     val errorMessage = s"Message $message is unknown to ${getClass.getName} " +
@@ -131,10 +134,8 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
 }
 
 object CompressionActor {
-  case class ProcessRequest(mode: ProcessingMode,
-                            inputArray: Uint8Array,
-                            options: Options,
-                            chunkSize: Int)
+  case class ProcessRequest(mode: ProcessingMode, inputArray: Uint8Array,
+      options: Options, chunkSize: Int)
 
   protected object InternalMessages {
     case object ContinueProcessing
