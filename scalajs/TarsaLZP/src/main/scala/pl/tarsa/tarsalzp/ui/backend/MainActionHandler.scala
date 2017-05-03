@@ -22,7 +22,7 @@ package pl.tarsa.tarsalzp.ui.backend
 
 import akka.actor.ActorRef
 import bindings.eligrey.FileSaver
-import diode._
+import diode.{ActionHandler, ActionResult, Effect, ModelRW}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
 import pl.tarsa.tarsalzp.compression.options.Options

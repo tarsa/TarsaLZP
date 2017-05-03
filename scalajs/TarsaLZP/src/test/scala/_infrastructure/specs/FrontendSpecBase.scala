@@ -32,7 +32,7 @@ class FrontendSpecBase extends SyncSpecBase {
 
   def findChildByClassName(parent: dom.Element,
       className: String): dom.Element = {
-    import dom.ext._
+    import dom.ext.PimpedNodeList
     val element =
       (parent.getElementsByClassName(className): Seq[dom.Node]) match {
         case Seq(theOne) =>

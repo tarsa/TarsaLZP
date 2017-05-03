@@ -28,7 +28,7 @@ import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   IdleStateViewData
 }
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{DecodingMode, EncodingMode}
-import pl.tarsa.tarsalzp.ui.backend._
+import pl.tarsa.tarsalzp.ui.backend.{MainModel, MainStateHolder}
 import pl.tarsa.tarsalzp.ui.util.DiodeTypes.DiodeWrapperU
 import pl.tarsa.tarsalzp.ui.util.{LoggingProcessor, RafBatcher}
 import pl.tarsa.tarsalzp.ui.views.ChartView.Model

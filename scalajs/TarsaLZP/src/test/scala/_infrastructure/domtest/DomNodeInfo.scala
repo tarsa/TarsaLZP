@@ -26,10 +26,10 @@ import _infrastructure.domtest.DomNodeInfo.{
   NodeProperty
 }
 import org.scalajs.dom
-import org.scalajs.dom.ext._
-import org.scalatest.AppendedClues._
+import org.scalajs.dom.ext.{Attributes, PimpedNodeList}
+import org.scalatest.AppendedClues.convertToClueful
 import org.scalatest.Assertion
-import org.scalatest.Inspectors._
+import org.scalatest.Inspectors.forEvery
 import org.scalatest.MustMatchers._
 
 import scala.collection.mutable

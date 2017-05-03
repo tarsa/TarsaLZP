@@ -21,10 +21,10 @@
 package pl.tarsa.tarsalzp.ui.views
 
 import diode.react.ModelProxy
-import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.html_<^._
+import japgolly.scalajs.react.{ReactEventFromInput, ScalaComponent}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{

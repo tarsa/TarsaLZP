@@ -21,7 +21,7 @@
 package pl.tarsa.tarsalzp.ui.views
 
 import diode.react.ModelProxy
-import japgolly.scalajs.react._
+import japgolly.scalajs.react.ScalaComponent
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.html_<^._
 import pl.tarsa.tarsalzp.compression.options.Options
