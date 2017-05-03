@@ -38,7 +38,7 @@ object OptionsView {
         saveValue: Int => Options.Updater) = {
       def updateAction(value: Int) =
         p.proxy.dispatchCB(UpdateOptions(saveValue(value)))
-      val labelledNumberInput = LabelledSpinner.forInts(loadValue(options),
+      val labelledNumberInput = LabelledNumberInput.forInts(loadValue(options),
         description, updateAction, disabled = false)
       <.tr(
         <.td(labelledNumberInput.label),

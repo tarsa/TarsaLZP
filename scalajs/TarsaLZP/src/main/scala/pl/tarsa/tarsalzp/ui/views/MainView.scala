@@ -69,12 +69,12 @@ object MainView {
 
     val busy = foldTask(_.loadingInProgress, _ => true)
 
-    val chunkSizeLabelledSpinner = {
+    val chunkSizeControl = {
       val onChangeAction = (value: Int) =>
         p.proxy.dispatchCB(ChangeChunkSize(value))
-      val labelledSpinner = LabelledSpinner
+      val labelledNumberInput = LabelledNumberInput
         .forInts(data.chunkSize, "Chunk size", onChangeAction, busy)
-      <.div(labelledSpinner.label, labelledSpinner.numberInput)
+      <.div(labelledNumberInput.label, labelledNumberInput.numberInput)
     }
 
     val fileChooser =
@@ -201,7 +201,7 @@ object MainView {
     }
 
     <.div(
-      chunkSizeLabelledSpinner,
+      chunkSizeControl,
       <.br(),
       p.optionsView,
       <.div(

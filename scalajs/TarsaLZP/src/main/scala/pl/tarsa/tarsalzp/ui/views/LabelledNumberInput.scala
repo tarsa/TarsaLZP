@@ -26,22 +26,21 @@ import japgolly.scalajs.react.{Callback, ReactEventFromInput}
 import org.scalajs.dom.html
 import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
-// TODO rename to LabelledNumberInput
-class LabelledSpinner(
+class LabelledNumberInput(
     val label: VdomTagOf[html.Label],
     val numberInput: VdomTagOf[html.Input]
 )
 
-object LabelledSpinner {
+object LabelledNumberInput {
   abstract class Builder[T: Numeric](implicit t: ValueType[T, Any]) {
     def convertValue(number: Double): T
 
     def apply(value: T, description: String, onChangeAction: T => Callback,
-        disabled: Boolean): LabelledSpinner = {
+        disabled: Boolean): LabelledNumberInput = {
       val onChange = (event: ReactEventFromInput) =>
         onChangeAction(convertValue(event.target.value.toDouble))
       val id = IdsGenerator.freshUnique()
-      new LabelledSpinner(
+      new LabelledNumberInput(
         <.label(^.`for` := id, s"$description:"),
         <.input(^.id := id, ^.`type` := "number", ^.value := value,
           ^.disabled := disabled, ^.onChange ==> onChange)
