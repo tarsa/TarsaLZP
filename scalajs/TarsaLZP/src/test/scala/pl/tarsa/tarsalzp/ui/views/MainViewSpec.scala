@@ -53,19 +53,24 @@ class MainViewSpec extends SyncSpecBase {
     withModel(Models.initialModel) { fixture =>
       import fixture._
       import mainViewInfo._
-      inside(chunkSize) {
+      inside(chunkSizeControl) {
         case H.div(H.label(chunkSizeLabelText @ N.text()),
             chunkSizeSpinner @ H.input()) =>
           chunkSizeLabelText.mustHaveProps(F.wholeText("Chunk size:"))
           chunkSizeSpinner.mustHaveProps(A.value(345))
       }
-      val H.span(H.label(encodeLabelText @ N.text()), H.input()) = encode
-      encodeLabelText.mustHaveProps(F.wholeText("Encode"))
-      val H.span(H.label(decodeLabelText @ N.text()), H.input()) = decode
-      decodeLabelText.mustHaveProps(F.wholeText("Decode"))
-      val H.span(H.label(showOptionsLabelText @ N.text()), H.input()) =
-        showOptions
-      showOptionsLabelText.mustHaveProps(F.wholeText("Show options"))
+      inside(encodeControl) {
+        case H.span(H.label(encodeLabelText @ N.text()), H.input()) =>
+          encodeLabelText.mustHaveProps(F.wholeText("Encode"))
+      }
+      inside(decodeControl) {
+        case H.span(H.label(decodeLabelText @ N.text()), H.input()) =>
+          decodeLabelText.mustHaveProps(F.wholeText("Decode"))
+      }
+      inside(showOptionsControl) {
+        case H.span(H.label(showOptionsLabelText @ N.text()), H.input()) =>
+          showOptionsLabelText.mustHaveProps(F.wholeText("Show options"))
+      }
       fileChooser.mustHaveProps(A.`type`("file"))
       loadContentsButton.mustHaveProps(A.`type`("button"),
         A.value("Load contents from file"), F.disabled(true))
@@ -146,13 +151,13 @@ class MainViewSpec extends SyncSpecBase {
       domNodeInfo: Repr): MainViewInfo[Repr] = {
     inside(domNodeInfo) {
       case H.div(
-          chunkSize @ H.div(_ *),
+          chunkSizeControl @ H.div(_ *),
           H.br(),
           H.noscript(),
           H.div(
-            encode @ H.span(_ *),
-            decode @ H.span(_ *),
-            showOptions @ H.span(_ *)
+            encodeControl @ H.span(_ *),
+            decodeControl @ H.span(_ *),
+            showOptionsControl @ H.span(_ *)
           ),
           H.div(
             fileChooser @ H.input(),
@@ -164,15 +169,15 @@ class MainViewSpec extends SyncSpecBase {
           H.div(H.noscript()),
           codingResult @ H.div(_ *)
           ) =>
-        MainViewInfo(chunkSize, encode, decode, showOptions, fileChooser,
-          loadContentsButton, processDataButton, saveResultsButton,
-          codingResult)
+        MainViewInfo(chunkSizeControl, encodeControl, decodeControl,
+          showOptionsControl, fileChooser, loadContentsButton,
+          processDataButton, saveResultsButton, codingResult)
     }
   }
 
-  case class MainViewInfo[Repr <: DomNodeInfo[Repr]](chunkSize: Repr,
-      encode: Repr, decode: Repr, showOptions: Repr, fileChooser: Repr,
-      loadContentsButton: Repr, processDataButton: Repr,
+  case class MainViewInfo[Repr <: DomNodeInfo[Repr]](chunkSizeControl: Repr,
+      encodeControl: Repr, decodeControl: Repr, showOptionsControl: Repr,
+      fileChooser: Repr, loadContentsButton: Repr, processDataButton: Repr,
       saveResultsButton: Repr, codingResult: Repr)
 
   def dummyTag(): (String, VdomElement) = {
