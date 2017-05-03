@@ -61,5 +61,6 @@ object Extractor {
     val input: EX = make("input")
     val label: EX = make("label")
     val noscript: EX = make("noscript")
+    val span: EX = make("span")
   }
 }

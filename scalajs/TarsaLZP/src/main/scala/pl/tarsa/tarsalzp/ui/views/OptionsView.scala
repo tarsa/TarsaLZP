@@ -34,61 +34,42 @@ object OptionsView {
   private def render(p: Props) = {
     val options = p.proxy()
 
-    def make(description: String, loadValue: Options => Int,
-        saveValue: (Options, Int) => Options): LabelledSpinner = {
-
-      def updateAction(e: ReactEventFromInput) =
-        p.proxy.dispatchCB(UpdateOptions(saveValue(_, e.target.valueAsNumber)))
-
-      LabelledSpinner(loadValue(options), description, updateAction,
-        disabled = false)
+    def optionInput(description: String, loadValue: Options => Int,
+        saveValue: Int => Options.Updater) = {
+      def updateAction(value: Int) =
+        p.proxy.dispatchCB(UpdateOptions(saveValue(value)))
+      val labelledNumberInput = LabelledSpinner.forInts(loadValue(options),
+        description, updateAction, disabled = false)
+      <.tr(
+        <.td(labelledNumberInput.label),
+        <.td(labelledNumberInput.numberInput)
+      )
     }
 
-    def lzpLowContextLength = make("LZP Low Context Length",
-      _.lzpLowContextLength, (o, v) => o.copy(lzpLowContextLength = v))
-    def lzpLowMaskSize = make("LZP Low Mask Size",
-      _.lzpLowMaskSize, (o, v) => o.copy(lzpLowMaskSize = v))
-    def lzpHighContextLength = make("LZP High Context Length",
-      _.lzpHighContextLength, (o, v) => o.copy(lzpHighContextLength = v))
-    def lzpHighMaskSize = make("LZP High Mask Size",
-      _.lzpHighMaskSize, (o, v) => o.copy(lzpHighMaskSize = v))
-    def literalCoderOrder = make("Literal Coder Order",
-      _.literalCoderOrder, (o, v) => o.copy(literalCoderOrder = v))
-    def literalCoderInit = make("Literal Coder Init",
-      _.literalCoderInit, (o, v) => o.copy(literalCoderInit = v))
-    def literalCoderStep = make("Literal Coder Step",
-      _.literalCoderStep, (o, v) => o.copy(literalCoderStep = v))
-    def literalCoderLimit = make("Literal Coder Limit",
-      _.literalCoderLimit, (o, v) => o.copy(literalCoderLimit = v))
+    val parameters = {
+      import Options.Updater._
+      TagMod(
+        optionInput("LZP Low Context Length", _.lzpLowContextLength,
+          NewLzpLowContextLength),
+        optionInput("LZP Low Mask Size", _.lzpLowMaskSize, NewLzpLowMaskSize),
+        optionInput("LZP High Context Length", _.lzpHighContextLength, NewLzpHighContextLength),
+        optionInput("LZP High Mask Size", _.lzpHighMaskSize, NewLzpHighMaskSize),
+        optionInput("Literal Coder Order", _.literalCoderOrder, NewLiteralCoderOrder),
+        optionInput("Literal Coder Init", _.literalCoderInit, NewLiteralCoderInit),
+        optionInput("Literal Coder Step", _.literalCoderStep, NewLiteralCoderStep),
+        optionInput("Literal Coder Limit", _.literalCoderLimit, NewLiteralCoderLimit)
+      )
+    }
 
-    def table = {
-      val labelledSpinners =
-        Seq(lzpLowContextLength, lzpLowMaskSize, lzpHighContextLength,
-          lzpHighMaskSize, literalCoderOrder, literalCoderInit,
-          literalCoderStep, literalCoderLimit).map { labelledSpinner =>
-          <.tr(
-            <.td(labelledSpinner.label),
-            <.td(labelledSpinner.spinner)
-          )
-        }
-      val statusRow = <.tr(
+    val statusRow =
+      <.tr(
         <.td("Options status:"),
-        <.td(
-          if (options.isValid) {
-            "Valid"
-          } else {
-            "Invalid"
-          }
-        )
+        <.td(if (options.isValid) "Valid" else "Invalid")
       )
-      <.table(
-        <.tbody(
-          labelledSpinners :+ statusRow: _*
-        )
-      )
-    }
 
-    table
+    <.table(
+      <.tbody(parameters, statusRow)
+    )
   }
 
   private val component = ScalaComponent

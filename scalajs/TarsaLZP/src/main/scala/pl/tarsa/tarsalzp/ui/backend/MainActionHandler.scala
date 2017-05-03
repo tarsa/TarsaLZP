@@ -101,8 +101,8 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
   }
 
   private def idleStateActionHandler: IdleStateActionHandler = {
-    case (UpdateOptions(modify), _) =>
-      updated(value.copy(options = modify(value.options)))
+    case (UpdateOptions(updater), _) =>
+      updated(value.copy(options = updater.run(value.options)))
     case (ChangeChunkSize(newChunkSize), _) =>
       updated(value.copy(chunkSize = newChunkSize))
     case (ChangedMode(newMode), idleStateViewData) =>

@@ -34,7 +34,7 @@ sealed trait MainAction extends Action
 object MainAction {
   sealed trait IdleStateAction extends MainAction
 
-  case class UpdateOptions(modify: Options => Options) extends IdleStateAction
+  case class UpdateOptions(updater: Options.Updater) extends IdleStateAction
 
   case class ChangeChunkSize(newChunkSize: Int) extends IdleStateAction
 

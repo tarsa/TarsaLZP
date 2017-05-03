@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -21,31 +21,31 @@
 package pl.tarsa.tarsalzp.compression.options
 
 case class Options(
-  lzpLowContextLength: Int,
-  lzpLowMaskSize: Int,
-  lzpHighContextLength: Int,
-  lzpHighMaskSize: Int,
-  literalCoderOrder: Int,
-  literalCoderInit: Int,
-  literalCoderStep: Int,
-  literalCoderLimit: Int
+    lzpLowContextLength: Int,
+    lzpLowMaskSize: Int,
+    lzpHighContextLength: Int,
+    lzpHighMaskSize: Int,
+    literalCoderOrder: Int,
+    literalCoderInit: Int,
+    literalCoderStep: Int,
+    literalCoderLimit: Int
 ) {
   def isValid: Boolean = {
     lzpLowContextLength > literalCoderOrder &&
-      lzpLowContextLength <= lzpHighContextLength &&
-      lzpHighContextLength <= 8 &&
-      lzpLowMaskSize >= 15 &&
-      lzpLowMaskSize <= 30 &&
-      lzpHighMaskSize >= 15 &&
-      lzpHighMaskSize <= 30 &&
-      literalCoderOrder >= 1 &&
-      literalCoderOrder <= 2 &&
-      literalCoderInit >= 1 &&
-      literalCoderInit <= 127 &&
-      literalCoderStep >= 1 &&
-      literalCoderStep <= 127 &&
-      literalCoderLimit >= literalCoderInit * 256 &&
-      literalCoderLimit <= 32767 - literalCoderStep
+    lzpLowContextLength <= lzpHighContextLength &&
+    lzpHighContextLength <= 8 &&
+    lzpLowMaskSize >= 15 &&
+    lzpLowMaskSize <= 30 &&
+    lzpHighMaskSize >= 15 &&
+    lzpHighMaskSize <= 30 &&
+    literalCoderOrder >= 1 &&
+    literalCoderOrder <= 2 &&
+    literalCoderInit >= 1 &&
+    literalCoderInit <= 127 &&
+    literalCoderStep >= 1 &&
+    literalCoderStep <= 127 &&
+    literalCoderLimit >= literalCoderInit * 256 &&
+    literalCoderLimit <= 32767 - literalCoderStep
   }
 
   def toPacked: Long = {
@@ -82,7 +82,7 @@ case class Options(
 }
 
 object Options {
-  val default = {
+  val default: Options = {
     Options(
       lzpLowContextLength = 4,
       lzpLowMaskSize = 24,
@@ -106,5 +106,33 @@ object Options {
       (packed >> 16).toInt & 0xff,
       packed.toInt & 0xffff
     )
+  }
+
+  sealed abstract class Updater private (val run: Options => Options)
+
+  object Updater {
+    case class NewLzpLowContextLength(value: Int)
+        extends Updater(_.copy(lzpLowContextLength = value))
+
+    case class NewLzpLowMaskSize(value: Int)
+        extends Updater(_.copy(lzpLowMaskSize = value))
+
+    case class NewLzpHighContextLength(value: Int)
+        extends Updater(_.copy(lzpHighContextLength = value))
+
+    case class NewLzpHighMaskSize(value: Int)
+        extends Updater(_.copy(lzpHighMaskSize = value))
+
+    case class NewLiteralCoderOrder(value: Int)
+        extends Updater(_.copy(literalCoderOrder = value))
+
+    case class NewLiteralCoderInit(value: Int)
+        extends Updater(_.copy(literalCoderInit = value))
+
+    case class NewLiteralCoderStep(value: Int)
+        extends Updater(_.copy(literalCoderStep = value))
+
+    case class NewLiteralCoderLimit(value: Int)
+        extends Updater(_.copy(literalCoderLimit = value))
   }
 }

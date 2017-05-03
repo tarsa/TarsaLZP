@@ -42,16 +42,23 @@ import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
 import scala.scalajs.js
 
+/*
+scalafmt: {
+  style = default
+  binPack.defnSite = true
+  binPack.callSite = false
+}
+ */
 object MainView {
 
   case class Props(proxy: ModelProxy[MainModel], optionsView: VdomElement,
-    chartView: VdomElement)
+      chartView: VdomElement)
 
   private def render(p: Props) = {
     val data = p.proxy()
 
     def foldTask[T](onIdle: IdleStateViewData => T,
-      onCoding: CodingInProgressViewData => T): T = {
+        onCoding: CodingInProgressViewData => T): T = {
       data.taskViewData match {
         case codingState: CodingInProgressViewData =>
           onCoding(codingState)
@@ -63,8 +70,11 @@ object MainView {
     val busy = foldTask(_.loadingInProgress, _ => true)
 
     val chunkSizeLabelledSpinner = {
-      LabelledSpinner(data.chunkSize, "Chunk size", event =>
-        p.proxy.dispatchCB(ChangeChunkSize(event.target.valueAsNumber)), busy)
+      val onChangeAction = (value: Int) =>
+        p.proxy.dispatchCB(ChangeChunkSize(value))
+      val labelledSpinner = LabelledSpinner
+        .forInts(data.chunkSize, "Chunk size", onChangeAction, busy)
+      <.div(labelledSpinner.label, labelledSpinner.numberInput)
     }
 
     val fileChooser =
@@ -85,26 +95,30 @@ object MainView {
         ^.disabled := busy ||
           foldTask(_ => data.chosenFileOpt.isEmpty, _ => true),
         ^.value := "Load contents from file",
-        ^.onClick --> p.proxy.dispatchCB(LoadFile))
+        ^.onClick --> p.proxy.dispatchCB(LoadFile)
+      )
     val processButton =
       <.input(
         ^.className := "temp_processButton",
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.inputArrayOpt.isEmpty, _ => true),
         ^.value := "Process data",
-        ^.onClick --> p.proxy.dispatchCB(StartProcessing))
+        ^.onClick --> p.proxy.dispatchCB(StartProcessing)
+      )
     val saveButton =
       <.input(
         ^.className := "temp_saveButton",
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.codingResultOpt.isEmpty, _ => true),
         ^.value := "Save results to file",
-        ^.onClick --> p.proxy.dispatchCB(SaveFile))
+        ^.onClick --> p.proxy.dispatchCB(SaveFile)
+      )
 
     def makeModeSwitch(value: String, description: String,
-      mode: ProcessingMode) = {
+        mode: ProcessingMode) = {
       val id = IdsGenerator.freshUnique()
-      val input =
+      <.span(
+        <.label(^.`for` := id, description),
         <.input(
           ^.className := s"temp_modeSwitch_$value",
           ^.id := id,
@@ -115,11 +129,7 @@ object MainView {
           ^.value := value,
           ^.onChange --> p.proxy.dispatchCB(ChangedMode(mode))
         )
-      val label =
-        <.label(
-          ^.`for` := id,
-          description)
-      (input, label)
+      )
     }
 
     val encodeLabelledButton = makeModeSwitch("encode", "Encode", EncodingMode)
@@ -128,7 +138,7 @@ object MainView {
       makeModeSwitch("showOptions", "Show options", ShowOptions)
 
     def codingTimeline(totalSymbolsOpt: Option[Int],
-      timeline: Seq[ChunkCodingMeasurement]) = {
+        timeline: Seq[ChunkCodingMeasurement]) = {
       <.div(s"Chunks number: ${timeline.size}")
     }
 
@@ -155,14 +165,16 @@ object MainView {
             codingTimeline(totalSymbolsOpt, coding.codingTimeline),
             <.div("Coding in progress:"),
             <.div(s"Coding mode: ${coding.mode}"),
-            <.div("Input progress:",
+            <.div(
+              "Input progress:",
               <.progress(^.value := coding.inputStreamPosition,
-                ^.max := coding.inputBufferLength),
+                         ^.max := coding.inputBufferLength),
               s"${coding.inputStreamPosition} / " +
                 s"${coding.inputBufferLength} bytes"
             ),
-            <.div("Output progress: " +
-              s"${coding.outputStreamPosition} / ??? bytes"),
+            <.div(
+              "Output progress: " +
+                s"${coding.outputStreamPosition} / ??? bytes"),
             <.div(s"Coding start time: ${coding.startTime}"),
             <.div(f"Elapsed milliseconds: $elapsedMillis%.1f"),
             <.div(f"Coding speed: $speed%.1f symbols / second")
@@ -173,7 +185,7 @@ object MainView {
           val speed = codingResult.totalSymbols / (elapsedMillis / 1000.0)
           <.div(
             codingTimeline(Some(codingResult.totalSymbols),
-              codingResult.codingTimeline),
+                           codingResult.codingTimeline),
             <.div("Coding result:"),
             <.div(s"Coding mode: ${codingResult.mode}"),
             <.div(s"Coding start time: ${codingResult.startTime}"),
@@ -189,40 +201,35 @@ object MainView {
     }
 
     <.div(
-      TagMod(
-        chunkSizeLabelledSpinner.label,
-        chunkSizeLabelledSpinner.spinner,
-        <.br(), <.br(),
-        p.optionsView
-      )(
-        encodeLabelledButton._1,
-        encodeLabelledButton._2,
-        decodeLabelledButton._1,
-        decodeLabelledButton._2,
-        showOptionsLabelledButton._1,
-        showOptionsLabelledButton._2
-      )(
-        <.br(),
+      chunkSizeLabelledSpinner,
+      <.br(),
+      p.optionsView,
+      <.div(
+        encodeLabelledButton,
+        decodeLabelledButton,
+        showOptionsLabelledButton
+      ),
+      <.div(
         fileChooser,
         loadButton,
         processButton,
-        saveButton,
-        <.br(), <.br(), <.br(),
-        <.div(p.chartView),
-        codingResultInfo
-      )
+        saveButton
+      ),
+      <.br(),
+      <.div(p.chartView),
+      codingResultInfo
     )
   }
 
   private val component =
-    ScalaComponent.builder[Props]("MainView")
+    ScalaComponent
+      .builder[Props]("MainView")
       .stateless
       .render_P(render)
       .configure(LogLifecycle.short)
       .build
 
-  def apply(proxy: ModelProxy[MainModel],
-    optionsView: VdomElement,
-    chartView: VdomElement): Unmounted[Props, Unit, Unit] =
+  def apply(proxy: ModelProxy[MainModel], optionsView: VdomElement,
+      chartView: VdomElement): Unmounted[Props, Unit, Unit] =
     component(Props(proxy, optionsView, chartView))
 }

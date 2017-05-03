@@ -53,11 +53,18 @@ class MainViewSpec extends SyncSpecBase {
     withModel(Models.initialModel) { fixture =>
       import fixture._
       import mainViewInfo._
-      chunkSizeLabelText.mustHaveProps(F.wholeText("Chunk size:"))
-      chunkSizeSpinner.mustHaveProps(A.value(345))
+      inside(chunkSize) {
+        case H.div(H.label(chunkSizeLabelText @ N.text()),
+            chunkSizeSpinner @ H.input()) =>
+          chunkSizeLabelText.mustHaveProps(F.wholeText("Chunk size:"))
+          chunkSizeSpinner.mustHaveProps(A.value(345))
+      }
+      val H.span(H.label(encodeLabelText @ N.text()), H.input()) = encode
       encodeLabelText.mustHaveProps(F.wholeText("Encode"))
+      val H.span(H.label(decodeLabelText @ N.text()), H.input()) = decode
       decodeLabelText.mustHaveProps(F.wholeText("Decode"))
-      decodeLabelText.mustHaveProps(F.wholeText("Decode"))
+      val H.span(H.label(showOptionsLabelText @ N.text()), H.input()) =
+        showOptions
       showOptionsLabelText.mustHaveProps(F.wholeText("Show options"))
       fileChooser.mustHaveProps(A.`type`("file"))
       loadContentsButton.mustHaveProps(A.`type`("button"),
@@ -139,55 +146,32 @@ class MainViewSpec extends SyncSpecBase {
       domNodeInfo: Repr): MainViewInfo[Repr] = {
     inside(domNodeInfo) {
       case H.div(
-          chunkSizeLabel @ H.label(chunkSizeLabelText @ N.text()),
-          chunkSizeSpinner @ H.input(),
-          H.br(),
+          chunkSize @ H.div(_ *),
           H.br(),
           H.noscript(),
-          encodeRadio @ H.input(),
-          encodeLabel @ H.label(encodeLabelText @ N.text()),
-          decodeRadio @ H.input(),
-          decodeLabel @ H.label(decodeLabelText @ N.text()),
-          showOptionsRadio @ H.input(),
-          showOptionsLabel @ H.label(showOptionsLabelText @ N.text()),
-          H.br(),
-          fileChooser @ H.input(),
-          loadContentsButton @ H.input(),
-          processDataButton @ H.input(),
-          saveResultsButton @ H.input(),
-          H.br(),
-          H.br(),
+          H.div(
+            encode @ H.span(_ *),
+            decode @ H.span(_ *),
+            showOptions @ H.span(_ *)
+          ),
+          H.div(
+            fileChooser @ H.input(),
+            loadContentsButton @ H.input(),
+            processDataButton @ H.input(),
+            saveResultsButton @ H.input()
+          ),
           H.br(),
           H.div(H.noscript()),
-          codingResult @ H.div(_)
+          codingResult @ H.div(_ *)
           ) =>
-        MainViewInfo(
-          chunkSizeLabel,
-          chunkSizeLabelText,
-          chunkSizeSpinner,
-          encodeRadio,
-          encodeLabel,
-          encodeLabelText,
-          decodeRadio,
-          decodeLabel,
-          decodeLabelText,
-          showOptionsRadio,
-          showOptionsLabel,
-          showOptionsLabelText,
-          fileChooser,
-          loadContentsButton,
-          processDataButton,
-          saveResultsButton,
-          codingResult
-        )
+        MainViewInfo(chunkSize, encode, decode, showOptions, fileChooser,
+          loadContentsButton, processDataButton, saveResultsButton,
+          codingResult)
     }
   }
 
-  case class MainViewInfo[Repr <: DomNodeInfo[Repr]](chunkSizeLabel: Repr,
-      chunkSizeLabelText: Repr, chunkSizeSpinner: Repr, encodeRadio: Repr,
-      encodeLabel: Repr, encodeLabelText: Repr, decodeRadio: Repr,
-      decodeLabel: Repr, decodeLabelText: Repr, showOptionsRadio: Repr,
-      showOptionsLabel: Repr, showOptionsLabelText: Repr, fileChooser: Repr,
+  case class MainViewInfo[Repr <: DomNodeInfo[Repr]](chunkSize: Repr,
+      encode: Repr, decode: Repr, showOptions: Repr, fileChooser: Repr,
       loadContentsButton: Repr, processDataButton: Repr,
       saveResultsButton: Repr, codingResult: Repr)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -20,25 +20,38 @@
  */
 package pl.tarsa.tarsalzp.ui.views
 
+import japgolly.scalajs.react.vdom.Attr.ValueType
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.{Callback, ReactEventFromInput}
 import org.scalajs.dom.html
 import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
+// TODO rename to LabelledNumberInput
 class LabelledSpinner(
     val label: VdomTagOf[html.Label],
-    val spinner: VdomTagOf[html.Input]
+    val numberInput: VdomTagOf[html.Input]
 )
 
 object LabelledSpinner {
-  def apply(loadValue: => Int, description: String,
-      onChangeAction: ReactEventFromInput => Callback,
-      disabled: Boolean): LabelledSpinner = {
-    val id = IdsGenerator.freshUnique()
-    val spinner =
-      <.input(^.id := id, ^.`type` := "number", ^.value := loadValue,
-        ^.onChange ==> onChangeAction, ^.disabled := disabled)
-    val label = <.label(^.`for` := id, description + ':')
-    new LabelledSpinner(label, spinner)
+  abstract class Builder[T: Numeric](implicit t: ValueType[T, Any]) {
+    def convertValue(number: Double): T
+
+    def apply(value: T, description: String, onChangeAction: T => Callback,
+        disabled: Boolean): LabelledSpinner = {
+      val onChange = (event: ReactEventFromInput) =>
+        onChangeAction(convertValue(event.target.value.toDouble))
+      val id = IdsGenerator.freshUnique()
+      new LabelledSpinner(
+        <.label(^.`for` := id, s"$description:"),
+        <.input(^.id := id, ^.`type` := "number", ^.value := value,
+          ^.disabled := disabled, ^.onChange ==> onChange)
+      )
+    }
   }
+
+  val forInts: Builder[Int] =
+    new Builder[Int] {
+      override def convertValue(number: Double): Int =
+        number.toInt
+    }
 }
