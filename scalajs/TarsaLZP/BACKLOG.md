@@ -1,4 +1,5 @@
 TODO:
+- use official updated diode-react as soon as it's released
 - write tests
   - write locators to enable elegant searching for elements in DOM
   - unit tests using React utilities for simulation
