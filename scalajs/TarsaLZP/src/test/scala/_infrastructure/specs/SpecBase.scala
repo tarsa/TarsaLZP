@@ -36,7 +36,7 @@ sealed trait SpecBase extends MustMatchers with Inside {
     }
   } =>
   def typeBehavior[T](implicit classTag: ClassTag[T]): Unit =
-    behavior of classTag.toString()
+    behavior of classTag.runtimeClass.getSimpleName
 }
 
 abstract class SyncSpecBase extends FlatSpec with SpecBase
