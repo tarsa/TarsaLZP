@@ -25,7 +25,6 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.LogLifecycle
 import japgolly.scalajs.react.vdom.prefix_<^._
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   ChunkCodingMeasurement,
@@ -38,7 +37,6 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
   ShowOptions
 }
 import pl.tarsa.tarsalzp.ui.backend._
-import pl.tarsa.tarsalzp.ui.util.DiodeTypes.DiodeWrapperU
 import pl.tarsa.tarsalzp.ui.util.{IdsGenerator, TagModJoiner}
 
 import scala.scalajs.js
@@ -70,6 +68,7 @@ object MainView {
 
     val fileChooser =
       <.input(
+        ^.className := "temp_fileChooser",
         ^.`type` := "file",
         ^.disabled := busy,
         ^.onChange ==> { (e: ReactEventI) =>
@@ -80,6 +79,7 @@ object MainView {
       )
     val loadButton =
       <.input(
+        ^.className := "temp_loadButton",
         ^.`type` := "button",
         ^.disabled := busy ||
           foldTask(_ => data.chosenFileOpt.isEmpty, _ => true),
@@ -87,12 +87,14 @@ object MainView {
         ^.onClick --> p.proxy.dispatchCB(LoadFile))
     val processButton =
       <.input(
+        ^.className := "temp_processButton",
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.inputArrayOpt.isEmpty, _ => true),
         ^.value := "Process data",
         ^.onClick --> p.proxy.dispatchCB(StartProcessing))
     val saveButton =
       <.input(
+        ^.className := "temp_saveButton",
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.codingResultOpt.isEmpty, _ => true),
         ^.value := "Save results to file",
@@ -103,6 +105,7 @@ object MainView {
       val id = IdsGenerator.freshUnique()
       val input =
         <.input(
+          ^.className := s"temp_modeSwitch_$value",
           ^.id := id,
           ^.disabled := busy,
           ^.name := "mode",
@@ -219,7 +222,7 @@ object MainView {
       .build
 
   def apply(proxy: ModelProxy[MainModel],
-    optionsView: DiodeWrapperU[Options],
-    chartView: DiodeWrapperU[ChartView.Model]): ReactElement =
+    optionsView: ReactElement,
+    chartView: ReactElement): ReactElement =
     component(Props(proxy, optionsView, chartView))
 }
