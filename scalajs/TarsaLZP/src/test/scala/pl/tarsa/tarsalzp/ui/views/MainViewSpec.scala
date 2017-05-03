@@ -40,14 +40,15 @@ import pl.tarsa.tarsalzp.ui.backend.MainAction.{
 import pl.tarsa.tarsalzp.ui.backend.MainModel.IdleStateViewData
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
 import pl.tarsa.tarsalzp.ui.backend.{MainAction, MainModel}
-import pl.tarsa.tarsalzp.ui.views.BasicSpec.Models
+import pl.tarsa.tarsalzp.ui.views.MainViewSpec.Models
 
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-// TODO rename to MainViewSpec
-class BasicSpec extends SyncSpecBase {
+class MainViewSpec extends SyncSpecBase {
+  typeBehavior[MainView.type]
+
   it must s"show initial state properly" in {
     withModel(Models.initialModel) { fixture =>
       import fixture._
@@ -238,7 +239,7 @@ class BasicSpec extends SyncSpecBase {
   }
 }
 
-object BasicSpec {
+object MainViewSpec {
   object Models {
     private val initialTaskViewData =
       IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)
