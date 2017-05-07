@@ -23,9 +23,13 @@ package _infrastructure.data
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.ui.backend.MainModel
-import pl.tarsa.tarsalzp.ui.backend.MainModel.IdleStateViewData
+import pl.tarsa.tarsalzp.ui.backend.MainModel.{
+  CodingInProgressViewData,
+  IdleStateViewData
+}
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
 
+import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
 object Models {
@@ -46,4 +50,8 @@ object Models {
   val withLoadedFile: MainModel = initialModel.copy(
       taskViewData = initialTaskViewData.copy(
           inputArrayOpt = Some(new Uint8Array(3))))
+
+  val afterStartedEncoding: MainModel = withLoadedFile.copy(
+      taskViewData = CodingInProgressViewData(EncodingMode, new Uint8Array(3),
+        3, 0, 0, new js.Date(), Seq.empty))
 }

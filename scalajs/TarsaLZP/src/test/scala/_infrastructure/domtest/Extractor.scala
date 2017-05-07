@@ -48,6 +48,7 @@ object Extractor {
     private def make(nodeName: String): EX =
       new Extractor(nodeName.toLowerCase)
 
+    val comment: EX = make("#comment")
     val text: EX = make("#text")
   }
 
@@ -61,6 +62,7 @@ object Extractor {
     val input: EX = make("input")
     val label: EX = make("label")
     val noscript: EX = make("noscript")
+    val progress: EX = make("progress")
     val span: EX = make("span")
   }
 }

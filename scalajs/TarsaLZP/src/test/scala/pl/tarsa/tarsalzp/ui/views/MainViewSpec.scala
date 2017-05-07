@@ -35,6 +35,7 @@ import pl.tarsa.tarsalzp.ui.backend.MainAction.{
   SelectedFile,
   StartProcessing
 }
+import pl.tarsa.tarsalzp.ui.backend.MainModel.CodingInProgressViewData
 import pl.tarsa.tarsalzp.ui.backend.{MainAction, MainModel}
 
 import scala.collection.mutable
@@ -43,7 +44,7 @@ import scala.scalajs.js
 class MainViewSpec extends FrontendSpecBase {
   typeBehavior[MainView.type]
 
-  it must s"show initial state properly" in {
+  it must s"show initial idle state" in {
     withModel(Models.initialModel) { fixture =>
       import fixture._
       import mainViewInfo._
@@ -54,24 +55,31 @@ class MainViewSpec extends FrontendSpecBase {
           chunkSizeSpinner.mustHaveProps(A.value(345))
       }
       inside(encodeControl) {
-        case H.span(H.label(encodeLabelText @ N.text()), H.input()) =>
-          encodeLabelText.mustHaveProps(F.wholeText("Encode"))
+        case H.span(H.label(labelText @ N.text()), radioButton @ H.input()) =>
+          labelText.mustHaveProps(F.wholeText("Encode"))
+          radioButton.mustHaveProps(F.checked(true))
       }
       inside(decodeControl) {
-        case H.span(H.label(decodeLabelText @ N.text()), H.input()) =>
-          decodeLabelText.mustHaveProps(F.wholeText("Decode"))
+        case H.span(H.label(labelText @ N.text()), radioButton @ H.input()) =>
+          labelText.mustHaveProps(F.wholeText("Decode"))
+          radioButton.mustHaveProps(F.checked(false))
       }
       inside(showOptionsControl) {
-        case H.span(H.label(showOptionsLabelText @ N.text()), H.input()) =>
-          showOptionsLabelText.mustHaveProps(F.wholeText("Show options"))
+        case H.span(H.label(labelText @ N.text()), radioButton @ H.input()) =>
+          labelText.mustHaveProps(F.wholeText("Show options"))
+          radioButton.mustHaveProps(F.checked(false))
       }
-      fileChooser.mustHaveProps(A.`type`("file"))
-      loadContentsButton.mustHaveProps(A.`type`("button"),
+      fileChooser.mustHaveProps(A.tpe("file"))
+      loadContentsButton.mustHaveProps(A.tpe("button"),
         A.value("Load contents from file"), F.disabled(true))
-      processDataButton.mustHaveProps(A.`type`("button"),
-        A.value("Process data"), F.disabled(true))
-      saveResultsButton.mustHaveProps(A.`type`("button"),
+      processDataButton.mustHaveProps(A.tpe("button"), A.value("Process data"),
+        F.disabled(true))
+      saveResultsButton.mustHaveProps(A.tpe("button"),
         A.value("Save results to file"), F.disabled(true))
+      inside(codingResult) {
+        case H.div(text @ N.text()) =>
+          text.mustHaveProps(F.wholeText("No coding result"))
+      }
     }
   }
 
@@ -121,6 +129,39 @@ class MainViewSpec extends FrontendSpecBase {
     }
   }
 
+  it must "show initial encoding state" in {
+    val model = Models.afterStartedEncoding
+    val viewData = model.taskViewData.asInstanceOf[CodingInProgressViewData]
+    withModel(model) { fixture =>
+      import fixture._
+      import mainViewInfo._
+      val progressRow = inside(codingResult) {
+        case H.div(H.div(row1 @ N.text()), H.div(row2 @ N.text()),
+            H.div(row3 @ N.text()), progressRow @ H.div(_ *),
+            H.div(row5 @ N.text()), H.div(row6 @ N.text()),
+            H.div(row7 @ N.text()), H.div(row8 @ N.text())) =>
+          row1.mustHaveProps(F.wholeText("Chunks number: 0"))
+          row2.mustHaveProps(F.wholeText("Coding in progress:"))
+          row3.mustHaveProps(F.wholeText("Coding mode: EncodingMode"))
+          row5.mustHaveProps(F.wholeText("Output progress: 0 / ??? bytes"))
+          val startTime = viewData.startTime
+          row6.mustHaveProps(F.wholeText(s"Coding start time: $startTime"))
+          row7.propFor(F.wholeText).get must fullyMatch regex
+            """Elapsed milliseconds: \d*\.\d"""
+          row8.mustHaveProps(F.wholeText("Coding speed: 0.0 symbols / second"))
+          progressRow
+      }
+      inside(progressRow) {
+        case H.div(N.comment(), leftText @ N.text(), N.comment(),
+            progressBar @ H.progress(), N.comment(), rightText @ N.text(),
+            N.comment()) =>
+          leftText.mustHaveProps(F.wholeText("Input progress:"))
+          progressBar.mustHaveProps(A.value(0), A.max(3))
+          rightText.mustHaveProps(F.wholeText("0 / 3 bytes"))
+      }
+    }
+  }
+
   def extractMainViewInfo[Repr <: DomNodeInfo[Repr]](
       domNodeInfo: Repr): MainViewInfo[Repr] = {
     inside(domNodeInfo) {
@@ -128,17 +169,10 @@ class MainViewSpec extends FrontendSpecBase {
           chunkSizeControl @ H.div(_ *),
           H.br(),
           H.noscript(),
-          H.div(
-            encodeControl @ H.span(_ *),
-            decodeControl @ H.span(_ *),
-            showOptionsControl @ H.span(_ *)
-          ),
-          H.div(
-            fileChooser @ H.input(),
-            loadContentsButton @ H.input(),
-            processDataButton @ H.input(),
-            saveResultsButton @ H.input()
-          ),
+          H.div(encodeControl @ H.span(_ *), decodeControl @ H.span(_ *),
+            showOptionsControl @ H.span(_ *)),
+          H.div(fileChooser @ H.input(), loadContentsButton @ H.input(),
+            processDataButton @ H.input(), saveResultsButton @ H.input()),
           H.br(),
           H.div(H.noscript()),
           codingResult @ H.div(_ *)

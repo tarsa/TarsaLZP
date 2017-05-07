@@ -1,5 +1,6 @@
 TODO:
 - use official updated diode-react as soon as it's released
+- abstract time source for testing purposes
 - write tests
   - write backend tests using data from Models class
   - write locators to enable elegant searching for elements in DOM

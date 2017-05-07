@@ -30,7 +30,7 @@ class LazyMutableWrapper private (domNode: dom.Node)
   protected lazy val attributes: Map[String, String] =
     DomNodeInfo.nodeAttributes(domNode)
 
-  protected override def attribute(name: String): Option[String] =
+  override protected def attribute(name: String): Option[String] =
     DomNodeInfo.nodeAttribute(domNode, name)
 
   override protected def attributesCount: Int =
@@ -39,7 +39,7 @@ class LazyMutableWrapper private (domNode: dom.Node)
   protected lazy val fields: Map[String, String] =
     DomNodeInfo.objectFields(domNode)
 
-  protected override def field(name: String): Option[String] =
+  override protected def field(name: String): Option[String] =
     DomNodeInfo.objectField(domNode, name)
 
   lazy val childNodes: Seq[LazyMutableWrapper] =

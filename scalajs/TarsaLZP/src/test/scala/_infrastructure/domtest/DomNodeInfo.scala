@@ -20,11 +20,7 @@
  */
 package _infrastructure.domtest
 
-import _infrastructure.domtest.DomNodeInfo.{
-  NodeAttribute,
-  NodeField,
-  NodeProperty
-}
+import _infrastructure.domtest.DomNodeInfo._
 import org.scalajs.dom
 import org.scalajs.dom.ext.{Attributes, PimpedNodeList}
 import org.scalatest.AppendedClues.convertToClueful
@@ -34,7 +30,6 @@ import org.scalatest.MustMatchers._
 
 import scala.collection.mutable
 import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 abstract class DomNodeInfo[Repr <: DomNodeInfo[Repr]] {
   def name: String
@@ -50,6 +45,15 @@ abstract class DomNodeInfo[Repr <: DomNodeInfo[Repr]] {
   protected def field(name: String): Option[String]
 
   def childNodes: Seq[Repr]
+
+  final def propFor(propertyName: NodePropertyName): Option[String] = {
+    propertyName match {
+      case NodeAttributeName(name) =>
+        attribute(name)
+      case NodeFieldName(name) =>
+        field(name)
+    }
+  }
 
   final def mustHaveProps(nodeProperties: NodeProperty*): Assertion = {
     forEvery(nodeProperties) {
@@ -100,9 +104,9 @@ abstract class DomNodeInfo[Repr <: DomNodeInfo[Repr]] {
 
   override def toString: String = {
     if (childNodes.isEmpty) {
-      name
+      s""""$name""""
     } else {
-      childNodes.mkString(s"$name(", ", ", ")")
+      childNodes.mkString(s"$name{", "; ", "}")
     }
   }
 }
@@ -114,37 +118,55 @@ object DomNodeInfo {
   def snapshot(domNode: dom.Node): Snapshot =
     Snapshot(domNode)
 
+  sealed trait NodePropertyName {
+    type PropertyType <: NodeProperty
+
+    def raw: String
+    def apply(value: js.Any): PropertyType
+  }
+
+  final case class NodeAttributeName(raw: String) extends NodePropertyName {
+    override type PropertyType = NodeAttribute
+
+    override def apply(value: js.Any): NodeAttribute =
+      NodeAttribute(raw, value)
+  }
+
+  final case class NodeFieldName(raw: String) extends NodePropertyName {
+    override type PropertyType = NodeField
+
+    override def apply(value: js.Any): NodeField =
+      NodeField(raw, value)
+  }
+
   sealed trait NodeProperty {
     def name: String
     def value: js.Any
   }
 
-  case class NodeAttribute(name: String, value: js.Any) extends NodeProperty
+  final case class NodeAttribute(name: String, value: js.Any)
+      extends NodeProperty
 
-  case class NodeField(name: String, value: js.Any) extends NodeProperty
+  final case class NodeField(name: String, value: js.Any) extends NodeProperty
 
   /** Attributes */
   object A {
-    // attribute builder
-    private type AB = js.Any => NodeAttribute
+    private type AN = NodeAttributeName
+    private val AN = NodeAttributeName
 
-    private def make(attrName: String): AB =
-      NodeAttribute(attrName, _)
-
-    val `type`: AB = make("type")
-    val value: AB = make("value")
+    val max: AN = AN("max")
+    val tpe: AN = AN("type")
+    val value: AN = AN("value")
   }
 
   /** Fields */
   object F {
-    // field builder
-    private type FB = js.Any => NodeField
+    private type FN = NodeFieldName
+    private val FN = NodeFieldName
 
-    private def make(fieldName: String): FB =
-      NodeField(fieldName, _)
-
-    val disabled: FB = make("disabled")
-    val wholeText: FB = make("wholeText")
+    val checked: FN = FN("checked")
+    val disabled: FN = FN("disabled")
+    val wholeText: FN = FN("wholeText")
   }
 
   private val disallowedFieldNames =
@@ -192,7 +214,7 @@ object DomNodeInfo {
 
   private[domtest] def nodeAttributes(
       domNode: dom.Node): Map[String, String] = {
-    (domNode.attributes: UndefOr[dom.NamedNodeMap])
+    (domNode.attributes: js.UndefOr[dom.NamedNodeMap])
       .fold(Map.empty[String, String]) { attrMap =>
         attrMap.toMap.mapValues(_.nodeValue)
       }
@@ -200,14 +222,14 @@ object DomNodeInfo {
 
   private[domtest] def nodeAttribute(domNode: dom.Node,
       name: String): Option[String] = {
-    (domNode.attributes: UndefOr[dom.NamedNodeMap])
+    (domNode.attributes: js.UndefOr[dom.NamedNodeMap])
       .fold(Option.empty[String]) { attributes =>
         attributes.get(name).map(_.nodeValue)
       }
   }
 
   private[domtest] def nodeChildNodes(domNode: dom.Node): Seq[dom.Node] = {
-    (domNode.childNodes: UndefOr[dom.NodeList])
+    (domNode.childNodes: js.UndefOr[dom.NodeList])
       .fold(Nil: Seq[dom.Node])(nodeList => nodeList)
   }
 }
