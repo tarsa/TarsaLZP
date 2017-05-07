@@ -21,8 +21,9 @@
 package _infrastructure.global
 
 import akka.actor.ActorSystem
+import akka.testkit.TestKit
 
 object AkkaForTesting {
   val actorSystem: ActorSystem =
-    ActorSystem("AkkaForTesting")
+    TestKit.initialization(ActorSystem("AkkaForTesting"))
 }

@@ -22,7 +22,7 @@ package _infrastructure.specs
 
 import _infrastructure.global.AkkaForTesting
 import akka.actor.ActorSystem
-import org.scalatest.{AsyncFlatSpec, FlatSpec, Inside, MustMatchers}
+import org.scalatest._
 
 import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
@@ -41,12 +41,30 @@ sealed trait SpecBase extends MustMatchers with Inside {
 
 abstract class SyncSpecBase extends FlatSpec with SpecBase
 
-abstract class AsyncSpecBase extends AsyncFlatSpec with SpecBase {
+abstract class FixtureSyncSpecBase extends fixture.FlatSpec with SpecBase
+
+sealed trait AsyncSpecMixin { this: AsyncTestSuite =>
   override implicit def executionContext: ExecutionContext =
     AkkaForTesting.actorSystem.dispatcher
 }
 
-abstract class AkkaSpecBase extends AsyncSpecBase {
+abstract class AsyncSpecBase
+    extends AsyncFlatSpec
+    with SpecBase
+    with AsyncSpecMixin
+
+abstract class FixtureAsyncSpecBase
+    extends fixture.AsyncFlatSpec
+    with SpecBase
+    with AsyncSpecMixin
+
+sealed trait AkkaSpecMixin {
   protected implicit val actorSystem: ActorSystem =
     AkkaForTesting.actorSystem
 }
+
+abstract class AkkaSpecBase extends AsyncSpecBase with AkkaSpecMixin
+
+abstract class FixtureAkkaSpecBase
+    extends FixtureAsyncSpecBase
+    with AkkaSpecMixin
