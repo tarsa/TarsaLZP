@@ -1,7 +1,6 @@
 TODO:
 - rename package pl.tarsa.tarsalzp.prelude to data (?)
 - raise issue on akka-js that TestKit.initialization is crucial
-- use official updated diode-react as soon as it's released
 - abstract time source for testing purposes
 - write tests
   - write backend tests using data from Models class

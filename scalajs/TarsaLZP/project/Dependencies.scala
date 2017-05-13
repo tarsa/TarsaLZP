@@ -27,11 +27,11 @@ object Dependencies {
   object Versions {
     object ScalaJs {
       // general
-      val akkaJs = "1.2.5.0"
-      val diode = "1.1.1"
+      val akkaJs = "1.2.5.1"
+      val diode = "1.1.2"
       val scalaCss = "0.5.3"
-      val scalaJsD3 = "0.3.3"
-      val scalaJsDom = "0.9.1"
+      val scalaJsD3 = "0.3.4"
+      val scalaJsDom = "0.9.2"
       val scalaJsReact = "1.0.0"
       // test only
       val scalaTest = "3.0.1"
@@ -52,8 +52,7 @@ object Dependencies {
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReact,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReact,
       "io.suzaku" %%% "diode" % diode,
-      // diode-react sources copied verbatim
-      // "io.suzaku" %%% "diode-react" % diode,
+      "io.suzaku" %%% "diode-react" % diode,
       "org.akka-js" %%% "akkajsactor" % akkaJs,
       "org.scala-js" %%% "scalajs-dom" % scalaJsDom,
       "org.singlespaced" %%% "scalajs-d3" % scalaJsD3,
