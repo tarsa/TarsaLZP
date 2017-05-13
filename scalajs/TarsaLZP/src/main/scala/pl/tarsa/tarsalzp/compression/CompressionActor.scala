@@ -30,8 +30,8 @@ import pl.tarsa.tarsalzp.compression.CompressionActor.{
 }
 import pl.tarsa.tarsalzp.compression.engine.{Coder, Decoder, Encoder}
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.prelude.Streams
-import pl.tarsa.tarsalzp.prelude.Streams.ArrayInputStream
+import pl.tarsa.tarsalzp.data.Streams
+import pl.tarsa.tarsalzp.data.Streams.ArrayInputStream
 import pl.tarsa.tarsalzp.ui.backend.MainAction.{
   ChunkProcessed,
   CodingInProgressAction,

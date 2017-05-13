@@ -1,5 +1,4 @@
 TODO:
-- rename package pl.tarsa.tarsalzp.prelude to data (?)
 - raise issue on akka-js that TestKit.initialization is crucial
 - abstract time source for testing purposes
 - write tests

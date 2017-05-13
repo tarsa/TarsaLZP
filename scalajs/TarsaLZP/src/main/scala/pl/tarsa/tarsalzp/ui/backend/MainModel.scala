@@ -22,7 +22,7 @@ package pl.tarsa.tarsalzp.ui.backend
 
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.prelude.WrappedTypedArray
+import pl.tarsa.tarsalzp.data.WrappedTypedArray
 import pl.tarsa.tarsalzp.ui.backend.MainModel.ProcessingTaskViewData
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.WithCodingMode
 

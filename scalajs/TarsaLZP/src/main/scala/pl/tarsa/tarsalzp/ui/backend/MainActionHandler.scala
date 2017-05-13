@@ -26,7 +26,7 @@ import diode.{ActionHandler, ActionResult, Effect, ModelRW}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.prelude.WrappedTypedArray
+import pl.tarsa.tarsalzp.data.WrappedTypedArray
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   CodingInProgressViewData,
