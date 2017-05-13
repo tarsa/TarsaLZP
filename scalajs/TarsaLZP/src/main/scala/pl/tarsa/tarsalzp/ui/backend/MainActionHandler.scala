@@ -26,6 +26,7 @@ import diode.{ActionHandler, ActionResult, Effect, ModelRW}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.prelude.WrappedTypedArray
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   CodingInProgressViewData,
@@ -42,7 +43,6 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
 import scala.concurrent.Promise
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
 
 class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
     compressionActor: ActorRef)
@@ -120,15 +120,15 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
     case (LoadingFinished(inputBufferOpt), idleStateViewData) =>
       val newModel = value.copy(
           taskViewData = idleStateViewData.copy(
-              inputArrayOpt = inputBufferOpt.map(
-                  buffer => new Uint8Array(buffer)),
+              wrappedInputOpt = inputBufferOpt.map(buffer =>
+                  new WrappedTypedArray(new js.typedarray.Uint8Array(buffer))),
               loadingInProgress = false))
       updated(newModel)
     case (StartProcessing, idleStateViewData) =>
       val newViewData = MainActionHandler
         .startProcessingData(idleStateViewData.mode,
-          idleStateViewData.inputArrayOpt.get, value.options, value.chunkSize,
-          compressionActor)
+          idleStateViewData.wrappedInputOpt.get, value.options,
+          value.chunkSize, compressionActor)
         .getOrElse(idleStateViewData)
       updated(value.copy(taskViewData = newViewData))
     case (SaveFile, idleStateViewData) =>
@@ -146,8 +146,8 @@ object MainActionHandler {
       println("Loading...")
     }
     reader.onload = (_: dom.UIEvent) => {
-      bufferPromise.success(
-          LoadingFinished(Some(reader.result.asInstanceOf[ArrayBuffer])))
+      val buffer = reader.result.asInstanceOf[js.typedarray.ArrayBuffer]
+      bufferPromise.success(LoadingFinished(Some(buffer)))
       println("Loaded!")
     }
     reader.onloadend = (_: dom.ProgressEvent) => {
@@ -162,20 +162,21 @@ object MainActionHandler {
     println("Saved!")
   }
 
-  def startProcessingData(mode: ProcessingMode, inputArray: Uint8Array,
-      options: Options, chunkSize: Int,
+  def startProcessingData(mode: ProcessingMode,
+      inputWrapper: WrappedTypedArray, options: Options, chunkSize: Int,
       compressionActor: ActorRef): Option[CodingInProgressViewData] = {
     mode match {
       case withCodingMode: WithCodingMode =>
         compressionActor !
-          ProcessRequest(withCodingMode, inputArray, options, chunkSize)
+          ProcessRequest(withCodingMode, inputWrapper.array, options,
+            chunkSize)
         val startTime = new js.Date
-        val viewData = CodingInProgressViewData(withCodingMode, inputArray,
-          inputArray.length, 0, 0, startTime, Nil)
+        val viewData = CodingInProgressViewData(withCodingMode, inputWrapper,
+          inputWrapper.array.length, 0, 0, startTime, Nil)
         Some(viewData)
       case ShowOptions =>
         compressionActor !
-          ProcessRequest(ShowOptions, inputArray, options, chunkSize)
+          ProcessRequest(ShowOptions, inputWrapper.array, options, chunkSize)
         None
     }
   }
@@ -192,7 +193,7 @@ object MainActionHandler {
       }
     val codingResult = CodingResult(mode, totalSymbols, compressedSize,
       startTime, endTime, codingTimeline, resultBlob)
-    IdleStateViewData(mode, Some(inputArray), Some(codingResult),
+    IdleStateViewData(mode, Some(wrappedInput), Some(codingResult),
       loadingInProgress = false)
   }
 }

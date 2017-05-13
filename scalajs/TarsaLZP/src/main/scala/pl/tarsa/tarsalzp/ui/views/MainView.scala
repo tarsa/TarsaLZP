@@ -101,7 +101,7 @@ object MainView {
       <.input(
         ^.className := "temp_processButton",
         ^.`type` := "button",
-        ^.disabled := busy || foldTask(_.inputArrayOpt.isEmpty, _ => true),
+        ^.disabled := busy || foldTask(_.wrappedInputOpt.isEmpty, _ => true),
         ^.value := "Process data",
         ^.onClick --> p.proxy.dispatchCB(StartProcessing)
       )

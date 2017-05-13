@@ -25,18 +25,24 @@ import akka.actor.ActorSystem
 import org.scalatest._
 
 import scala.concurrent.ExecutionContext
-import scala.language.reflectiveCalls
 import scala.reflect.ClassTag
 
 sealed trait SpecBase extends MustMatchers with Inside {
-  this: {
+  this: SpecBase.HasBehavior =>
+
+  def typeBehavior[T](implicit classTag: ClassTag[T]): Unit = {
+    import scala.language.reflectiveCalls
+    behavior of classTag.runtimeClass.getSimpleName
+  }
+}
+
+object SpecBase {
+  type HasBehavior = {
     def behavior: {
       def of(description: scala.Predef.String)(
           implicit pos: org.scalactic.source.Position): Unit
     }
-  } =>
-  def typeBehavior[T](implicit classTag: ClassTag[T]): Unit =
-    behavior of classTag.runtimeClass.getSimpleName
+  }
 }
 
 abstract class SyncSpecBase extends FlatSpec with SpecBase
@@ -45,7 +51,7 @@ abstract class FixtureSyncSpecBase extends fixture.FlatSpec with SpecBase
 
 sealed trait AsyncSpecMixin { this: AsyncTestSuite =>
   override implicit def executionContext: ExecutionContext =
-    AkkaForTesting.actorSystem.dispatcher
+    scala.concurrent.ExecutionContext.Implicits.global
 }
 
 abstract class AsyncSpecBase

@@ -22,11 +22,11 @@ package pl.tarsa.tarsalzp.ui.backend
 
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.prelude.WrappedTypedArray
 import pl.tarsa.tarsalzp.ui.backend.MainModel.ProcessingTaskViewData
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.WithCodingMode
 
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
 case class MainModel(
     options: Options,
@@ -42,7 +42,7 @@ object MainModel {
 
   case class IdleStateViewData(
       mode: ProcessingMode,
-      inputArrayOpt: Option[Uint8Array],
+      wrappedInputOpt: Option[WrappedTypedArray],
       codingResultOpt: Option[CodingResult],
       loadingInProgress: Boolean
   ) extends ProcessingTaskViewData
@@ -59,7 +59,7 @@ object MainModel {
 
   case class CodingInProgressViewData(
       mode: WithCodingMode,
-      inputArray: Uint8Array,
+      wrappedInput: WrappedTypedArray,
       inputBufferLength: Int,
       inputStreamPosition: Int,
       outputStreamPosition: Int,

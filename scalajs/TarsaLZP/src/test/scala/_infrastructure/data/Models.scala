@@ -22,36 +22,126 @@ package _infrastructure.data
 
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.ui.backend.MainModel
+import pl.tarsa.tarsalzp.prelude.WrappedTypedArray
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   CodingInProgressViewData,
   IdleStateViewData
 }
-import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.EncodingMode
+import pl.tarsa.tarsalzp.ui.backend.{MainModel, ProcessingMode}
 
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
 object Models {
-  private val initialTaskViewData =
-    IdleStateViewData(EncodingMode, None, None, loadingInProgress = false)
+  private val P = Parameters
+  private val VD = TaskViewData
 
-  val initialModel =
-    MainModel(Options.default, None, 345, initialTaskViewData)
+  val initial: MainModel =
+    MainModel(P.initialOptions, Option.empty[dom.File], P.initialChunkSize,
+      VD.initial)
 
-  val afterFileSelection: MainModel = initialModel.copy(
-    chosenFileOpt = Some(new dom.Blob().asInstanceOf[dom.File])
-  )
+  val optionsUpdated: MainModel =
+    initial.copy(options = P.newOptions)
 
-  val duringFileLoading: MainModel = afterFileSelection.copy(
-    taskViewData = initialTaskViewData.copy(loadingInProgress = true)
-  )
+  var chunksSizeChanged: MainModel =
+    initial.copy(chunkSize = P.newChunkSize)
 
-  val withLoadedFile: MainModel = initialModel.copy(
-      taskViewData = initialTaskViewData.copy(
-          inputArrayOpt = Some(new Uint8Array(3))))
+  val modeChanged: MainModel =
+    initial.copy(taskViewData = VD.modeChanged)
 
-  val afterStartedEncoding: MainModel = withLoadedFile.copy(
-      taskViewData = CodingInProgressViewData(EncodingMode, new Uint8Array(3),
-        3, 0, 0, new js.Date(), Seq.empty))
+  val fileSelected: MainModel =
+    initial.copy(chosenFileOpt = P.newChosenFile)
+
+  val fileLoadingStarted: MainModel =
+    fileSelected.copy(taskViewData = VD.fileLoadingStarted)
+
+  val fileLoadingFinished: MainModel =
+    fileSelected.copy(taskViewData = VD.fileLoadingFinished)
+
+  val encodingStarted: MainModel =
+    fileLoadingFinished.copy(taskViewData = VD.encodingStarted)
+
+  val firstMeasurementReceived: MainModel =
+    encodingStarted.copy(taskViewData = VD.firstMeasurementReceived)
+
+  val secondMeasurementReceived: MainModel =
+    encodingStarted.copy(taskViewData = VD.secondMeasurementReceived)
+
+  val afterProcessingFinished: MainModel =
+    fileLoadingFinished.copy(taskViewData = VD.afterProcessingFinished)
+
+  private object TaskViewData {
+    val initial: IdleStateViewData =
+      IdleStateViewData(ProcessingMode.EncodingMode, None, None,
+        loadingInProgress = false)
+
+    val modeChanged: IdleStateViewData =
+      initial.copy(mode = P.newMode)
+
+    val fileLoadingStarted: IdleStateViewData =
+      initial.copy(loadingInProgress = true)
+
+    val fileLoadingFinished: IdleStateViewData =
+      initial.copy(wrappedInputOpt = Some(P.wrappedInput))
+
+    val encodingStarted: CodingInProgressViewData =
+      CodingInProgressViewData(ProcessingMode.EncodingMode, P.wrappedInput,
+        P.wrappedInput.array.length, 0, 0, P.encodingStartTime, Seq.empty)
+
+    val firstMeasurementReceived: CodingInProgressViewData =
+      encodingStarted.copy(inputStreamPosition = 2, outputStreamPosition = 1,
+        codingTimeline = Seq(P.firstMeasurement))
+
+    val secondMeasurementReceived: CodingInProgressViewData =
+      encodingStarted.copy(inputStreamPosition = 5, outputStreamPosition = 4,
+        codingTimeline = Seq(P.firstMeasurement, P.secondMeasurement))
+
+    private val codingResult = MainModel.CodingResult(
+        ProcessingMode.EncodingMode, 3, 4, P.encodingStartTime,
+        P.encodingEndTime, Seq(P.firstMeasurement, P.secondMeasurement),
+        P.resultingBlob)
+
+    val afterProcessingFinished: IdleStateViewData =
+      fileLoadingFinished.copy(codingResultOpt = Some(codingResult))
+  }
+
+  object Parameters {
+    val newLiteralCoderLimit: Int = 777
+
+    val initialOptions: Options =
+      Options.default
+
+    val newOptions: Options =
+      Options.default.copy(literalCoderLimit = newLiteralCoderLimit)
+
+    val initialChunkSize: Int = 345
+
+    val newChunkSize: Int = 3456
+
+    val newMode: ProcessingMode =
+      ProcessingMode.ShowOptions
+
+    val inputBuffer: js.typedarray.ArrayBuffer =
+      new js.typedarray.ArrayBuffer(3)
+
+    val newChosenFile: Option[dom.File] =
+      Some(new dom.Blob(js.Array(inputBuffer)).asInstanceOf[dom.File])
+
+    val wrappedInput: WrappedTypedArray =
+      new WrappedTypedArray(new js.typedarray.Uint8Array(inputBuffer))
+
+    val encodingStartTime: js.Date =
+      new js.Date()
+
+    val firstMeasurement: MainModel.ChunkCodingMeasurement =
+      MainModel.ChunkCodingMeasurement(new js.Date(), new js.Date(), 2, 1)
+
+    val secondMeasurement: MainModel.ChunkCodingMeasurement =
+      MainModel.ChunkCodingMeasurement(new js.Date(), new js.Date(), 3, 3)
+
+    val encodingEndTime: js.Date =
+      new js.Date()
+
+    val resultingBlob: dom.Blob =
+      new dom.Blob()
+  }
 }

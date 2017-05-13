@@ -45,7 +45,7 @@ class MainViewSpec extends FrontendSpecBase {
   typeBehavior[MainView.type]
 
   it must s"show initial idle state" in {
-    withModel(Models.initialModel) { fixture =>
+    withModel(Models.initial) { fixture =>
       import fixture._
       import mainViewInfo._
       inside(chunkSizeControl) {
@@ -84,7 +84,7 @@ class MainViewSpec extends FrontendSpecBase {
   }
 
   it must s"fire event after selecting file" in {
-    withModel(Models.initialModel) { fixture =>
+    withModel(Models.initial) { fixture =>
       import fixture._
       val file = new dom.Blob().asInstanceOf[dom.File]
       val target = js.Dynamic.literal("files" -> js.Array(file))
@@ -97,7 +97,7 @@ class MainViewSpec extends FrontendSpecBase {
   }
 
   it must "allow loading file after it was selected" in {
-    withModel(Models.afterFileSelection) { fixture =>
+    withModel(Models.fileSelected) { fixture =>
       import fixture._
       import mainViewInfo._
       loadContentsButton.mustHaveProps(F.disabled(false))
@@ -108,7 +108,7 @@ class MainViewSpec extends FrontendSpecBase {
   }
 
   it must "disable buttons during file loading" in {
-    withModel(Models.duringFileLoading) { fixture =>
+    withModel(Models.fileLoadingStarted) { fixture =>
       import fixture._
       import mainViewInfo._
       loadContentsButton.mustHaveProps(F.disabled(true))
@@ -118,7 +118,7 @@ class MainViewSpec extends FrontendSpecBase {
   }
 
   it must "allow processing after file has been loaded" in {
-    withModel(Models.withLoadedFile) { fixture =>
+    withModel(Models.fileLoadingFinished) { fixture =>
       import fixture._
       import mainViewInfo._
       processDataButton.mustHaveProps(F.disabled(false))
@@ -130,7 +130,7 @@ class MainViewSpec extends FrontendSpecBase {
   }
 
   it must "show initial encoding state" in {
-    val model = Models.afterStartedEncoding
+    val model = Models.encodingStarted
     val viewData = model.taskViewData.asInstanceOf[CodingInProgressViewData]
     withModel(model) { fixture =>
       import fixture._

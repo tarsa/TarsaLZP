@@ -25,11 +25,11 @@ import java.io.{InputStream, OutputStream}
 import org.scalajs.dom
 
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
 object Streams {
 
-  class ArrayInputStream(val array: Uint8Array) extends InputStream {
+  class ArrayInputStream(val array: js.typedarray.Uint8Array)
+      extends InputStream {
     private var _position = 0
 
     def position: Int =
@@ -67,8 +67,7 @@ object Streams {
       val chunks = new js.Array[js.Any]()
       chunksArray.foreach(chunk => chunks.push(chunk.truncatedBuffer))
       chunks.push(chunk.truncatedBuffer)
-      new dom.Blob(chunks,
-        dom.raw.BlobPropertyBag(s"{type: '$blobType'}"))
+      new dom.Blob(chunks, dom.raw.BlobPropertyBag(s"{type: '$blobType'}"))
     }
   }
 }
