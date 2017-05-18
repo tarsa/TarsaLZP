@@ -18,22 +18,14 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.data
-
-import akka.util.HashCode
+package _infrastructure.data
 
 import scala.scalajs.js
+import scala.scalajs.js.annotation.JSGlobal
 
-class WrappedTypedArray(val raw: js.typedarray.Uint8Array) {
-  override def equals(that: scala.Any): Boolean = {
-    that match {
-      case that: WrappedTypedArray =>
-        raw.toIterator.sameElements(that.raw.toIterator)
-      case _ =>
-        false
-    }
-  }
-
-  override def hashCode(): Int =
-    raw.foldLeft(HashCode.SEED)(HashCode.hash(_, _))
+@js.native
+@JSGlobal("_infrastructure.data.CodingExample")
+object CodingExample extends js.Object {
+  val original: js.Array[Byte] = js.native
+  val encoded: js.Array[Byte] = js.native
 }

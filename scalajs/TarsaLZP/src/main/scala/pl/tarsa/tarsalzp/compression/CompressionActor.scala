@@ -20,18 +20,14 @@
  */
 package pl.tarsa.tarsalzp.compression
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import org.scalajs.dom
-import pl.tarsa.tarsalzp.compression.CompressionActor.{
-  DecodingProcessingData,
-  EncodingProcessingData,
-  ProcessRequest,
-  ProcessingData
-}
+import pl.tarsa.tarsalzp.compression.CompressionActor._
 import pl.tarsa.tarsalzp.compression.engine.{Coder, Decoder, Encoder}
 import pl.tarsa.tarsalzp.compression.options.Options
 import pl.tarsa.tarsalzp.data.Streams
 import pl.tarsa.tarsalzp.data.Streams.ArrayInputStream
+import pl.tarsa.tarsalzp.system.Clock
 import pl.tarsa.tarsalzp.ui.backend.MainAction.{
   ChunkProcessed,
   CodingInProgressAction,
@@ -47,10 +43,11 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
 
 import scala.concurrent.duration.Duration
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
-class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
-    extends Actor {
+class CompressionActor(
+    actionDispatch: CodingInProgressAction => Unit,
+    clock: Clock
+) extends Actor {
   import CompressionActor.InternalMessages.ContinueProcessing
 
   var processingDataOpt: Option[ProcessingData] = None
@@ -58,7 +55,7 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
   override def receive: Receive = {
     case ContinueProcessing if processingDataOpt.nonEmpty =>
       val processingData = processingDataOpt.get
-      val startTime = new js.Date
+      val startTime = clock.currentDate
       val (symbolsNumber, compressedSize, finishingMessageOpt) =
         processingData match {
           case encoding: EncodingProcessingData =>
@@ -71,7 +68,7 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
                 None
               } else {
                 encoder.flush()
-                Some(ProcessingFinished(new js.Date, outputStream.toBlob()))
+                Some(ProcessingFinished(clock.currentDate, outputStream))
               }
             (encodedSymbols, compressedSizeAfter - compressedSizeBefore,
               finishingMessageOpt)
@@ -84,17 +81,18 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
               if (decodedSymbols == chunkSize) {
                 None
               } else {
-                Some(ProcessingFinished(new js.Date, outputStream.toBlob()))
+                Some(ProcessingFinished(clock.currentDate, outputStream))
               }
             (decodedSymbols, compressedSizeAfter - compressedSizeBefore,
               finishingMessageOpt)
         }
-      val endTime = new js.Date
+      val endTime = clock.currentDate
       val updateAction = ChunkProcessed(ChunkCodingMeasurement(startTime,
           endTime, symbolsNumber, compressedSize))
       actionDispatch(updateAction)
       finishingMessageOpt.fold(continueProcessing()) { finishingMessage =>
         actionDispatch(finishingMessage)
+        processingData.requestSenderOpt.foreach(_ ! RequestProcessed)
         processingDataOpt = None
       }
     case ProcessRequest(mode, inputArray, options, chunkSize)
@@ -108,14 +106,14 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
         case EncodingMode =>
           val outputStream = new Streams.ChunksArrayOutputStream
           val encoder = Coder.startEncoder(inputStream, outputStream, options)
-          processingDataOpt = Some(new EncodingProcessingData(encoder,
-              inputStream, outputStream, chunkSize))
+          processingDataOpt = Some(new EncodingProcessingData(Option(sender()),
+              encoder, inputStream, outputStream, chunkSize))
           continueProcessing()
         case DecodingMode =>
           val outputStream = new Streams.ChunksArrayOutputStream
           val decoder = Coder.startDecoder(inputStream, outputStream)
-          processingDataOpt = Some(new DecodingProcessingData(decoder,
-              inputStream, outputStream, chunkSize))
+          processingDataOpt = Some(new DecodingProcessingData(Option(sender()),
+              decoder, inputStream, outputStream, chunkSize))
           continueProcessing()
       }
   }
@@ -134,20 +132,24 @@ class CompressionActor(actionDispatch: CodingInProgressAction => Unit)
 }
 
 object CompressionActor {
-  case class ProcessRequest(mode: ProcessingMode, inputArray: Uint8Array,
-      options: Options, chunkSize: Int)
+  case class ProcessRequest(mode: ProcessingMode,
+      inputArray: js.typedarray.Uint8Array, options: Options, chunkSize: Int)
+
+  case object RequestProcessed
 
   protected object InternalMessages {
     case object ContinueProcessing
   }
 
   sealed trait ProcessingData {
+    def requestSenderOpt: Option[ActorRef]
     def inputStream: ArrayInputStream
     def outputStream: Streams.ChunksArrayOutputStream
     def chunkSize: Int
   }
 
   class EncodingProcessingData(
+      val requestSenderOpt: Option[ActorRef],
       val encoder: Encoder,
       val inputStream: ArrayInputStream,
       val outputStream: Streams.ChunksArrayOutputStream,
@@ -155,6 +157,7 @@ object CompressionActor {
   ) extends ProcessingData
 
   class DecodingProcessingData(
+      val requestSenderOpt: Option[ActorRef],
       val decoder: Decoder,
       val inputStream: ArrayInputStream,
       val outputStream: Streams.ChunksArrayOutputStream,
@@ -162,5 +165,5 @@ object CompressionActor {
   ) extends ProcessingData
 
   def props(actionDispatch: CodingInProgressAction => Unit): Props =
-    Props(new CompressionActor(actionDispatch))
+    Props(new CompressionActor(actionDispatch, new Clock))
 }

@@ -18,22 +18,16 @@
  *  3. This notice may not be removed or altered from any source distribution.
  *
  */
-package pl.tarsa.tarsalzp.data
+package pl.tarsa.tarsalzp.system
 
-import akka.util.HashCode
+import pl.tarsa.tarsalzp.data.WrappedDate
 
 import scala.scalajs.js
 
-class WrappedTypedArray(val raw: js.typedarray.Uint8Array) {
-  override def equals(that: scala.Any): Boolean = {
-    that match {
-      case that: WrappedTypedArray =>
-        raw.toIterator.sameElements(that.raw.toIterator)
-      case _ =>
-        false
-    }
-  }
+class Clock {
+  protected def millisecondsNow: Double =
+    js.Date.now()
 
-  override def hashCode(): Int =
-    raw.foldLeft(HashCode.SEED)(HashCode.hash(_, _))
+  def currentDate: WrappedDate =
+    new WrappedDate(new js.Date(millisecondsNow))
 }

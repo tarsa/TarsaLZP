@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -20,24 +20,46 @@
  */
 package pl.tarsa.tarsalzp.data
 
-import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
+import scala.scalajs.js
 
 class Chunk(chunkSize: Int = 64 * 1024) {
-  private val buffer = new ArrayBuffer(chunkSize)
-  private val view = new Uint8Array(buffer)
+  private val array = {
+    val buffer = new js.typedarray.ArrayBuffer(chunkSize)
+    val typedArray = new js.typedarray.Uint8Array(buffer)
+    new WrappedTypedArray(typedArray)
+  }
+
   private var _position = 0
 
   def position: Int =
     _position
 
   def write(value: Byte): Unit = {
-    view(_position) = value
+    array.raw(_position) = value
     _position += 1
   }
 
   def isFull: Boolean =
     _position == chunkSize
 
-  def truncatedBuffer: ArrayBuffer =
-    buffer.slice(0, _position)
+  def truncatedArray: WrappedTypedArray = {
+    val buffer = array.raw.buffer.slice(0, _position)
+    val typedArray = new js.typedarray.Uint8Array(buffer)
+    new WrappedTypedArray(typedArray)
+  }
+
+  final override def equals(that: scala.Any): Boolean = {
+    that match {
+      case that: Chunk =>
+        truncatedArray.equals(that.truncatedArray)
+      case _ =>
+        false
+    }
+  }
+
+  final override def hashCode(): Int =
+    truncatedArray.hashCode()
+
+  def toIterator: Iterator[Byte] =
+    Iterator.tabulate(_position)(array.raw(_).toByte)
 }

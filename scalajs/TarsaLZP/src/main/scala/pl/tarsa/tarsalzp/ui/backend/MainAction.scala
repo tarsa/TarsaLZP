@@ -23,11 +23,11 @@ package pl.tarsa.tarsalzp.ui.backend
 import diode.Action
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
+import pl.tarsa.tarsalzp.data.{BlobSource, WrappedDate}
 import pl.tarsa.tarsalzp.ui.backend.MainModel.ChunkCodingMeasurement
 import pl.tarsa.tarsalzp.ui.util.RafAction
 
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.ArrayBuffer
 
 sealed trait MainAction extends Action
 
@@ -44,7 +44,7 @@ object MainAction {
 
   case object LoadFile extends IdleStateAction
 
-  case class LoadingFinished(inputBufferOpt: Option[ArrayBuffer])
+  case class LoadingFinished(inputBufferOpt: Option[js.typedarray.ArrayBuffer])
       extends IdleStateAction
 
   case object StartProcessing extends IdleStateAction
@@ -57,7 +57,7 @@ object MainAction {
       extends CodingInProgressAction
       with RafAction
 
-  case class ProcessingFinished(endTime: js.Date, resultBlob: dom.Blob)
+  case class ProcessingFinished(endTime: WrappedDate, result: BlobSource)
       extends CodingInProgressAction
       with RafAction
 }

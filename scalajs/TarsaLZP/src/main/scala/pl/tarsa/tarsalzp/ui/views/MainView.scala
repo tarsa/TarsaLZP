@@ -145,7 +145,7 @@ object MainView {
     val codingResultInfo = {
       data.taskViewData match {
         case coding: CodingInProgressViewData =>
-          val elapsedMillis = js.Date.now() - coding.startTime.getTime()
+          val elapsedMillis = js.Date.now() - coding.startTime.raw.getTime()
           val processedSymbols =
             coding.mode match {
               case EncodingMode =>
@@ -180,8 +180,8 @@ object MainView {
             <.div(f"Coding speed: $speed%.1f symbols / second")
           )
         case IdleStateViewData(_, _, Some(codingResult), _) =>
-          val elapsedMillis = codingResult.endTime.getTime() -
-            codingResult.startTime.getTime()
+          val elapsedMillis = codingResult.endTime.raw.getTime() -
+            codingResult.startTime.raw.getTime()
           val speed = codingResult.totalSymbols / (elapsedMillis / 1000.0)
           <.div(
             codingTimeline(Some(codingResult.totalSymbols),

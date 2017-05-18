@@ -26,7 +26,7 @@ import diode.{ActionHandler, ActionResult, Effect, ModelRW}
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.CompressionActor.ProcessRequest
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.data.WrappedTypedArray
+import pl.tarsa.tarsalzp.data.{BlobSource, WrappedDate, WrappedTypedArray}
 import pl.tarsa.tarsalzp.ui.backend.MainAction._
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   CodingInProgressViewData,
@@ -94,9 +94,9 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
         codingTimeline = viewData.codingTimeline :+ measurements
       )
       updated(value.copy(taskViewData = newViewData))
-    case (ProcessingFinished(endTime, resultBlob), viewData) =>
+    case (ProcessingFinished(endTime, result), viewData) =>
       val idleStateViewData =
-        MainActionHandler.processingFinished(viewData, endTime, resultBlob)
+        MainActionHandler.processingFinished(viewData, endTime, result)
       updated(value.copy(taskViewData = idleStateViewData))
   }
 
@@ -133,7 +133,7 @@ class MainActionHandler[M](modelRW: ModelRW[M, MainModel],
       updated(value.copy(taskViewData = newViewData))
     case (SaveFile, idleStateViewData) =>
       MainActionHandler.saveResults(
-          idleStateViewData.codingResultOpt.get.resultBlob)
+          idleStateViewData.codingResultOpt.get.result)
       noChange
   }
 }
@@ -157,8 +157,8 @@ object MainActionHandler {
     Effect(bufferPromise.future)
   }
 
-  def saveResults(results: dom.Blob): Unit = {
-    FileSaver.saveAs(results, "filename")
+  def saveResults(result: BlobSource): Unit = {
+    FileSaver.saveAs(result.toBlob, "filename")
     println("Saved!")
   }
 
@@ -168,21 +168,20 @@ object MainActionHandler {
     mode match {
       case withCodingMode: WithCodingMode =>
         compressionActor !
-          ProcessRequest(withCodingMode, inputWrapper.array, options,
-            chunkSize)
-        val startTime = new js.Date
+          ProcessRequest(withCodingMode, inputWrapper.raw, options, chunkSize)
+        val startTime = new WrappedDate(new js.Date)
         val viewData = CodingInProgressViewData(withCodingMode, inputWrapper,
-          inputWrapper.array.length, 0, 0, startTime, Nil)
+          inputWrapper.raw.length, 0, 0, startTime, Nil)
         Some(viewData)
       case ShowOptions =>
         compressionActor !
-          ProcessRequest(ShowOptions, inputWrapper.array, options, chunkSize)
+          ProcessRequest(ShowOptions, inputWrapper.raw, options, chunkSize)
         None
     }
   }
 
   def processingFinished(codingInProgressViewData: CodingInProgressViewData,
-      endTime: js.Date, resultBlob: dom.Blob): IdleStateViewData = {
+      endTime: WrappedDate, result: BlobSource): IdleStateViewData = {
     import codingInProgressViewData._
     val (totalSymbols, compressedSize) =
       mode match {
@@ -192,7 +191,7 @@ object MainActionHandler {
           (outputStreamPosition, inputBufferLength)
       }
     val codingResult = CodingResult(mode, totalSymbols, compressedSize,
-      startTime, endTime, codingTimeline, resultBlob)
+      startTime, endTime, codingTimeline, result)
     IdleStateViewData(mode, Some(wrappedInput), Some(codingResult),
       loadingInProgress = false)
   }

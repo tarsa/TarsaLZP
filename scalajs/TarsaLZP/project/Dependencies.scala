@@ -75,6 +75,7 @@ object Dependencies {
       ProvidedJS / "eligrey/Blob.js",
       ProvidedJS / "eligrey/FileSaver.js" dependsOn "eligrey/Blob.js",
       // test
+      ProvidedJS / "_infrastructure/data/CodingExample.js" % Test,
       RuntimeDOM % Test
     ))
   }

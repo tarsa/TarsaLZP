@@ -106,7 +106,7 @@ class MainActionHandlerSpec extends FixtureAkkaSpecBase {
     }
     fixture.compressionActorProbe.receiveOne(1.second) mustBe
       CompressionActor.ProcessRequest(ProcessingMode.EncodingMode,
-        viewData.wrappedInput.array, Options.default,
+        viewData.wrappedInput.raw, Options.default,
         Models.Parameters.initialChunkSize)
   }
 
@@ -128,7 +128,7 @@ class MainActionHandlerSpec extends FixtureAkkaSpecBase {
     fixture.handleFunction(
       Models.secondMeasurementReceived,
       MainAction.ProcessingFinished(Models.Parameters.encodingEndTime,
-        Models.Parameters.resultingBlob)
+        Models.Parameters.result)
     ) mustBe Some(ModelUpdate(Models.afterProcessingFinished))
   }
 

@@ -21,19 +21,22 @@
 package pl.tarsa.tarsalzp.data
 
 import akka.util.HashCode
+import org.scalajs.dom
 
-import scala.scalajs.js
-
-class WrappedTypedArray(val raw: js.typedarray.Uint8Array) {
-  override def equals(that: scala.Any): Boolean = {
+trait BlobSource {
+  final override def equals(that: scala.Any): Boolean = {
     that match {
-      case that: WrappedTypedArray =>
-        raw.toIterator.sameElements(that.raw.toIterator)
+      case that: BlobSource =>
+        toIterator.sameElements(that.toIterator)
       case _ =>
         false
     }
   }
 
-  override def hashCode(): Int =
-    raw.foldLeft(HashCode.SEED)(HashCode.hash(_, _))
+  final override def hashCode(): Int =
+    toIterator.foldLeft(HashCode.SEED)(HashCode.hash(_, _))
+
+  def toBlob: dom.Blob
+
+  def toIterator: Iterator[Byte]
 }

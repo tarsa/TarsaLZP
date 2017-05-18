@@ -20,20 +20,16 @@
  */
 package pl.tarsa.tarsalzp.data
 
-import akka.util.HashCode
-
 import scala.scalajs.js
 
-class WrappedTypedArray(val raw: js.typedarray.Uint8Array) {
+class WrappedDate(val raw: js.Date) {
   override def equals(that: scala.Any): Boolean = {
     that match {
-      case that: WrappedTypedArray =>
-        raw.toIterator.sameElements(that.raw.toIterator)
-      case _ =>
-        false
+      case other: WrappedDate =>
+        raw.getTime() == other.raw.getTime()
     }
   }
 
   override def hashCode(): Int =
-    raw.foldLeft(HashCode.SEED)(HashCode.hash(_, _))
+    raw.getTime().hashCode()
 }

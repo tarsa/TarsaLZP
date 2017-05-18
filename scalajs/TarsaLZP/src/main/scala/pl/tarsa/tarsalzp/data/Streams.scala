@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Piotr Tarsa ( http://github.com/tarsa )
+ * Copyright (C) 2016 - 2017 Piotr Tarsa ( http://github.com/tarsa )
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the author be held liable for any damages
@@ -46,7 +46,7 @@ object Streams {
     }
   }
 
-  class ChunksArrayOutputStream extends OutputStream {
+  class ChunksArrayOutputStream extends OutputStream with BlobSource {
     private var cumulativeExclusiveChunksArraySize = 0
     private val chunksArray = js.Array[Chunk]()
     private var chunk = new Chunk()
@@ -63,11 +63,18 @@ object Streams {
       chunk.write(value.toByte)
     }
 
-    def toBlob(blobType: String = "example/binary"): dom.Blob = {
+    override def toBlob: dom.Blob = {
       val chunks = new js.Array[js.Any]()
-      chunksArray.foreach(chunk => chunks.push(chunk.truncatedBuffer))
-      chunks.push(chunk.truncatedBuffer)
-      new dom.Blob(chunks, dom.raw.BlobPropertyBag(s"{type: '$blobType'}"))
+      chunksArray.foreach { chunk =>
+        chunks.push(chunk.truncatedArray.raw.buffer)
+      }
+      chunks.push(chunk.truncatedArray.raw.buffer)
+      new dom.Blob(chunks,
+        dom.raw.BlobPropertyBag(s"{type: 'example/binary'}"))
+    }
+
+    override def toIterator: Iterator[Byte] = {
+      chunksArray.toIterator.flatMap(_.toIterator) ++ chunk.toIterator
     }
   }
 }

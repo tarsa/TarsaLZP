@@ -22,11 +22,9 @@ package pl.tarsa.tarsalzp.ui.backend
 
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.data.WrappedTypedArray
+import pl.tarsa.tarsalzp.data.{BlobSource, WrappedDate, WrappedTypedArray}
 import pl.tarsa.tarsalzp.ui.backend.MainModel.ProcessingTaskViewData
 import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.WithCodingMode
-
-import scala.scalajs.js
 
 case class MainModel(
     options: Options,
@@ -51,10 +49,10 @@ object MainModel {
       mode: WithCodingMode,
       totalSymbols: Int,
       compressedSize: Int,
-      startTime: js.Date,
-      endTime: js.Date,
+      startTime: WrappedDate,
+      endTime: WrappedDate,
       codingTimeline: Seq[ChunkCodingMeasurement],
-      resultBlob: dom.Blob
+      result: BlobSource
   )
 
   case class CodingInProgressViewData(
@@ -63,13 +61,13 @@ object MainModel {
       inputBufferLength: Int,
       inputStreamPosition: Int,
       outputStreamPosition: Int,
-      startTime: js.Date,
+      startTime: WrappedDate,
       codingTimeline: Seq[ChunkCodingMeasurement]
   ) extends ProcessingTaskViewData
 
   case class ChunkCodingMeasurement(
-      startTime: js.Date,
-      endTime: js.Date,
+      startTime: WrappedDate,
+      endTime: WrappedDate,
       symbolsNumber: Int,
       compressedSize: Int
   )

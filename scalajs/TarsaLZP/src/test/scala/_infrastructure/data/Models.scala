@@ -22,7 +22,7 @@ package _infrastructure.data
 
 import org.scalajs.dom
 import pl.tarsa.tarsalzp.compression.options.Options
-import pl.tarsa.tarsalzp.data.WrappedTypedArray
+import pl.tarsa.tarsalzp.data.{BlobSource, WrappedDate, WrappedTypedArray}
 import pl.tarsa.tarsalzp.ui.backend.MainModel.{
   CodingInProgressViewData,
   IdleStateViewData
@@ -85,7 +85,7 @@ object Models {
 
     val encodingStarted: CodingInProgressViewData =
       CodingInProgressViewData(ProcessingMode.EncodingMode, P.wrappedInput,
-        P.wrappedInput.array.length, 0, 0, P.encodingStartTime, Seq.empty)
+        P.wrappedInput.raw.length, 0, 0, P.encodingStartTime, Seq.empty)
 
     val firstMeasurementReceived: CodingInProgressViewData =
       encodingStarted.copy(inputStreamPosition = 2, outputStreamPosition = 1,
@@ -98,7 +98,7 @@ object Models {
     private val codingResult = MainModel.CodingResult(
         ProcessingMode.EncodingMode, 3, 4, P.encodingStartTime,
         P.encodingEndTime, Seq(P.firstMeasurement, P.secondMeasurement),
-        P.resultingBlob)
+        P.result)
 
     val afterProcessingFinished: IdleStateViewData =
       fileLoadingFinished.copy(codingResultOpt = Some(codingResult))
@@ -129,19 +129,26 @@ object Models {
     val wrappedInput: WrappedTypedArray =
       new WrappedTypedArray(new js.typedarray.Uint8Array(inputBuffer))
 
-    val encodingStartTime: js.Date =
-      new js.Date()
+    val encodingStartTime: WrappedDate =
+      new WrappedDate(new js.Date())
 
     val firstMeasurement: MainModel.ChunkCodingMeasurement =
-      MainModel.ChunkCodingMeasurement(new js.Date(), new js.Date(), 2, 1)
+      MainModel.ChunkCodingMeasurement(new WrappedDate(new js.Date()),
+        new WrappedDate(new js.Date()), 2, 1)
 
     val secondMeasurement: MainModel.ChunkCodingMeasurement =
-      MainModel.ChunkCodingMeasurement(new js.Date(), new js.Date(), 3, 3)
+      MainModel.ChunkCodingMeasurement(new WrappedDate(new js.Date()),
+        new WrappedDate(new js.Date()), 3, 3)
 
-    val encodingEndTime: js.Date =
-      new js.Date()
+    val encodingEndTime: WrappedDate =
+      new WrappedDate(new js.Date())
 
-    val resultingBlob: dom.Blob =
-      new dom.Blob()
+    val result: BlobSource =
+      new BlobSource {
+        val toBlob: dom.Blob = new dom.Blob()
+
+        override def toIterator: Iterator[Byte] =
+          Iterator.empty
+      }
   }
 }
