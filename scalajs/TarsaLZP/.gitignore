@@ -4,5 +4,7 @@
 /out/
 
 /*/project/target/
+/*/.js/target/
+/*/.jvm/target/
 /*/target/
 /target/

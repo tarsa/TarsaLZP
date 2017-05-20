@@ -27,9 +27,14 @@ lazy val commonSettings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
 )
 
-lazy val locators = (project in file("locators"))
-  .settings(commonSettings: _*)
-  .settings(name := "TarsaLZP-locators")
+lazy val locators =
+  (crossProject.crossType(CrossType.Pure) in file("locators"))
+    .settings(commonSettings: _*)
+    .settings(name := "TarsaLZP-locators")
+
+lazy val locatorsJs = locators.js
+
+lazy val locatorsJvm = locators.jvm
 
 lazy val app =
   (project in file("app"))
@@ -39,16 +44,16 @@ lazy val app =
       libraryDependencies ++= Dependencies.scalajsDependencies.value,
       jsDependencies ++= Dependencies.jsDependencies.value
     )
-    .dependsOn(locators)
+    .dependsOn(locatorsJs)
 
 lazy val e2e =
   (project in file("e2e"))
     .settings(commonSettings: _*)
     .settings(name := "TarsaLZP-e2e")
-    .dependsOn(locators)
+    .dependsOn(locatorsJvm)
 
 lazy val root = (project in file("."))
   .settings(commonSettings: _*)
   .settings(name := "TarsaLZP-root")
-  .aggregate(locators, app, e2e)
-  .dependsOn(locators, app, e2e)
+  .aggregate(app, e2e)
+  .dependsOn(app, e2e)

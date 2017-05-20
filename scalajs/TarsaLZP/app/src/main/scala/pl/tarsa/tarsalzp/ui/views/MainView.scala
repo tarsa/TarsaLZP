@@ -38,6 +38,7 @@ import pl.tarsa.tarsalzp.ui.backend.ProcessingMode.{
   ShowOptions
 }
 import pl.tarsa.tarsalzp.ui.backend._
+import pl.tarsa.tarsalzp.ui.locators.MainLocators
 import pl.tarsa.tarsalzp.ui.util.IdsGenerator
 
 import scala.scalajs.js
@@ -79,7 +80,7 @@ object MainView {
 
     val fileChooser =
       <.input(
-        ^.className := "temp_fileChooser",
+        ^.className := MainLocators.fileChooser,
         ^.`type` := "file",
         ^.disabled := busy,
         ^.onChange ==> { (e: ReactEventFromInput) =>
@@ -90,7 +91,7 @@ object MainView {
       )
     val loadButton =
       <.input(
-        ^.className := "temp_loadButton",
+        ^.className := MainLocators.loadButton,
         ^.`type` := "button",
         ^.disabled := busy ||
           foldTask(_ => data.chosenFileOpt.isEmpty, _ => true),
@@ -99,7 +100,7 @@ object MainView {
       )
     val processButton =
       <.input(
-        ^.className := "temp_processButton",
+        ^.className := MainLocators.processButton,
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.wrappedInputOpt.isEmpty, _ => true),
         ^.value := "Process data",
@@ -107,26 +108,26 @@ object MainView {
       )
     val saveButton =
       <.input(
-        ^.className := "temp_saveButton",
+        ^.className := MainLocators.saveButton,
         ^.`type` := "button",
         ^.disabled := busy || foldTask(_.codingResultOpt.isEmpty, _ => true),
         ^.value := "Save results to file",
         ^.onClick --> p.proxy.dispatchCB(SaveFile)
       )
 
-    def makeModeSwitch(value: String, description: String,
+    def makeModeSwitch(modeName: String, description: String,
         mode: ProcessingMode) = {
       val id = IdsGenerator.freshUnique()
       <.span(
         <.label(^.`for` := id, description),
         <.input(
-          ^.className := s"temp_modeSwitch_$value",
+          ^.className := MainLocators.modeSwitch(modeName),
           ^.id := id,
           ^.disabled := busy,
           ^.name := "mode",
           ^.`type` := "radio",
           ^.checked := mode == data.taskViewData.mode,
-          ^.value := value,
+          ^.value := modeName,
           ^.onChange --> p.proxy.dispatchCB(ChangedMode(mode))
         )
       )

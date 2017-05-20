@@ -37,6 +37,7 @@ import pl.tarsa.tarsalzp.ui.backend.MainAction.{
 }
 import pl.tarsa.tarsalzp.ui.backend.MainModel.CodingInProgressViewData
 import pl.tarsa.tarsalzp.ui.backend.{MainAction, MainModel}
+import pl.tarsa.tarsalzp.ui.locators.MainLocators
 
 import scala.collection.mutable
 import scala.scalajs.js
@@ -90,7 +91,7 @@ class MainViewSpec extends FrontendSpecBase {
       val target = js.Dynamic.literal("files" -> js.Array(file))
       val eventData = js.Dynamic.literal("target" -> target)
       val fileChooserDom =
-        findChildByClassName(mainViewNode, "temp_fileChooser")
+        findChildByClassName(mainViewNode, MainLocators.fileChooser)
       Simulate.change(fileChooserDom, eventData)
       testCircuit.actionsQueue mustBe Seq(SelectedFile(Some(file)))
     }
@@ -101,7 +102,8 @@ class MainViewSpec extends FrontendSpecBase {
       import fixture._
       import mainViewInfo._
       loadContentsButton.mustHaveProps(F.disabled(false))
-      val loadButtonDom = findChildByClassName(mainViewNode, "temp_loadButton")
+      val loadButtonDom =
+        findChildByClassName(mainViewNode, MainLocators.loadButton)
       Simulate.click(loadButtonDom)
       testCircuit.actionsQueue mustBe Seq(LoadFile)
     }
@@ -123,7 +125,7 @@ class MainViewSpec extends FrontendSpecBase {
       import mainViewInfo._
       processDataButton.mustHaveProps(F.disabled(false))
       val processButtonDom =
-        findChildByClassName(mainViewNode, "temp_processButton")
+        findChildByClassName(mainViewNode, MainLocators.processButton)
       Simulate.click(processButtonDom)
       testCircuit.actionsQueue mustBe Seq(StartProcessing)
     }
