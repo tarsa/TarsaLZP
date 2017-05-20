@@ -23,7 +23,7 @@ package _infrastructure.specs
 import japgolly.scalajs.react.vdom.{HtmlAttrs, HtmlTags, VdomElement}
 import org.scalajs.dom
 
-class FrontendSpecBase extends SyncSpecBase {
+abstract class FrontendSpecBase extends SyncSpecBase {
   def dummyTag(): (String, VdomElement) = {
     import japgolly.scalajs.react.vdom.Implicits._
     val guid = java.util.UUID.randomUUID().toString
