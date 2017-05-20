@@ -3,6 +3,6 @@
 /dist/
 /out/
 
-/project/project/
-/project/target/
+/*/project/target/
+/*/target/
 /target/
