@@ -50,6 +50,7 @@ lazy val e2e =
   (project in file("e2e"))
     .settings(commonSettings: _*)
     .settings(name := "TarsaLZP-e2e")
+    .settings(libraryDependencies ++= Dependencies.e2eDependencies.value)
     .dependsOn(locatorsJvm)
 
 lazy val root = (project in file("."))

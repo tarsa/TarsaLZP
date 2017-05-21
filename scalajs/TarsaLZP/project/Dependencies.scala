@@ -25,6 +25,12 @@ import sbt._
 
 object Dependencies {
   object Versions {
+    object Scala {
+      // test only
+      val selenium = "3.4.0"
+      val scalaTest = "3.0.1"
+    }
+
     object ScalaJs {
       // general
       val akkaJs = "1.2.5.1"
@@ -33,8 +39,6 @@ object Dependencies {
       val scalaJsD3 = "0.3.4"
       val scalaJsDom = "0.9.2"
       val scalaJsReact = "1.0.0"
-      // test only
-      val scalaTest = "3.0.1"
     }
 
     object Js {
@@ -44,6 +48,7 @@ object Dependencies {
   }
 
   val scalajsDependencies: Def.Initialize[Seq[ModuleID]] = {
+    import Versions.Scala._
     import Versions.ScalaJs._
     Def.setting(Seq(
       // production
@@ -77,6 +82,15 @@ object Dependencies {
       // test
       ProvidedJS / "_infrastructure/data/CodingExample.js" % Test,
       RuntimeDOM % Test
+    ))
+  }
+
+  val e2eDependencies: Def.Initialize[Seq[ModuleID]] = {
+    import Versions.Scala._
+    Def.setting(Seq(
+      // test
+      "org.seleniumhq.selenium" % "selenium-java" % selenium % Test,
+      "org.scalatest" %% "scalatest" % scalaTest % Test
     ))
   }
 }

@@ -158,8 +158,8 @@ object MainActionHandler {
   }
 
   def saveResults(result: BlobSource): Unit = {
+    println("Saving...")
     FileSaver.saveAs(result.toBlob, "filename")
-    println("Saved!")
   }
 
   def startProcessingData(mode: ProcessingMode,

@@ -69,8 +69,7 @@ object Streams {
         chunks.push(chunk.truncatedArray.raw.buffer)
       }
       chunks.push(chunk.truncatedArray.raw.buffer)
-      new dom.Blob(chunks,
-        dom.raw.BlobPropertyBag(s"{type: 'example/binary'}"))
+      new dom.Blob(chunks, dom.raw.BlobPropertyBag(s"example/binary"))
     }
 
     override def toIterator: Iterator[Byte] = {
